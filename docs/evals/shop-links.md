@@ -1,6 +1,6 @@
 # Shopping increment — 1 November 2026
 
-Runtime has no configured shopping/search provider. `ShopLinks` therefore offers explicitly labelled UK retailer searches, making no product, inventory, price or fibre claims. No paid calls, affiliates, accounts, tracking or fetching are added. Only user-entered garment terms leave the app when a retailer link is clicked; consultation descriptions and constraints stay local. Fields start blank deliberately, preventing personal consultation text from being exported by default.
+Runtime has no configured shopping/search provider. `ShopLinks` therefore offers explicitly labelled UK retailer searches, making no product, inventory, price or fibre claims. No paid calls, affiliates, accounts, tracking or fetching are added. Only visible editable garment terms leave the app when a retailer link is clicked; consultation descriptions and constraints stay local. Fields now start with bounded allowlisted clothing vocabulary extracted from the approved look description/title. Per-garment chips preserve separate pieces; users can edit terms. Emails and URLs are removed before extraction; raw consultation prose is never copied into outgoing search terms. No wool/cashmere terms are extracted because they may express an avoidance.
 
 Mount from the exact approved output, inside the existing `approved` section:
 
@@ -22,7 +22,9 @@ Opened live primary retailer pages on 1 November 2026. Board reference: private 
 - [White Stuff June linen notch-neck dress](https://www.whitestuff.com/p/7067/june-linen-notch-neck-dress/NAVY_PR): similar open neckline, short sleeves and A-line movement to look 3; primary page lists 100% linen. Significant mismatch: navy print and above-knee length, whereas the board has a plain muted blue midi. Reject if plain midi is essential. Size/stock not confirmed.
 - [Seasalt pure cotton notch-neck top at M&S](https://www.marksandspencer.com/pure-cotton-notch-neck-top/p/clp23028425?color=TEAL): unusually close texture/neckline candidate for look 1; primary page lists crinkly cotton, notch V and short grown-on sleeves. **Rejected for shopping: page explicitly says no longer available.** Sleeve shape also differs from the board’s elbow sleeve. This is why search snippets alone are insufficient.
 
-Search endpoint URLs use M&S `l/search?searchTerm=` and John Lewis `search?search-term=`. Browser search-tool opens of these dynamic searches were unavailable; product pages above were readable. End-to-end retailer search rendering still needs a real browser check; do not claim verified search results.
+Browser verification used T3 first, which returned “calling provider no longer owns an active thread run”; existing installed Playwright + Chrome was used as fallback. Actual M&S site search submitted “teal top” and navigated to `/search?searchTerm=teal+top&intid=normal&searchType=normal`, rendering “Search results for teal top” and 63 items. The initial guessed `/l/search` endpoint returned 404 and was corrected. John Lewis search failed with HTTP2 protocol error and then timed out with HTTP2 disabled, so it was removed from shipped links rather than described as working.
+
+Actual React component rendered from fictional board descriptors at 1200px and 390px. Both had contentWidth equal to viewport width. Initial query “teal textured blouse”; separate “cream fluid trousers” chip; constraints shown locally. Screenshots remain ephemeral `/tmp/stylist-shop-1200.png` and `/tmp/stylist-shop-390.png`, not committed. This proves the component presentation, not a production approved-user session or interactive hydration.
 
 ## Remaining work for verified product recommendations
 
