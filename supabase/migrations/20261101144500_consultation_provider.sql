@@ -1,6 +1,6 @@
 -- Add provider-backed turns without enabling prices or making any API call.
 alter table public.style_price_bounds drop constraint style_price_bounds_kind_check;
-alter table public.style_price_bounds add constraint style_price_bounds_kind_check check(kind in ('generation','editorial','dialogue','voice'));
+alter table public.style_price_bounds add constraint style_price_bounds_kind_check check(kind in ('generation','editorial','composite','dialogue','voice'));
 alter table public.consultation_messages drop constraint consultation_messages_source_check;
 alter table public.consultation_messages drop constraint consultation_messages_check;
 alter table public.consultation_messages add column provider_operation_id uuid references public.ai_operations(id);

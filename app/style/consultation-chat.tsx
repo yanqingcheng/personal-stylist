@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { consultationSchema, type ConsultationMessage, type ConsultationSnapshot } from '@/lib/consultation';
+import ConsultationVoice from './consultation-voice';
 
 export type ConsultationChatProps = {
   activeBoardId?:string|null;
@@ -15,6 +16,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
   const [error,setError]=useState('');
   const [connectionError,setConnectionError]=useState('');
   const [loading,setLoading]=useState(true);
+  const [autonomous,setAutonomous]=useState(false);
   const current=useRef<ConsultationSnapshot|null>(null);
   const alive=useRef(true);
   const submitLock=useRef(false);
@@ -24,6 +26,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
   const pending=Boolean(consultation?.pendingCount);
 
   useEffect(()=>{callback.current=onMessages},[onMessages]);
+  useEffect(()=>{void fetch('/api/consultation/respond',{cache:'no-store'}).then(r=>r.json()).then(data=>setAutonomous(data.available===true)).catch(()=>setAutonomous(false))},[]);
   const receive=useCallback((snapshot:ConsultationSnapshot)=>{
     if(!alive.current || (current.current && snapshot.revision<current.current.revision)) return;
     const changed=!current.current || snapshot.revision!==current.current.revision;
@@ -94,6 +97,11 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
         : 'Your message could not be confirmed. Your draft is still here; check the conversation before trying again.');
       if(!parsed.success) throw new Error('Your message could not be confirmed. Your draft is still here; check the conversation before trying again.');
       if(alive.current) {setDraft(value=>value===text?'':value);retry.current=null;setError('');}
+      if(autonomous){
+        const reply=await fetch('/api/consultation/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idempotencyKey:crypto.randomUUID(),expectedRevision:parsed.data.revision,replyTo:attempt.idempotencyKey})});
+        const result=await reply.json();const saved=consultationSchema.safeParse(result.consultation);if(saved.success)receive(saved.data);
+        if(!reply.ok)throw new Error(result.error||'Your message is saved, but the stylist reply is unavailable.');
+      }
     } catch(reason) {
       if(alive.current) setError(reason instanceof Error?reason.message:'Your message could not be confirmed. Your draft is still here.');
     } finally {
@@ -103,7 +111,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
   }
 
   return <section className="sc-conversation" aria-label="Your stylist conversation">
-    <header><div><h2>A little conversation.<br/>A more personal edit.</h2><p>Private, saved consultation · supervised native stylist</p></div></header>
+    <header><div><h2>A little conversation.<br/>A more personal edit.</h2><p>Private, saved consultation · {autonomous?'AI stylist':'Replies are supervised for this demo'}</p></div></header>
     <div className="sc-messages" role="log" aria-label="Saved conversation" aria-live="polite" aria-relevant="additions text" aria-busy={loading}>
       {consultation?.messages.map(message=><article className={`sc-message sc-message--${message.role}`} data-role={message.role} key={message.id}>
         <p className="sc-message-author">{message.role==='user'?'You':'Your stylist'}</p>
@@ -131,5 +139,6 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
         <button type="submit" disabled={!canSend}>{sending?'Sending…':'Send message'} <span aria-hidden="true">↗</span></button>
       </div>
     </form>
+    {consultation&&<ConsultationVoice expectedRevision={consultation.revision} activeBoardId={activeBoardId} onSaved={receive}/>}
   </section>;
 }
