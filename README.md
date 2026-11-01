@@ -41,6 +41,8 @@ Photographs are stored privately under their account and normalized before displ
 
 The atlas and drape definitions were adapted from reviewed project research at revision `7f5f43d`; only sanitized structured colour data was imported. Expanded taxonomy, anchor positions and HEX palettes are illustrative and unvalidated. Public references include [The Concept Wardrobe’s seasonal guides](https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides) and [colour dimensions](https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/what-is-color-analysis). [Atlas source credits](data/colour-atlas-31.json) record their uses. Private research, portraits and personal examples are not distributed. “Opal” is a palette name, not the app name.
 
+The Next.js scaffold (`create-next-app` 16.4.3), initial holding page and private research predate the 11:00 hackathon build window. The consultation implementation was built during the hackathon. Framework logos/icons are scaffold assets; generated styling imagery is not yet included.
+
 ## Codex contribution and recovery
 
 Codex work produced the [saved colour-study interface](app/profile/page.tsx), [invite-gated profile/media backend](app/api), [colour evidence logic](lib/colour/index.ts) and [SQL ownership/concurrency boundaries](supabase/migrations/20261101000000_foundation.sql). Focused Sol review led to save-conflict, A/B placement and interrupted-upload fixes; [the review record](docs/reviews/stage1-review-request.md) describes those changes and their evidence. These are development contributions; runtime AI is absent.
