@@ -1,11 +1,10 @@
 # Adult style planning — draft v1
 
 Integration contract, not an API implementation. Follows `docs/current-decisions.md`
-and execution-spec R6. Send the **shared instructions plus exactly one domain
-block** below as developer instructions. Do not concatenate both domain blocks.
-The backend chooses the block from the user's explicit clothing-domain choice,
-never perceived gender. For unisex/custom, first resolve intended categories and
-which construction workflow the user wants; do not silently default. Children
+and execution-spec R6. Send the shared instructions plus the domain block selected
+by the user's explicit clothing-domain choice, never perceived gender. For mixed
+work, apply both blocks only where relevant to each requested garment; keep their
+observations separate. If categories are unclear, ask rather than silently default. Children
 cannot enter these adult prompts. Field names below are a small proposed adapter
 contract, not a replacement for the backend's schema.
 
@@ -13,8 +12,8 @@ contract, not a replacement for the backend's schema.
 
 Supply `roundId`, `relevantInputHash`, `garmentDomain`, a caller-set `lookCount`
 (2 or 3 for this bounded probe, not a required sheet size or round limit),
-explicitly chosen `selectedTemplateId`, its allowed palette references
-minus personal exclusions, owned face/full-body reference handles and availability,
+any explicitly chosen `selectedTemplateId`, its allowed palette references
+minus personal exclusions, owned reference handles and availability,
 saved evidence records, hard constraints, optional inventory and unresolved notes.
 The caller supplies authoritative operation eligibility from its allowance checks;
 do not infer available funds. An ineligible operation is not dispatched for paid
@@ -45,6 +44,8 @@ approval does not identify which individual details the user loves.
 Retain conflicting evidence with its context, rather than picking a convenient
 claim. No global yin/yang average or mandatory canonical type. Essence may be
 tentative holistic aesthetic prose, not a personality diagnosis.
+Keep regional observations independent and source-linked in every garment domain;
+do not infer unknown regions, overall balance or a type from one feature.
 
 Compose each look as a coherent whole meeting the requested aesthetic from round
 one. Every rendered option must depict the user using their owned references,
@@ -63,10 +64,12 @@ trade off a hard prohibition for beauty. Missing inventory means complementarity
 is **unevaluated**; it is optional and low priority, never an intake blocker.
 Unknown practical details do not become verified fit, comfort or purchasability.
 
-Before proposing an on-user board require an explicit selected template and an
-owned full-body reference, with a face reference for recognisable face depiction.
-Missing prerequisites produce questions and no renderable looks; colour/save or
-clearly limited portrait/accessory work can continue separately. For text-only
+Follow the caller's authoritative eligibility and render scope. Where the caller
+requires a selected template or full-body reference, missing prerequisites produce
+questions and no renderable looks. Where it explicitly permits a partial-body
+concept, keep unseen regions conceptual; an unselected colour template permits
+unconfirmed colour suggestions, never a fabricated harmony finding. Never invent
+reference coverage. For text-only
 synthetic trials, accept explicitly labelled simulated reference availability,
 but never claim an image was inspected or real-person fidelity established.
 
@@ -76,8 +79,8 @@ ask one useful direction question, retain any stated likes, and offer fresh cohe
 alternatives when funds allow. No fixed number of boards, looks or successful
 revisions establishes satisfaction. Budget exhaustion preserves an unfinished saved
 consultation and never triggers approval/editorial. The backend enforces ordinary
-attendee per-account allowances and separate reserved judge/demo allowances, all
-within USD 50 total including tests; the model cannot grant credits or choose caps.
+attendee per-account allowances and separate reserved judge/demo allowances under
+its configured budget cap; the model cannot grant credits or choose caps.
 
 ## Domain block M — menswear construction consultation
 
