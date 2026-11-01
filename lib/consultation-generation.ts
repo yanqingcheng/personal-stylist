@@ -14,7 +14,7 @@ export const generationInput=z.object({idempotencyKey:z.uuid(),expectedRevision:
 type Input=z.infer<typeof generationInput>;
 type Auth=NonNullable<Awaited<ReturnType<typeof activeUser>>>;
 const boardSchema=demoDocument.shape.boards.unwrap().element;
-export const generationOutput=z.object({id:z.uuid(),board:boardSchema,assetPath:z.string().min(1).max(500),documentRevision:z.string().regex(/^[a-f0-9]{64}$/),provenance:z.enum(['prepared','dynamic']),plan:z.unknown().optional(),critique:z.string().max(12000).optional(),sourceDocumentRevision:z.string().optional()});
+export const generationOutput=z.object({id:z.uuid(),board:boardSchema,assetPath:z.string().min(1).max(500),documentRevision:z.string().regex(/^[a-f0-9]{64}$/),provenance:z.enum(['prepared','dynamic']),plan:z.unknown().optional(),critique:z.string().max(12000).optional(),sourceDocumentRevision:z.string().optional(),mediaId:z.uuid().optional(),byteSize:z.number().int().positive().max(10485760).optional()});
 const jobSchema=z.object({id:z.uuid(),state:z.enum(['pending','running','succeeded','failed','uncertain']),mode:z.enum(['prepared','dynamic']),baseRevision:z.number().int(),actionId:z.uuid().nullable(),parentOutputId:z.string().nullable(),operationId:z.uuid().nullable(),missingRequirements:z.array(z.string()),output:generationOutput.nullable(),createdAt:z.string()});
 const createdSchema=z.object({job:jobSchema,replayed:z.boolean().optional()});
 const startSchema=z.object({job:jobSchema,created:z.boolean(),operation:z.object({id:z.uuid(),state:z.string()}).optional()});
@@ -62,7 +62,7 @@ export async function readGenerationJobs(auth:Auth){
 export async function generateConsultation(auth:Auth,input:Input){
  const ctx=await context(auth);
  const adult=input.adultConfirmed===true||ctx.reports.adultFullBodyConfirmed===true;
- const created=await auth.service.rpc('create_consultation_generation',{p_user:auth.user.id,p_id:input.idempotencyKey,p_revision:input.expectedRevision,p_mode:input.mode,p_payload_hash:digest(input),p_input_hash:ctx.inputHash,p_action:input.actionId??null,p_parent:input.parentOutputId??null,p_adult:adult});
+ const created=await auth.service.rpc('create_consultation_generation',{p_user:auth.user.id,p_id:input.idempotencyKey,p_revision:input.expectedRevision,p_mode:input.mode,p_payload_hash:digest(input),p_input_hash:ctx.inputHash,p_action:input.actionId??null,p_parent:input.parentOutputId??null,p_adult:input.adultConfirmed===true});
  if(created.error)throw new Error('save');
  if(created.data?.error)return {status:409,body:{error:'The conversation or revision request changed. Reload it before generating.',...created.data}};
  let job=createdSchema.parse(created.data).job;
@@ -77,7 +77,12 @@ export async function generateConsultation(auth:Auth,input:Input){
  if(ctx.consultation.pendingCount)return pending(['Wait for the saved stylist reply before creating the sheet.']);
  const demo=await prepared(auth);
  if(input.mode==='prepared'){
-  const board=input.parentOutputId?demo?.document.boards.find((board,index,boards)=>board.kind==='revision'&&boards.findIndex(item=>item.id===input.parentOutputId)<index&&boards.some(item=>item.id===input.parentOutputId)):demo?.document.boards.find(board=>board.kind==='initial');
+  let preparedParentId=input.parentOutputId;
+  if(preparedParentId&&z.uuid().safeParse(preparedParentId).success){
+   const previous=await auth.service.from('consultation_generation_jobs').select('result').eq('id',preparedParentId).eq('user_id',auth.user.id).eq('profile_id',ctx.profileId).eq('status','succeeded').maybeSingle();
+   const owned=generationOutput.safeParse(previous.data?.result);if(owned.success)preparedParentId=owned.data.board.id;
+  }
+  const board=preparedParentId?demo?.document.boards.find((board,index,boards)=>board.kind==='revision'&&boards.findIndex(item=>item.id===preparedParentId)<index&&boards.some(item=>item.id===preparedParentId)):demo?.document.boards.find(board=>board.kind==='initial');
   if(!demo||!board)return pending(['No owned prepared image matches this request. Choose dynamic generation to create a new sheet.'],'prepared_unavailable');
   const path=auth.user.id+'/demo/'+board.path;
   try{await pixels(auth,path);}catch{return pending(['The owned prepared image is unavailable.']);}
@@ -101,17 +106,19 @@ export async function generateConsultation(auth:Auth,input:Input){
  try{original=await pixels(auth,z.string().parse(media.data.object_path));}catch{return pending(['Your reference photo cannot currently be read. Re-upload or retry.']);}
  const images=[original];
  let parent:unknown=null;
+ let parentHash:string|null=null;
  if(input.parentOutputId){
-  const previous=await auth.service.from('consultation_generation_jobs').select('result').eq('id',input.parentOutputId).eq('user_id',auth.user.id).eq('profile_id',ctx.profileId).eq('status','succeeded').maybeSingle();
-  const generated=generationOutput.safeParse(previous.data?.result);
+  const previous=z.uuid().safeParse(input.parentOutputId).success?await auth.service.from('consultation_generation_jobs').select('result').eq('id',input.parentOutputId).eq('user_id',auth.user.id).eq('profile_id',ctx.profileId).eq('status','succeeded').maybeSingle():null;
+  const generated=generationOutput.safeParse(previous?.data?.result);
   const supplied=demo?.document.boards.find(board=>board.id===input.parentOutputId);
   const path=generated.success?generated.data.assetPath:supplied?auth.user.id+'/demo/'+supplied.path:null;
   parent=generated.success?generated.data:supplied;
+  parentHash=generated.success?generated.data.documentRevision:supplied?demo?.hash??null:null;
   if(!path||!parent)return pending(['The exact parent sheet is unavailable. Open a saved sheet and request its revision again.']);
   try{images.push(await pixels(auth,path));}catch{return pending(['The exact parent sheet image cannot be read. No revision was dispatched.']);}
  }
  const feedback=input.actionId?await auth.service.from('consultation_actions').select('feedback,output_id,output_hash,base_revision').eq('id',input.actionId).eq('user_id',auth.user.id).eq('kind','request_revision').maybeSingle():null;
- if(input.actionId&&(feedback?.error||!feedback?.data))return pending(['Save a revision request and its feedback first.']);
+ if(input.actionId&&(feedback?.error||!feedback?.data||feedback.data.output_hash!==parentHash||feedback.data.output_id!==input.parentOutputId))return pending(['Save a revision request and its feedback first.']);
  const selected=atlas.find(item=>item.id===ctx.document.selectedTemplateId);
  const taste=recordSchema.safeParse(ctx.document.taste);
  const excluded=z.array(z.string()).safeParse(selected&&taste.success?taste.data[selected.id]??[]:[]);
@@ -161,7 +168,7 @@ export async function generateConsultation(auth:Auth,input:Input){
   const uploaded=await auth.service.storage.from('private-media').upload(path,image,{contentType:'image/png',upsert:false});
   if(uploaded.error)throw new Error('upload');
   const board=boardSchema.parse({id:job.id,kind:parent?'revision':'initial',title:'Your personal style sheet',description:review.critique,path:mediaId,options:plan.looks.map((look,index)=>({id:'look-'+(index+1),title:look.title,description:look.description,reason:look.reason}))});
-  const output=generationOutput.parse({id:job.id,board,assetPath:path,documentRevision:digest({id:job.id,board,imageHash:createHash('sha256').update(image).digest('hex'),plan}),provenance:'dynamic',plan,critique:review.critique});
+  const output=generationOutput.parse({id:job.id,board,assetPath:path,documentRevision:digest({id:job.id,board,imageHash:createHash('sha256').update(image).digest('hex'),plan}),provenance:'dynamic',mediaId,byteSize:image.byteLength,plan,critique:review.critique});
   const finished=await auth.service.rpc('finish_consultation_generation',{p_user:auth.user.id,p_job:job.id,p_input_hash:ctx.inputHash,p_result:output});
   if(finished.error||finished.data?.error)throw new Error('publish');
   path=undefined;job=jobSchema.parse(finished.data.job);

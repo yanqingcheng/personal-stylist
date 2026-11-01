@@ -12,6 +12,7 @@ create table public.consultation_generation_jobs(
  action_id uuid references public.consultation_actions(id) on delete cascade,
  parent_output_id text,
  adult_confirmed boolean not null default false,
+ adult_confirmation_source text not null check(adult_confirmation_source in ('explicit-generation-request','saved-intake','unknown')),
  operation_id uuid references public.ai_operations(id),
  requirements jsonb not null default '[]',
  result jsonb,
@@ -45,8 +46,8 @@ begin
   if a.id is null or a.kind<>'request_revision' or a.status<>'pending' or a.base_revision<>s.revision or a.output_id is distinct from p_parent then return jsonb_build_object('error','action'); end if;
  elsif p_parent is not null then return jsonb_build_object('error','action');
  end if;
- insert into public.consultation_generation_jobs(id,user_id,profile_id,mode,base_revision,payload_hash,input_hash,action_id,parent_output_id,adult_confirmed)
- values(p_id,p_user,p.id,p_mode,p_revision,p_payload_hash,p_input_hash,p_action,p_parent,coalesce(p_adult,false)) returning * into j;
+ insert into public.consultation_generation_jobs(id,user_id,profile_id,mode,base_revision,payload_hash,input_hash,action_id,parent_output_id,adult_confirmed,adult_confirmation_source)
+ values(p_id,p_user,p.id,p_mode,p_revision,p_payload_hash,p_input_hash,p_action,p_parent,coalesce(p_adult,false) or exists(select 1 from public.style_intakes where user_id=p_user and profile_id=p.id and data->'adultFullBodyConfirmed'='true'::jsonb),case when p_adult then 'explicit-generation-request' when exists(select 1 from public.style_intakes where user_id=p_user and profile_id=p.id and data->'adultFullBodyConfirmed'='true'::jsonb) then 'saved-intake' else 'unknown' end) returning * into j;
  return jsonb_build_object('job',public.consultation_generation_json(j),'replayed',false);
 end $$;
 
@@ -85,7 +86,7 @@ end $$;
 
 create function public.finish_consultation_generation(p_user uuid,p_job uuid,p_input_hash text,p_result jsonb)
 returns jsonb language plpgsql security invoker set search_path=public,pg_temp as $$
-declare p public.profiles; s public.consultation_sessions; j public.consultation_generation_jobs; checked jsonb;
+declare p public.profiles; s public.consultation_sessions; j public.consultation_generation_jobs; checked jsonb; media_id uuid; image_size bigint;
 begin
  select * into p from public.profiles where user_id=p_user for update;
  if p.id is null or p.deletion_state<>'active' or not exists(select 1 from public.access_grants where user_id=p_user and active) then return jsonb_build_object('error','forbidden'); end if;
@@ -95,6 +96,10 @@ begin
  if j.input_hash is distinct from public.style_input_hash(p.document,coalesce((select data from public.style_intakes where user_id=p_user and profile_id=p.id),'{}'::jsonb)) then return jsonb_build_object('error','conflict'); end if;
  if p_result is null or jsonb_typeof(p_result)<>'object' or p_result->>'assetPath' is null or p_result->>'documentRevision' is null or p_result->>'assetPath' not like p_user::text||'/%' or position('..' in p_result->>'assetPath')>0 or p_result->>'documentRevision' !~ '^[a-f0-9]{64}$' then return jsonb_build_object('error','asset'); end if;
  if j.mode='dynamic' and not exists(select 1 from public.ai_operations where id=j.operation_id and user_id=p_user and profile_id=p.id and kind='generation' and state='running') then return jsonb_build_object('error','operation'); end if;
+ if j.mode='dynamic' then
+  begin media_id:=(p_result->>'mediaId')::uuid; image_size:=(p_result->>'byteSize')::bigint; exception when invalid_text_representation or numeric_value_out_of_range then return jsonb_build_object('error','asset'); end;
+  if media_id is null or image_size is null or image_size not between 1 and 10485760 or p_result->>'assetPath'<>p_user::text||'/generated/'||media_id::text or not exists(select 1 from public.upload_leases where id=media_id and user_id=p_user and object_path=p_result->>'assetPath' and expires_at>now()) then return jsonb_build_object('error','asset'); end if;
+ end if;
  if j.action_id is not null then
   if j.mode='dynamic' then
    checked:=public.finish_consultation_action(p_user,j.action_id,j.operation_id,null,p_result->>'assetPath');
@@ -104,6 +109,10 @@ begin
    where id=j.action_id and user_id=p_user and kind='request_revision' and status='pending' and base_revision=s.revision;
    if not found then return jsonb_build_object('error','action'); end if;
   end if;
+ end if;
+ if j.mode='dynamic' then
+  insert into public.media(id,user_id,profile_id,object_path,kind,content_type,byte_size,status) values(media_id,p_user,p.id,p_result->>'assetPath','style_look','image/png',image_size,'ready');
+  delete from public.upload_leases where id=media_id and user_id=p_user;
  end if;
  update public.consultation_generation_jobs set status='succeeded',result=p_result,requirements='[]',updated_at=now() where id=j.id returning * into j;
  return jsonb_build_object('job',public.consultation_generation_json(j),'consultation',public.read_consultation(p_user));
