@@ -20,7 +20,11 @@ begin
  r:=public.reserve_style_operation(u,k,repeat('b',64),'generation',2,null); if r->>'error' <> 'conflict' then raise exception 'key mismatch accepted'; end if;
  r:=public.save_style_intake(v,0,'{"photoId":null}'::jsonb);
  r:=public.reserve_style_operation(v,'20000000-0000-0000-0000-000000000002',h,'generation',2,null); if r->>'error' <> 'invalid' then raise exception 'missing reference accepted'; end if;
- if not public.dispatch_style_operation(u,a,1) or public.dispatch_style_operation(u,a,1) then raise exception 'dispatch guard failed'; end if;
+ if not public.settle_style_operation(u,a,'failed_before_dispatch',null) then raise exception 'pre-dispatch release failed'; end if;
+ if (select reserved_microusd from public.budget_control) <> 0 or (select spent_microusd from public.budget_control) <> 0 then raise exception 'pre-dispatch counters wrong'; end if;
+ r:=public.reserve_style_operation(u,'20000000-0000-0000-0000-000000000003',h,'generation',2,null); a:=(r->'operation'->>'id')::uuid;
+ if a is null or not public.dispatch_style_operation(u,a,1) or public.dispatch_style_operation(u,a,1) then raise exception 'dispatch guard failed'; end if;
+ if public.settle_style_operation(u,a,'failed_before_dispatch',null) or (select reserved_microusd from public.budget_control) <> 600 then raise exception 'running request was refunded'; end if;
  update public.ai_operations set lease_expires_at=now()-interval '1 second' where id=a;
  perform public.expire_style_operations(u);
  if (select state from public.ai_operations where id=a) <> 'uncertain' or (select reserved_microusd from public.budget_control) <> 600 then raise exception 'uncertain reserve lost'; end if;

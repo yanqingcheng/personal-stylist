@@ -51,18 +51,34 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
     if(reserved.data.error) return fail(503,'Generation unavailable');
     const op=reserved.data.operation;
     if(!reserved.data.created) return Response.json({operation:op},{headers});
-    // Download and normalize before dispatch, so failures here are known unspent.
+    // A failure before the dispatch RPC is demonstrably unspent. The database
+    // only releases the reservation if it is still in the reserved state.
+    const releaseBeforeDispatch=async()=> {
+      try { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'failed_before_dispatch'}); } catch { /* Held for reconciliation if release cannot be confirmed. */ }
+    };
     let photo:Uint8Array | undefined;
     if(kind==='generation') {
-      const media=await auth.service.from('media').select('object_path').eq('id',intake.data.data.photoId).eq('user_id',auth.user.id).eq('profile_id',profile.data.id).eq('kind','colour_portrait').eq('status','ready').maybeSingle();
-      if(!media.data || media.error) { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'failed_before_dispatch'}); return fail(409,'Reference photo unavailable'); }
-      const download=await auth.service.storage.from('private-media').download(media.data.object_path);
-      if(download.error || !download.data) { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'failed_before_dispatch'}); return fail(503,'Reference photo unavailable'); }
-      try { photo=await sharp(Buffer.from(await download.data.arrayBuffer())).rotate().resize(1024,1536,{fit:'inside',withoutEnlargement:true}).jpeg({quality:85}).toBuffer(); }
-      catch { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'failed_before_dispatch'}); return fail(503,'Reference photo unavailable'); }
+      try {
+        const media=await auth.service.from('media').select('object_path').eq('id',intake.data.data.photoId).eq('user_id',auth.user.id).eq('profile_id',profile.data.id).eq('kind','colour_portrait').eq('status','ready').maybeSingle();
+        if(!media.data || media.error) { await releaseBeforeDispatch(); return fail(409,'Reference photo unavailable'); }
+        const download=await auth.service.storage.from('private-media').download(media.data.object_path);
+        if(download.error || !download.data) { await releaseBeforeDispatch(); return fail(503,'Reference photo unavailable'); }
+        photo=await sharp(Buffer.from(await download.data.arrayBuffer())).rotate().resize(1024,1536,{fit:'inside',withoutEnlargement:true}).jpeg({quality:85}).toBuffer();
+      } catch { await releaseBeforeDispatch(); return fail(503,'Reference photo unavailable'); }
     }
-    const dispatch=await auth.service.rpc('dispatch_style_operation',{p_user:auth.user.id,p_id:op.id,p_lease_seconds:900});
-    if(dispatch.error || !dispatch.data) return fail(503,'Generation unavailable');
+    // An RPC transport failure may happen after the database transitioned to
+    // running. Never refund it: mark running as uncertain, or leave reserved held.
+    let dispatch;
+    try { dispatch=await auth.service.rpc('dispatch_style_operation',{p_user:auth.user.id,p_id:op.id,p_lease_seconds:900}); }
+    catch {
+      try { await auth.service.rpc('mark_style_uncertain',{p_user:auth.user.id,p_op:op.id}); } catch { /* Reservation remains held. */ }
+      return fail(503,'Generation unavailable');
+    }
+    if(dispatch.error || (dispatch.data!==true && dispatch.data!==false)) {
+      try { await auth.service.rpc('mark_style_uncertain',{p_user:auth.user.id,p_op:op.id}); } catch { /* Reservation remains held. */ }
+      return fail(503,'Generation unavailable');
+    }
+    if(dispatch.data===false) { await releaseBeforeDispatch(); return fail(503,'Generation unavailable'); }
     let path:string | undefined;
     try {
       const data={intake:intake.data.data,selectedTemplateId:profile.data.document.selectedTemplateId,previousFeedback:parent?.feedback??null,previousPlan};
