@@ -28,3 +28,9 @@ Astra parent stays available for high-level reasoning, requirements and product 
 No avoidable downtime: when a task is blocked, continue independent work and tell the owner immediately what is needed, what it blocks and what continues. Do not leave workers waiting on decisions that can be found in the notes or verified through research. Do not broaden work merely to keep agents busy.
 
 The homepage presents the whole stylist vision once; stages unlock within it. Stage1 is the deployed fallback. Later work serves the full on-user consultation, explicit satisfaction, personal editorial and optional boutique. Protect recording time from15:30, first take16:00, submission preparation16:30 before17:00London. Record concrete Codex contributions and honest feature availability.
+
+## Learn from each real journey
+
+Each bounded brief states Qing's intended outcome, a concrete demonstration and the known gap. Review the delivered interaction against that outcome before calling it ready. After live feedback, capture the cause and smallest prevention, then apply it in the next iteration; keep the process light.
+
+For this project: show the photo limit and live upload progress in the phone viewport and exercise a normal 2+2 upload; trace a visible drape selection through to its saved canonical colour in both placements; assess the colour journey against multiple-photo hypotheses, an accepted neutral-light composite, targeted comparisons and a supported result rather than a fixed quiz and template list; and inspect screenshots for the next action being visible. Distinguish what is implemented from what has actually been demonstrated.
