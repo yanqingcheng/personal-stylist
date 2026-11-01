@@ -14,10 +14,10 @@ type Auth=NonNullable<Awaited<ReturnType<typeof activeUser>>>;
 function available(userId:string){return process.env.EDITORIAL_LAYOUT_ENABLED==='true'&&consultationAiReady()&&process.env.CONSULTATION_AI_ENABLED==='true'&&process.env.CONSULTATION_VERIFIED_COST_BOUND==='true'&&!!process.env.OPENAI_API_KEY&&(!process.env.CONSULTATION_TEST_USER_ID||process.env.CONSULTATION_TEST_USER_ID===userId)}
 async function approvedSource(auth:Auth,input:z.infer<typeof sourceSchema>){
  const action=await auth.service.from('consultation_actions').select('id,result').eq('id',input.editorialActionId).eq('user_id',auth.user.id).eq('kind','editorial').eq('status','succeeded').maybeSingle();
- if(action.error||!action.data?.result)throw Error('editorial_unavailable');
+ if(action.error)throw Error('editorial_unavailable');if(!action.data?.result)throw Error('editorial_missing');
  const textHash=createHash('sha256').update(action.data.result).digest('hex');
  const checked=await auth.service.rpc('editorial_layout_approval_current',{p_user:auth.user.id,p_action:input.editorialActionId,p_revision:input.expectedRevision,p_output:input.outputId,p_output_hash:input.documentRevision,p_editorial_hash:textHash});
- if(checked.error||checked.data!==true)throw Error('approval_changed');
+ if(checked.error)throw Error('approval_unavailable');if(checked.data!==true)throw Error('approval_changed');
  const output=await resolveConsultationOutput({service:auth.service,userId:auth.user.id,outputId:input.outputId,documentRevision:input.documentRevision});
  return{output,text:action.data.result as string,textHash};
 }
@@ -30,7 +30,7 @@ async function present(auth:Auth,input:z.infer<typeof sourceSchema>,source:Await
  return{available:available(auth.user.id),reason:available(auth.user.id)?null:'Illustrated editorials are not enabled for this account or environment.',result:saved.data?{id:saved.data.id,status:saved.data.status,layout,approvedSheetUrl:signed.data.signedUrl,outputId:input.outputId,documentRevision:input.documentRevision}:null};
 }
 export async function GET(request:Request){
- try{const auth=await activeUser();if(!auth)return fail(401,'Sign in to open your illustrated editorial');const parsed=sourceSchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));if(!parsed.success)return fail(400,'Choose the current approved sheet and its saved editorial');const source=await approvedSource(auth,parsed.data);return Response.json(await present(auth,parsed.data,source),{headers});}catch{return fail(409,'The approved sheet or saved editorial changed. Review the current direction before illustrating it.');}
+ try{const auth=await activeUser();if(!auth)return fail(401,'Sign in to open your illustrated editorial');const parsed=sourceSchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));if(!parsed.success)return fail(400,'Choose the current approved sheet and its saved editorial');const source=await approvedSource(auth,parsed.data);return Response.json(await present(auth,parsed.data,source),{headers});}catch(error){return error instanceof Error&&['approval_changed','editorial_missing','output_changed','output_unavailable'].includes(error.message)?fail(409,'The approved sheet or saved editorial changed. Review the current direction before illustrating it.'):fail(503,'Illustrated editorial storage is unavailable. Your saved editorial text is unchanged.');}
 }
 export async function POST(request:Request){
  if(!sameOrigin(request))return fail(403,'Forbidden');
@@ -61,5 +61,5 @@ export async function POST(request:Request){
    const settled=await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:operationId,p_outcome:'succeeded'});if(settled.error||settled.data!==true)return fail(503,'Illustrated editorial saved; accounting reconciliation is pending.');
    return Response.json(await present(auth,input,source,input.idempotencyKey),{headers});
   }catch(error){if(published){await auth.service.rpc('mark_style_uncertain',{p_user:auth.user.id,p_op:operationId});return fail(503,'Illustrated editorial saved. Refresh its status; any unresolved accounting remains held.');}if(error instanceof ProviderError&&'model'in error){try{await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId,action:'editorial',response:error})}catch{/* Unknown usage remains held. */}}await uncertain();return fail(503,'Illustration outcome is uncertain. Its reservation remains held; no retry was sent.');}
- }catch{return fail(409,'The approved sheet or saved editorial is unavailable or changed. No new layout was published.');}
+ }catch(error){return error instanceof Error&&['approval_changed','editorial_missing','output_changed','output_unavailable'].includes(error.message)?fail(409,'The approved sheet or saved editorial changed. Review its current approval.'):fail(503,'Illustrated editorial preparation is unavailable. Check the saved request status before another attempt.');}
 }
