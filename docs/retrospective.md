@@ -1,19 +1,25 @@
-# Hackathon retrospective — draft
+# Hackathon retrospective
 
-Agent-authored reflection on the 1 November 2026 build, offered for the project owner to revise. Except for the explicitly attributed reflection below, these interpretations are not an endorsed account of her views. Feature development ended with the event; this document records lessons rather than a new implementation plan.
+Post-event reflection on the 1 November 2026 build. The [README](../README.md#what-we-learnedand-what-remains-a-hypothesis) separates observed problems, changes followed by better results, and proposals that have not been tested. Feature development has ended; this is a record, not an instruction to resume implementation.
 
-The intended product was an expert, iterative consultation: see useful visual possibilities, explain what works or misses, and refine the direction. That is more demanding than a sequence of classification screens. Colour, silhouette and vibe provide vocabulary for exploration; they do not establish a validated personal type.
+## The owner's reflections
 
-Individual components passing checks did not establish that the whole journey worked naturally. Authentication, storage, image generation and chat could each succeed while the user still struggled to find the next action or see the result. Early feedback on an actual phone would have exposed those problems sooner than another isolated component check.
+The owner assessed that her strong warnings about careless test spending propagated excessive caution through agents that were already cautious, and that the work substantially undershot the available budget. This is her interpretation, not a controlled causal result or a reconciled invoice total. A provider-dashboard observation of USD 0.31 differed sharply from the application's conservative bounds; later accounting corrections released substantial allowance.
 
-Parallel agents helped build a substantial application within the event. The useful unit of ownership was a concrete outcome with an agreed interface and an integration owner. Ambiguous ownership and changes crossing several lanes increased coordination costs. The final experience needed review as one continuous journey, not just as a collection of merged commits.
+She also identified an opportunity to explain the intended relationship between model calls earlier. She repeatedly had to request parallel work. The observed result is that the conversational instructions did not reliably maintain the desired coordination in this run; a different briefing or orchestration method remains something to test.
 
-A pleasing image was not sufficient evidence of success. The output also needed to preserve recognisable identity, respect the user's stated intent and practical constraints, and represent the requested comparison. An attractive illustration could still miss that task. Generated images were proposals to critique, never fresh evidence about the person's anatomy or preferences.
+Her standard for this write-up is explicit: describe a changed approach as a successful intervention only when it was actually tried and better results were observed. When only a failure and a possible remedy are known, record the failure as evidence and the remedy as a hypothesis. Record successful user interventions as well as problems.
 
-The project owner reflected that her strong warnings about careless test spending were a prompting mistake: that concern spread across agents which were already cautious, and in her assessment the work undershot the budget substantially. This is her assessment, not a reconciled invoice total. A reported dashboard observation of USD 0.31 differed sharply from conservative bounds; subsequent accounting adjustments reduced estimates substantially, but complete provider reconciliation was still outstanding.
+## Observed interventions and limits
 
-Agent interpretation: the total budget constraint was legitimate. Agents remained responsible for separating reservations from estimated expenditure, recovering failed requests and explaining uncertainty instead of amplifying caution into unnecessary blocking. A clearer future brief could pair a hard total cap with a small explicit experiment allowance and usage-based settlement, reporting bounds separately without repeated permission loops.
+Concrete feedback from the running website led to repairs of upload feedback, drape answer placement, incomplete palette previews and navigation. The owner later reported that clicking through worked. Her nine-step journey exposed missing stages and informed implementation; a synthetic phone walkthrough subsequently verified steps 3–9 and persistence. Later separate agents delivered independently checked ordering and saved-result navigation changes. These outcomes support those particular interventions, not a universal claim about agent scale or complete product correctness.
 
-Cost controls needed to distinguish a maximum reservation from settled expenditure. Treating a conservative bound as money already spent could block useful operations costing pennies and misrepresent the remaining allowance. The later accounting work separated retained usage, conservative estimates, released reservation and uncertain holds; none of those should be described as a provider invoice.
+Usage reconciliation replaced oversized settled bounds with usage-based estimates or labelled conservative upper estimates. One recorded adjustment reduced USD 49.50 to USD 4.191291 while preserving uncertain holds. It corrected accounting-based blockage, but it is not provider billing reconciliation.
 
-The strongest feedback came from the product owner using the experience and describing what she wanted to see. The general lesson is to put a recognisable version of the whole experience in front of the user early, especially on the device they will use, while keeping technical checks focused on concrete risks.
+Actual screenshots and generated-image inspection exposed failures that isolated code/prompt checks had missed. A pleasing image could still alter apparent proportions, import unwanted reference imagery or lose a preferred garment detail. Generated images therefore did not become independent evidence about a person's anatomy or preferences.
+
+## Hypotheses for a future run
+
+A durable shared journey brief, an explicit model-call map, clear implementation/integration/journey-review roles and a numerical autonomous experiment allowance may reduce repeated steering and blocked progress. Earlier complete phone walkthroughs may find interaction problems sooner. These proposals were not evaluated as a combined workflow in this event.
+
+The useful object of improvement is the prompt, context, tools and workflow. Human-style claims that an agent will take responsibility or try harder do not specify a reproducible change.
