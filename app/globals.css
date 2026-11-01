@@ -45,3 +45,12 @@ fieldset.studio-body{width:100%}
  .studio:has(.drapes) .mobile-step-nav{display:block}
  .studio:has(.drapes):has(textarea:focus,input[type=text]:focus) .mobile-step-nav{display:none}
 }
+/* The existing drape swatch also paints the full frame behind the same portrait. */
+.drape-frame{position:relative;isolation:isolate;padding:20px 18px 0}
+.drape-colour::before{content:"";position:absolute;inset:0;z-index:-1;background:inherit;pointer-events:none}
+.drape-frame img{background:transparent}
+@media(max-width:700px){
+ .studio-body:has(.drapes) .drape-frame{padding:18px 15px 0}
+ .studio-body:has(.drapes) .drape-frame img{height:clamp(116px,calc(100svh - 464px),246px)}
+ .studio-body:has(.drapes) .drape-colour{height:32px}
+}
