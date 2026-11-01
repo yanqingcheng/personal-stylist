@@ -1,29 +1,13 @@
-const colours = [
-  { name: "Chalk", hex: "#e8e4dc" },
-  { name: "Rose", hex: "#b78685" },
-  { name: "Claret", hex: "#713e50" },
-  { name: "Moss", hex: "#797d67" },
-  { name: "Ink", hex: "#343c4a" },
-];
+import Link from "next/link";
+
+const colours = ["#e4ded0", "#b78d83", "#794751", "#858b6e", "#404c5a"];
 
 export default function Home() {
-  return (
-    <div className="site">
-      <header><span>PERSONAL STYLIST</span><span>COLOUR STUDY / 01</span></header>
-      <main>
-        <p className="eyebrow">A more personal point of view</p>
-        <h1>Your colours.<br /><em>Seen differently.</em></h1>
-        <p className="intro">Explore what colour brings out in you. A thoughtful consultation, starting with your own photo.</p>
-        <div className="swatches" aria-label="Illustrative colour studies, not a personal palette">
-          {colours.map((colour) => <div key={colour.name} className="swatch"><div style={{ backgroundColor: colour.hex }} /><span>{colour.name}</span></div>)}
-        </div>
-        <p className="caption">An illustrative colour study. Your palette will be your own.</p>
-        <section className="status" aria-labelledby="status-title">
-          <span className="status-mark" aria-hidden="true" />
-          <div><h2 id="status-title">The studio is taking shape.</h2><p>This is the first scaffold. The photo consultation is not available yet.</p></div>
-        </section>
-      </main>
-      <footer><span>Built for DevDay Community Hackathon · London · 1 November 2026</span><span>No photo uploads or AI processing on this page.</span></footer>
-    </div>
-  );
+  return <div className="shell landing">
+    <header className="topbar"><Link className="wordmark" href="/">PERSONAL STYLIST <span> / COLOUR STUDY</span></Link><Link href="/colour-system">The colour system ↗</Link></header>
+    <main className="landing-main">
+      <div className="landing-copy"><p className="eyebrow">A more personal point of view <span>— 01</span></p><h1>Your colours.<br/><em>Seen differently.</em></h1><p className="lede">A quiet space to notice what colour brings out in you. Start with your own photo, compare colours, and build a palette that feels like yours.</p><Link className="button primary" href="/profile">Begin your colour study <span>↗</span></Link><p className="small">Private, invite-only access · No AI analysis required</p></div>
+      <div className="landing-art" aria-label="Illustrative colour study"><div className="art-label"><span>COLOUR STUDY</span><span>01 — 31</span></div><div className="art-arch"><div className="art-inner"><span>YOUR<br/><i>colour</i><br/>STORY</span></div></div><div className="art-swatches">{colours.map((c,i)=><div key={c} style={{background:c}}><span>0{i+1}</span></div>)}</div><p>AN EXPLORATION, NOT A VERDICT.</p></div>
+    </main><footer className="footer"><span>Made for the DevDay Community Hackathon</span><span>Colour is personal. Your choices are yours.</span></footer>
+  </div>;
 }
