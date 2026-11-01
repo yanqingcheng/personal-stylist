@@ -1,0 +1,9 @@
+# Stage 1 implementation review request
+
+Review implementation commit `98d6213` on `t3/stage-one-mvp` (includes `2b08e46`, `9ce14c5`, and `e2b0462`). This is a code review checkpoint, not a claim that the milestone is live or accepted.
+
+Scope: non-paid private colour consultation. Focus on `supabase/migrations/`, `lib/server/`, `app/api/`, `app/profile/page.tsx`, `lib/colour/`, and the public landing/explainer. Check invite authorization and last-slot concurrency; private profile/media and deletion; genuine save/conflict behavior; identical reference photo and stable A/B mapping; independent evidence, selection and taste; and accessible mobile/desktop use. Flag material defects with precise reproduction and impact. No style, AI, voice, 3D, editorial, or paid-operation implementation is in scope.
+
+Evidence at this commit: `npm run build` succeeded; `npm run lint` passed with one Next navigation warning; `node --test lib/colour/index.test.cjs` passed five colour boundary checks; `bash scripts/check-foundation.sh` applied the migration to an isolated PostgreSQL container and checked the last-slot race, repeat activation, judge admission, stale save and profile RLS. Local browser rendered the landing and public explainer at 390px without horizontal overflow; an unconfigured session returned 503 and the interface did not open private data.
+
+Limitations: no dedicated Supabase credentials yet, so actual Auth delivery, Storage ownership, deletion/late-upload races, unactivated direct requests, live invite behavior, cross-device resume and complete phone/desktop consultation have not been verified. Local PostgreSQL is not evidence for Supabase Storage or email. The current deployment remains the prior scaffold, not the stage-one product. No provider calls or spending occurred. Pending/failed media cleanup and judge promotion are not implemented. The management token handoff is awaiting hidden input in the main tmux session.
