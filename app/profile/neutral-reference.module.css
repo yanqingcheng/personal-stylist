@@ -1,0 +1,15 @@
+.review{padding:clamp(1rem,3vw,2rem);border:1px solid #d9d4c9;border-radius:1rem;background:#faf8f2;margin:1.5rem 0;color:#282920}
+.review h3{font-size:clamp(1.5rem,3vw,2rem);margin:.4rem 0 1rem;font-weight:500}
+.review p{line-height:1.6;max-width:75ch}
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.3rem 0}
+.comparison h4{margin:0 0 .8rem;font-weight:500}
+.comparison figure{margin:0;min-width:0}
+.originals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}
+.comparison img{width:100%;height:240px;object-fit:contain;background:#ece9e1;border-radius:.6rem}
+.originals img{height:160px}
+.comparison figcaption,.note{font-size:.8rem;color:#595b50;margin-top:.4rem}
+.actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.actions button{white-space:normal;min-height:48px}
+.result{padding:.8rem 1rem;background:#e6eadc;border-radius:.5rem}
+.empty{margin:1rem 0;padding:1rem;border:1px dashed #bbb8ad;border-radius:.7rem}
+@media(max-width:600px){.comparison{grid-template-columns:1fr}.originals{grid-template-columns:repeat(2,minmax(0,1fr))}.generated img{height:300px}.actions{display:grid}.actions button{width:100%}}
