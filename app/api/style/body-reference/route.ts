@@ -17,7 +17,7 @@ export async function GET(){
    const signed=await auth.service.storage.from('private-media').createSignedUrl(item.object_path,300);if(signed.error)throw Error('Photo signing unavailable');return{id:item.id,url:signed.data.signedUrl};
   }));
   const selected=photos.find(photo=>photo.id===state.data?.selected_media_id);
-  const snapshot:BodyReferenceSnapshot={revision:state.data?.revision??0,photos,pending:media.data.filter(item=>item.status!=='ready').map(({id,status})=>({id,status})),selectedSourceId:selected?.id??null,referenceStatus:selected?state.data.reference_status:'empty',referenceUrl:selected?.url??null,provenance:selected?'original':null,coverage:selected&&state.data?.confirmed_adult&&state.data?.confirmed_full_body?'user-confirmed-full-body':'unconfirmed',generatedReferenceStatus:'not-prepared'};
+  const snapshot:BodyReferenceSnapshot={revision:state.data?.revision??0,photos,pending:media.data.filter(item=>item.status!=='ready').map(({id,status})=>({id,status})),selectedSourceId:selected?.id??null,referenceStatus:selected?state.data.reference_status:'empty',referenceUrl:selected?.url??null,provenance:selected?'original':null,coverage:selected&&state.data?.confirmed_adult?(state.data.confirmed_full_body?'user-confirmed-full-body':'partial-body-concept'):'unconfirmed',generatedReferenceStatus:'not-prepared'};
   return Response.json({bodyReference:snapshot},{headers});
  }catch{return fail(503,'Body references unavailable')}
 }
@@ -25,7 +25,7 @@ export async function POST(request:Request){
  if(!sameOrigin(request))return fail(403,'Forbidden');
  try{
   const auth=await activeUser();if(!auth)return fail(401,'Sign in to save your body references');
-  const parsed=bodyReferenceAction.safeParse(await body(request));if(!parsed.success)return fail(400,'Choose valid body photos and confirm adult full-body coverage before preparing a reference');
+  const parsed=bodyReferenceAction.safeParse(await body(request));if(!parsed.success)return fail(400,'Choose a valid body photo and confirm that it shows you as an adult');
   const input=parsed.data;
   if(input.action==='upload'){
    const id=randomUUID(),objectPath=`${auth.user.id}/pending/${id}`;

@@ -9,7 +9,7 @@ create table public.style_body_references(
  confirmed_full_body boolean not null default false,
  approved_at timestamptz,
  updated_at timestamptz not null default now(),
- check(reference_status<>'approved' or (confirmed_adult and confirmed_full_body and approved_at is not null))
+ check(reference_status<>'approved' or (confirmed_adult and approved_at is not null))
 );
 alter table public.style_body_references enable row level security;
 revoke all on public.style_body_references from public,anon,authenticated;
@@ -63,12 +63,12 @@ begin
  selected:=case when p_action='select' then p_media else r.selected_media_id end;
  perform id from public.media where id=selected and user_id=p_user and profile_id=p.id and kind='body_reference' and status='ready' for share;
  if not found then return jsonb_build_object('error','body_source_unavailable');end if;
- if p_action='prepare' and (p_adult is distinct from true or p_full_body is distinct from true) then return jsonb_build_object('error','coverage_required');end if;
+ if p_action='prepare' and p_adult is distinct from true then return jsonb_build_object('error','coverage_required');end if;
  if p_action in ('approve','reject') and r.reference_status<>'pending' then return jsonb_build_object('error','conflict');end if;
  update public.style_body_references set selected_media_id=selected,revision=revision+1,
  reference_status=case when p_action='prepare' then 'pending' when p_action='approve' then 'approved' else 'uploaded' end,
  confirmed_adult=case when p_action='prepare' then true when p_action='approve' then r.confirmed_adult else false end,
- confirmed_full_body=case when p_action='prepare' then true when p_action='approve' then r.confirmed_full_body else false end,
+ confirmed_full_body=case when p_action='prepare' then coalesce(p_full_body,false) when p_action='approve' then r.confirmed_full_body else false end,
  approved_at=case when p_action='approve' then now() else null end,updated_at=now()
  where user_id=p_user returning * into r;
  return jsonb_build_object('reference',to_jsonb(r));
