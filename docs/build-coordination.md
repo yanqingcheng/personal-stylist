@@ -1,5 +1,7 @@
 # Build coordination — 1 November 2026
 
+> **Current authority:** [current decisions and build entry](current-decisions.md). Stage 1 is live and further implementation is stopped. Old credential/setup status, 3D wardrobe exploration and demo timing below are historical: boutique is stretch, and recording starts at 15:30 with first take at 16:00. Preserve only the still-relevant ownership/coordination detail.
+
 > Latest Stage 1 access decision: email and password with unverified email, no email recovery; see [password access decision](password-access-decision.md). Paid features remain off and do not block this non-paid milestone.
 
 User authorised implementation, deployment within existing hosting, GPT-6.1 Sol and Terra leads with bounded subdelegation, creative design and built-in image generation for assets. Earlier planning-only text is superseded. Deadline 17:00 London; aim feature freeze15:30 and submission ready16:30.

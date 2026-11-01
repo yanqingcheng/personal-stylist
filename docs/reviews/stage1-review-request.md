@@ -1,5 +1,7 @@
 # Stage 1 implementation review request
 
+> **Historical review checkpoint:** the missing credentials and scaffold-only deployment described below were resolved later. See [launch acceptance](../launch-status.md) and [current decisions](../current-decisions.md). The original review evidence/limitations below apply to their named commits, not current production.
+
 Review implementation commit `98d6213` on `t3/stage-one-mvp` (includes `2b08e46`, `9ce14c5`, and `e2b0462`). This is a code review checkpoint, not a claim that the milestone is live or accepted.
 
 Scope: non-paid private colour consultation. Focus on `supabase/migrations/`, `lib/server/`, `app/api/`, `app/profile/page.tsx`, `lib/colour/`, and the public landing/explainer. Check invite authorization and last-slot concurrency; private profile/media and deletion; genuine save/conflict behavior; identical reference photo and stable A/B mapping; independent evidence, selection and taste; and accessible mobile/desktop use. Flag material defects with precise reproduction and impact. No style, AI, voice, 3D, editorial, or paid-operation implementation is in scope.

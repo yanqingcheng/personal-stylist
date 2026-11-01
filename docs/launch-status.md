@@ -1,5 +1,7 @@
 # Stage 1 launch status — 1 November 2026
 
+[Current decisions and worker entry](current-decisions.md) governs product direction; this file records Stage 1 acceptance.
+
 Stage 1 is non-paid colour only. The user authorized email-and-password accounts with email confirmation disabled for the dedicated hackathon project; see [the access decision](password-access-decision.md). Email addresses are unverified, there is no email password recovery, and invitation counts are account counts rather than real-person counts. Keep paid features disabled.
 
 Dedicated project `ahxgiprmeiqplpkizlex` was verified in the authorized organization; its database is in Paris (`eu-west-3`). Schema and password configuration were applied, and Vercel Functions are configured for Paris (`cdg1`). No paid infrastructure upgrade was made.
@@ -8,6 +10,6 @@ Live Supabase API checks passed for signup, sign-in/sign-out/return, invalid and
 
 Deletion clears the profile immediately but retains signed-upload path records until the tokens expire. Cleanup requires a later retry after about two hours and five minutes; the app reports pending until then. Live Storage confirmed late-upload containment and path retention; the post-expiry cleanup step remains to be verified after the tokens expire.
 
-Demo and comparison guidance: show both colours, including a less harmonious choice when the user identifies one. The same unretouched source image and crop appear in each panel; the juxtaposition does not simulate reflected fabric light. Do not pre-label either option as flattering or bad. In any later generated style boards, retain genuine unflattering garment and colour effects, preserve the same subject, pose and lighting, avoid anatomy edits or flattering substitutions, and disclose illustration limits. This later-board requirement does not expand Stage 1.
+Demo and comparison guidance: show both colours, including a less harmonious choice when the user identifies one. The same unretouched source image and crop appear in each panel; the juxtaposition does not simulate reflected fabric light. Do not pre-label either option as flattering or bad. Later initial outfit boards should meet the user’s requests and suit them; do not deliberately show bad outfits by default. When a disputed choice needs explanation, use honest visual comparisons and reasons without beautifying/recolouring the source face or faking a bad effect. Preserve rendering fidelity and disclose illustration limits. This later-board requirement does not expand Stage 1.
 
 Four synthetic test accounts were disabled and their invitation slots restored (100 attendee, 10 judge available). Their temporary upload leases remain until signed tokens expire; the private cleanup manifest is `~/.secrets/personal-stylist-test-cleanup.json`. After 14:45 UTC, `python3 ~/.secrets/personal-stylist-cleanup-tests.py` can finish their cleanup; it refuses active accounts or unexpired leases. Invite phrases are stored separately in `~/.secrets/personal-stylist-invites.env` (mode 600), never in source.

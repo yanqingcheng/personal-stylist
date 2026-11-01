@@ -1,5 +1,7 @@
 # Personal stylist: slice plan
 
+> **Supersession notice:** [current decisions](current-decisions.md) is the authoritative entry. Stage 1 has shipped; planning-only, scaffold-only and expired-credential status below is historical. Verified-email prerequisites, mandatory wardrobe complementarity in early recommendations and older demo timing are superseded. Later slices remain unimplemented; module/threshold defaults remain proposals.
+
 Planning only; implementation remains paused until requested. Updated 1 November 2026.
 
 ## Product principle: factors first

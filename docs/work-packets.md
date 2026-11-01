@@ -1,5 +1,7 @@
 # Work packets for “go”
 
+> **Current entry:** [current decisions and build entry](current-decisions.md) governs conflicts below. Stage 1 is live; implementation is stopped after that checkpoint. P00/P01/P13 auth, DNS and timing prose is historical where contradicted there. P12’s mandatory wardrobe check is superseded for early editorial; complementarity can be unevaluated. Remaining packets are future work, not a new build authorization.
+
 > Latest Stage 1 access decision: email and password with unverified email, no email recovery; see [password access decision](password-access-decision.md). Paid features remain off and do not block this non-paid milestone.
 
 Read [execution-spec.md](execution-spec.md) (R0–R9) and [implementation-plan.md](implementation-plan.md) first. These files govern over older bead prose where they conflict. Implementation authorised by the user on 1 November 2026. Scope is the complete journey, delivered in working checkpoints; no assumption it all fits before17:00.

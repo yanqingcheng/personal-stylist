@@ -1,5 +1,7 @@
 # Execution contracts
 
+> **Supersession notice:** use [current decisions](current-decisions.md) first. R0/R8 setup status is historical; Stage 1 is live. R2 verified-email/SMTP/OAuth requirements and the ban on disabling confirmation are superseded by the explicit password decision. R7’s mandatory wardrobe check is superseded in early release sequencing. R6 outfit boards must be joyful and suitable from round one; do not use deliberately poor looks by default. Unbuilt contracts/defaults below are candidate implementation detail, not shipped capabilities.
+
 Status: planning candidate, not implemented. Governing product intent: [implementation plan](implementation-plan.md). Latest user decisions take precedence over older private notes. This document supplies contracts and defaults; it does not authorise deployment or paid probes before the user says go.
 
 ## R0 — Meaning of go
