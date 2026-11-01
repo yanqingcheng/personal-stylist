@@ -5,10 +5,10 @@ import "./home.css";
 export const metadata = { title: "Personal stylist · A style that could only be yours", description: "A personal styling journey through colour, individual style, outfit inspiration and your own editorial point of view." };
 
 const chapters = [
-  { number: "02", title: "Your signature", text: "Discover the shapes, details and style essence that feel unmistakably you." },
-  { number: "03", title: "The fitting room", text: "Explore on-you outfit moodboards. Tell us what you love. Refine together." },
-  { number: "04", title: "Your cover story", text: "A personal fashion editorial, bringing your point of view into focus." },
-  { number: "05", title: "The boutique", text: "A considered edit of clothing to explore and try. Your style, out in the world." },
+  { number: "02", title: "Your signature", href: "/style", status: "OPEN NOW ↗", text: "Review your original body photo, explore silhouette and proportions, and describe your visual character." },
+  { number: "03", title: "The fitting room", href: "/style", status: "OPEN NOW ↗", text: "Bring colour, silhouette and vibe together in outfit boards. Keep what you love; ask for revisions." },
+  { number: "04", title: "Your cover story", href: "/style", status: "WRITTEN EDIT ↗", text: "A written personal fashion editorial, drawn from the outfit direction you approve." },
+  { number: "05", title: "The boutique", href: "/style", status: "SEARCH LINKS ↗", text: "Search UK retailers for similar pieces from your approved looks. Matches, stock and fit are yours to check." },
 ];
 
 export default function Home() {
@@ -37,16 +37,16 @@ export default function Home() {
       </section>
       <div className="ps-manifesto"><span>LESS “WHAT SHOULD I WEAR?”</span><span className="ps-star">✳</span><span>MORE “THAT FEELS LIKE ME.”</span></div>
       <section className="ps-journey" id="chapters" aria-labelledby="journey-title">
-        <div className="ps-journeyHeading"><p className="ps-kicker">THE EXPERIENCE / FIVE CHAPTERS</p><h2 id="journey-title">From a little curiosity.<br/>To a whole <em>point of view.</em></h2><p>Style is a conversation, not a verdict.<br/>We’re opening the studio one chapter at a time.</p></div>
+        <div className="ps-journeyHeading"><p className="ps-kicker">THE EXPERIENCE / FIVE CHAPTERS</p><h2 id="journey-title">From a little curiosity.<br/>To a whole <em>point of view.</em></h2><p>Style is a conversation, not a verdict.<br/>Explore the full journey in our private demo studio.</p></div>
         <div className="ps-chapters">
           <Link href="/profile" className="ps-openChapter">
             <div className="ps-chapterMeta"><span>01 / COLOUR</span><span className="ps-openBadge">OPEN NOW ↗</span></div>
             <div className="ps-swatches" aria-hidden="true"><span/><span/><span/><span/><span/></div>
             <h3>See yourself<br/>in a new light.</h3><p>Bring your photo. Compare colour drapes. Find a palette that feels like yours.</p><span className="ps-chapterLink">Begin your colour study ↗</span>
           </Link>
-          <div className="ps-nextChapters">{chapters.map(chapter => <div className="ps-closedChapter" key={chapter.number}>
-            <span className="ps-chapterNumber">{chapter.number}</span><div><h3>{chapter.title}</h3><p>{chapter.text}</p></div><span className="ps-soon">COMING<br/>SOON</span>
-          </div>)}<p className="ps-voice">A conversation in your own voice? On our wish list, too.</p></div>
+          <div className="ps-nextChapters">{chapters.map(chapter => <Link href={chapter.href} className="ps-closedChapter" key={chapter.number}>
+            <span className="ps-chapterNumber">{chapter.number}</span><div><h3>{chapter.title}</h3><p>{chapter.text}</p></div><span className="ps-soon">{chapter.status}</span>
+          </Link>)}<p className="ps-voice">Type with your stylist or try a live voice conversation when available. Illustrated magazine spreads are still in development.</p></div>
         </div>
       </section>
       <section className="ps-closing"><span>NO DRESS CODE. NO ONE WAY TO BE.</span><p>Come as you are.<br/><em>See what unfolds.</em></p><Link href="/profile">Step into the studio <span>↗</span></Link></section>
