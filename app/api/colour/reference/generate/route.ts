@@ -10,6 +10,13 @@ const headers={'Cache-Control':'no-store'};
 const mimeType=z.enum(['image/jpeg','image/png','image/webp']);
 const photoList=z.array(z.object({id:z.uuid()}).passthrough()).max(4);
 
+export async function GET() {
+  try {
+    const auth=await activeUser();if(!auth)return fail(401,'Sign in and activate your account');
+    return Response.json({...colourGenerationGate(auth.user.id),sourceCount:{min:2,max:4},outputStatus:'pending',requiresLikenessAndColourReview:true},{headers});
+  }catch{return fail(503,'Portrait preparation unavailable')}
+}
+
 export async function POST(request:Request) {
   if (!sameOrigin(request)) return fail(403,'Forbidden');
   try {
@@ -25,10 +32,13 @@ export async function POST(request:Request) {
     if (!listed.success || sourceIds.some(id=>!listed.data.some(photo=>photo.id===id))) return fail(409,'Save the selected original photos to your profile first');
     const media=await auth.service.from('media').select('id,object_path,content_type,byte_size').eq('user_id',auth.user.id).eq('profile_id',profile.data.id).eq('kind','colour_portrait').eq('status','ready').in('id',sourceIds);
     if (media.error || media.data.length!==sourceIds.length) return fail(409,'One or more source photos are unavailable');
-    const gate=colourGenerationGate();
+    const gate=colourGenerationGate(auth.user.id);
     // Intentionally before any reservation, download, upload or model invocation.
-    // Image 2.5's $2 estimate is not a verified maximum; env flags cannot bypass it.
-    if (!gate.ready) return Response.json({error:'Dynamic portrait preparation is awaiting release',code:'composite_release_blocked',reasons:gate.reasons},{status:503,headers});
+    // Image 2.5's $2 estimate is an engineering reservation, not a provider maximum.
+    if (!gate.ready) return Response.json({error:'Portrait preparation is disabled for this account or environment',code:'composite_release_blocked',reasons:gate.reasons},{status:503,headers});
+    const unresolved=await auth.service.from('ai_operations').select('id').eq('user_id',auth.user.id).eq('state','uncertain').limit(1);
+    if(unresolved.error)return fail(503,'Portrait preparation accounting is unavailable');
+    if(unresolved.data.length)return fail(409,'An earlier request needs reconciliation before preparing another portrait');
 
     const hash=createHash('sha256').update(JSON.stringify({sources:input.sources,revision:input.expectedRevision,model:gate.model,promptVersion:COLOUR_COMPOSITE_PROMPT_VERSION,pricingVersion:gate.pricingVersion})).digest('hex');
     const reserved=await auth.service.rpc('reserve_colour_generation',{p_user:auth.user.id,p_key:input.idempotencyKey,p_hash:hash,p_revision:input.expectedRevision,p_sources:sourceIds,p_pricing_version:gate.pricingVersion});
