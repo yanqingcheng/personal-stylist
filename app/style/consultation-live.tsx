@@ -1,14 +1,16 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import type { Consultation } from '@/lib/consultation';
-type Props={expectedRevision:number;onSaved?:(consultation:Consultation)=>void;onActive?:(active:boolean)=>void};
-export default function ConsultationLive({expectedRevision,onSaved,onActive}:Props){
+type Props={activeBoardId?:string|null;expectedRevision:number;onSaved?:(consultation:Consultation)=>void;onActive?:(active:boolean)=>void};
+export default function ConsultationLive({activeBoardId=null,expectedRevision,onSaved,onActive}:Props){
  const [available,setAvailable]=useState(false),[active,setActive]=useState(false),[busy,setBusy]=useState(false),[status,setStatus]=useState('Checking GPT-Live availability…'),[userText,setUserText]=useState(''),[stylistText,setStylistText]=useState('');
  const peer=useRef<RTCPeerConnection|null>(null),media=useRef<MediaStream|null>(null),channel=useRef<RTCDataChannel|null>(null),audio=useRef<HTMLAudioElement|null>(null),monitor=useRef<AbortController|null>(null),mounted=useRef(true);
  useEffect(()=>{mounted.current=true;void fetch('/api/consultation/live',{cache:'no-store'}).then(async response=>{const data=await response.json();if(mounted.current){setAvailable(response.ok&&data.available===true);setStatus(data.reason||'GPT-Live is unavailable')}}).catch(()=>{if(mounted.current)setStatus('GPT-Live is unavailable. Continue by typing.')});return()=>{mounted.current=false;if(channel.current?.readyState==='open')channel.current.send(JSON.stringify({type:'session.close'}));media.current?.getTracks().forEach(track=>track.stop());peer.current?.close();monitor.current?.abort()}},[]);
  function release(){media.current?.getTracks().forEach(track=>track.stop());peer.current?.close();monitor.current?.abort();peer.current=null;setActive(false);setBusy(false);onActive?.(false)}
  async function start(){
   if(!available||busy||active)return;setBusy(true);onActive?.(true);setUserText('');setStylistText('');
+  // Capture the viewed board once so offer and monitor resolve the same choice.
+  const startingBoardId=activeBoardId;
   try{
    const stream=await navigator.mediaDevices.getUserMedia({audio:true});media.current=stream;
    const pc=new RTCPeerConnection();peer.current=pc;pc.ontrack=event=>{if(audio.current){audio.current.srcObject=event.streams[0];void audio.current.play().catch(()=>setStatus('Press play to hear the AI voice.'))}};
@@ -17,9 +19,9 @@ export default function ConsultationLive({expectedRevision,onSaved,onActive}:Pro
    dc.onmessage=event=>{try{const data=JSON.parse(event.data);if(data.type==='session.started')setStatus('Connected to GPT-Live. You can speak and interrupt naturally.');if(data.type==='session.closed')setStatus('Call ended. Waiting for saved history and final usage.')}catch{/* Server monitor owns trusted persistence. */}};
    await pc.setLocalDescription(await pc.createOffer());
    if(pc.iceGatheringState!=='complete')await new Promise<void>((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Microphone connection timed out')),10000);pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(timer);resolve()}})});
-   const response=await fetch('/api/consultation/live',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idempotencyKey:crypto.randomUUID(),expectedRevision,sdp:pc.localDescription?.sdp})});const created=await response.json();
+   const response=await fetch('/api/consultation/live',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idempotencyKey:crypto.randomUUID(),expectedRevision,activeBoardId:startingBoardId,sdp:pc.localDescription?.sdp})});const created=await response.json();
    if(!response.ok||!created.operationId)throw new Error(created.error||'Live call could not be started. Do not automatically retry.');
-   const abort=new AbortController();monitor.current=abort;const watched=await fetch(`/api/consultation/live?operationId=${encodeURIComponent(created.operationId)}`,{signal:abort.signal,cache:'no-store'});
+   const abort=new AbortController();monitor.current=abort;const query=new URLSearchParams({operationId:created.operationId});if(startingBoardId)query.set('activeBoardId',startingBoardId);const watched=await fetch(`/api/consultation/live?${query}`,{signal:abort.signal,cache:'no-store'});
    if(!watched.ok||!watched.body)throw new Error('Server monitoring could not be established. Call status requires reconciliation.');
    const reader=watched.body.getReader(),decoder=new TextDecoder();let pending='',ready=false;
    setActive(true);setBusy(false);

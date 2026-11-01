@@ -40,8 +40,9 @@ export async function normaliseConsultationImage(bytes:Uint8Array){
 }
 type SessionBoard={id:string;documentRevision:string};
 type ContextOptions={service:Service;userId:string}&(
- {mode:'voice-vision';sessionBoard?:SessionBoard;expectedRevision?:never;replyTo?:never}|
- {mode?:'text'|'voice';expectedRevision:number;replyTo?:string;sessionBoard?:never}
+ {mode:'voice-vision';sessionBoard?:SessionBoard;expectedRevision?:never;replyTo?:never;activeBoardId?:never}|
+ {mode:'voice';expectedRevision:number;activeBoardId?:string|null;replyTo?:never;sessionBoard?:never}|
+ {mode?:'text';expectedRevision:number;replyTo?:string;sessionBoard?:never;activeBoardId?:never}
 );
 function savedVoiceBoard(snapshot:z.infer<typeof consultationSnapshot>,sessionBoard?:SessionBoard){
  if(snapshot.approvedOutputId){if(!snapshot.approvedOutputHash)throw Error('active_output_unavailable');return{id:snapshot.approvedOutputId,documentRevision:snapshot.approvedOutputHash,source:'currently-approved-generated-board'}}
@@ -49,7 +50,7 @@ function savedVoiceBoard(snapshot:z.infer<typeof consultationSnapshot>,sessionBo
  if(contextual?.activeBoardId)return{id:contextual.activeBoardId,documentRevision:undefined,source:'saved-user-board-context'};
  return sessionBoard?{...sessionBoard,source:'session-starting-generated-board'}:null;
 }
-export async function loadConsultationContext({service,userId,expectedRevision,replyTo,mode='text',sessionBoard}:ContextOptions){
+export async function loadConsultationContext({service,userId,expectedRevision,replyTo,mode='text',sessionBoard,activeBoardId}:ContextOptions){
  const [saved,profile,intake,plans]=await Promise.all([
   service.rpc('read_consultation',{p_user:userId}),
   service.from('profiles').select('id,revision,document,deletion_state').eq('user_id',userId).maybeSingle(),
@@ -74,6 +75,9 @@ export async function loadConsultationContext({service,userId,expectedRevision,r
  }
  if(mode==='text'&&target?.activeBoardId){
   try{activeOutput=await resolveConsultationOutput({service,userId,outputId:target.activeBoardId})}catch{throw new Error('active_output_unavailable')}
+ }
+ if(mode==='voice'&&activeBoardId){
+  try{activeOutput=await resolveConsultationOutput({service,userId,outputId:activeBoardId});boardReferenceSource='user-selected-live-board'}catch{throw new Error('active_output_unavailable')}
  }
  if(mode==='voice-vision'&&voiceBoard){
   try{activeOutput=await resolveConsultationOutput({service,userId,outputId:voiceBoard.id,documentRevision:voiceBoard.documentRevision})}catch{throw new Error('active_output_unavailable')}
@@ -142,7 +146,7 @@ export async function loadConsultationContext({service,userId,expectedRevision,r
   history:voiceSnapshot?voiceSnapshot.messages:snapshot.data.messages.map(({role,source,text,activeBoardId})=>({role,source,text,activeBoardId})),
   profileReports:{reflections:profile.data.document.reflections??null,selectedTemplateId:profile.data.document.selectedTemplateId??null,taste:profile.data.document.taste??null,bodyProportionAnswers:profile.data.document.answers?.bodyProportionAnswers??null,consultationVibe:profile.data.document.answers?.consultationVibe??null,journeyStage:profile.data.document.answers?.consultationStage??null},
   bodyReference:bodySource?{sourceMediaId:bodySource.id,bodyRevision:bodySource.bodyRevision,coverage:bodySource.coverage,coverageSource:'user-report',provenance:bodySource.referenceProvenance,pixelsAttached:imageEvidence.some(item=>item.referenceKind==='body')}:null,
-  styleIntakeReports:intake.data?.data??null,savedStylePlans:plans.data??[],preparedBoards,preparedReferences,activeOutput:activeOutput?{board:activeOutput.board,documentRevision:activeOutput.documentRevision,provenance:activeOutput.provenance,...(mode==='voice-vision'?{referenceSource:boardReferenceSource}: {})}:null,
+  styleIntakeReports:intake.data?.data??null,savedStylePlans:plans.data??[],preparedBoards,preparedReferences,activeOutput:activeOutput?{board:activeOutput.board,documentRevision:activeOutput.documentRevision,provenance:activeOutput.provenance,...((mode==='voice-vision'||mode==='voice')?{referenceSource:boardReferenceSource}: {})}:null,
   approvedOutput:{id:(voiceSnapshot??snapshot.data).approvedOutputId,hash:(voiceSnapshot??snapshot.data).approvedOutputHash},
   ...(mode==='voice-vision'?{savedRevision:voiceSnapshot?.revision,hypothesisLimits:'Only attached image manifest entries are available for visual inspection. Generated boards support garment and rendering observations only, never body evidence. A session-starting board is not currently approved. If the user means a different board than the attached one, ask for that exact saved board; do not substitute another or claim it was seen. With no attached board, state that visual gap instead of making visual claims.'}:{}),
   visualEvidence:{images:imageEvidence,gaps:visualGaps},
