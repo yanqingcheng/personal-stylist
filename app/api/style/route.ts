@@ -9,11 +9,11 @@ export async function GET() {
     if (profile.error || !profile.data || profile.data.deletion_state !== 'active') return fail(404,'Profile unavailable');
     const [saved, rounds, operations] = await Promise.all([
       auth.service.from('style_intakes').select('revision,data').eq('user_id',auth.user.id).maybeSingle(),
-      auth.service.from('rounds').select('id,parent_round_id,status,feedback,media_ids,created_at').eq('user_id',auth.user.id).order('created_at'),
+      auth.service.rpc('read_style_rounds',{p_user:auth.user.id}),
       auth.service.from('ai_operations').select('id,kind,state,round_id').eq('user_id',auth.user.id).order('created_at'),
     ]);
     if (saved.error || rounds.error || operations.error) return fail(503,'Style consultation unavailable');
-    return Response.json({intake:saved.data,rounds:rounds.data.map(r=>({id:r.id,parentRoundId:r.parent_round_id,status:r.status,feedback:r.feedback,looks:(r.media_ids ?? []).map((mediaId:string)=>({mediaId})),approved:false,editorial:null,createdAt:r.created_at})),operations:operations.data.map(o=>({id:o.id,kind:o.kind,state:o.state,roundId:o.round_id}))},{headers});
+    return Response.json({intake:saved.data,rounds:rounds.data,operations:operations.data.map(o=>({id:o.id,kind:o.kind,state:o.state,roundId:o.round_id}))},{headers});
   } catch { return fail(503,'Style consultation unavailable'); }
 }
 export async function PUT(request:Request) {
