@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { serviceClient } from './server/supabase';
-import { CONSULTATION_INSTRUCTIONS } from './consultation-provider';
+import { CONSULTATION_INSTRUCTIONS,loadConsultationContext } from './consultation-provider';
 import { requestText, reportedUsage } from './style/server/provider.mjs';
 import { paidAccountInScope } from './paid-release';
 
@@ -46,6 +46,8 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
     const socket=new WebSocket(`wss://api.openai.com/v1/live/sessions/${encodeURIComponent(sessionId)}/attach`,{headers:{Authorization:`Bearer ${key}`},handshakeTimeout:10000,maxPayload:1_048_576});
     let finished=false,closing=false,confirmed=false,persistenceFailed=false,backendFailed=false,sequence=Promise.resolve(),backend=Promise.resolve(),delegations=0;
     let drain:ReturnType<typeof setTimeout>|undefined;
+    const startingBoard=z.object({approvedOutput:z.object({id:z.string().min(1).max(200),hash:z.string().regex(/^[a-f0-9]{64}$/)})}).safeParse(input);
+    const sessionBoard=startingBoard.success?{id:startingBoard.data.approvedOutput.id,documentRevision:startingBoard.data.approvedOutput.hash}:undefined;
     const seen=new Set<string>();const usage:Record<string,unknown>[]=[];const liveFragments:Record<string,unknown>[]=[];
     const emit=(event:Record<string,unknown>)=>{try{onEvent(event)}catch{/* Disconnected browser; server still finalizes. */}};
     const settle=async()=>{
@@ -82,11 +84,13 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
         backend=backend.then(async()=>{
           if(closing)return;
           socket.send(JSON.stringify({type:'session.thinking.append',event_id:randomUUID(),delegation_id:id,content:''}));
-          const saved=await service.rpc('read_consultation',{p_user:userId});
-          if(saved.error||!saved.data||typeof saved.data!=='object')throw new Error('Active consultation unavailable');
-          const current={savedContext:input,savedHistory:saved.data,liveFragments};
+          await sequence;
+          if(closing||persistenceFailed)return;
+          const context=await loadConsultationContext({service,userId,mode:'voice-vision',sessionBoard});
+          if(closing)return;
+          const current={savedContext:context.input,savedRevision:context.snapshot.revision,liveFragments:[...liveFragments]};
           if(Buffer.byteLength(JSON.stringify(current))>64000)throw new Error('Live context exceeds the 64 KB bound');
-          const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate.',input:current,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS});
+          const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate. Inspect only the attached visualEvidence manifest images. If the user means another board, clarify rather than claiming to inspect it.',input:current,images:context.images,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS});
           usage.push({delegationId:id,model:reply.model,modelSource:reply.modelSource,requestId:reply.requestId,reportedUsage:reportedUsage(reply.usage)});
           const recorded=await service.from('consultation_live_sessions').update({backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);if(recorded.error)throw new Error('Usage save failed');
           // Each commentary append is limited to 500 tokens. Small UTF-8 chunks
