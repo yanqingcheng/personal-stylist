@@ -3,10 +3,10 @@
 /* eslint-disable @next/next/no-img-element */
 import {useEffect,useRef,useState,type CSSProperties} from 'react';
 import {drapeLeft,type ColourResponse,type TrialAnswer} from '@/lib/colour';
-import {comparisonIdentity,seenComparisonIdentities,nextAdaptiveComparison,type AdaptiveColourResponse} from '@/lib/colour/adaptive';
+import {colourComparisonVersion,comparisonIdentity,seenComparisonIdentities,nextAdaptiveComparison,type AdaptiveColourResponse} from '@/lib/colour/adaptive';
 import styles from './adaptive-colour.module.css';
 export type AdaptiveColourProps={
- referenceUrl:string|undefined;photoId:string;referenceLabel?:string;
+ referenceUrl:string|undefined;photoId:string;referenceLabel?:string;comparisonVersion?:string;
  baseResponses:readonly ColourResponse[];responses:readonly AdaptiveColourResponse[];
  framing?:{sourceMediaId:string;sourceVersion:string;sourceWidth:number;sourceHeight:number;crop:{x:number;y:number;width:number;height:number}};
  crop?:{zoom:number;y:number};busy?:boolean;
@@ -15,7 +15,7 @@ export type AdaptiveColourProps={
 };
 /** Mount key={photoId}; the caller appends exact responses and saves with profile revision CAS. */
 export default function AdaptiveColour(props:AdaptiveColourProps){
- const context={photoId:props.photoId,referenceVersion:props.framing?.sourceVersion??props.photoId};
+ const context={photoId:props.photoId,referenceVersion:props.comparisonVersion??colourComparisonVersion(props.photoId,props.framing?.sourceVersion,props.framing?.crop)};
  const [current,setCurrent]=useState(()=>nextAdaptiveComparison(props.baseResponses,props.responses,context));
  const [submitted,setSubmitted]=useState<AdaptiveColourResponse|null>(null);
  const [comment,setComment]=useState('');const [saving,setSaving]=useState(false);const [error,setError]=useState('');const [paused,setPaused]=useState(false);
