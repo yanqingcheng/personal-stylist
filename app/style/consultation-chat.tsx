@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { consultationSchema, type ConsultationMessage, type ConsultationSnapshot } from '@/lib/consultation';
+import ConsultationLive from './consultation-live';
 
 export type ConsultationChatProps = {
   activeBoardId?:string|null;
@@ -17,6 +18,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
   const [connectionError,setConnectionError]=useState('');
   const [loading,setLoading]=useState(true);
   const [autonomous,setAutonomous]=useState(false);
+  const [liveActive,setLiveActive]=useState(false);
   const current=useRef<ConsultationSnapshot|null>(null);
   const alive=useRef(true);
   const submitLock=useRef(false);
@@ -74,7 +76,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
     if(target && list) list.scrollTop=list.scrollHeight;
   },[lastMessageId]);
 
-  const canSend=Boolean(consultation && draft.trim() && draft.length<=12000 && !sending && !pending);
+  const canSend=Boolean(consultation && draft.trim() && draft.length<=12000 && !sending && !pending && !liveActive);
 
   async function send() {
     if(!canSend || submitLock.current || !current.current) return;
@@ -133,7 +135,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
     <form className="sc-composer" onSubmit={event=>{event.preventDefault();void send()}}>
       <label htmlFor="consultation-message">{activeBoardId?'Your thoughts on this outfit study':'Tell your stylist'}</label>
       <textarea id="consultation-message" name="message" rows={3} maxLength={12000} value={draft}
-        disabled={sending} placeholder={pending?'Add a thought while your stylist considers your message…':'What feels right, what would you change, or what would you like to explore?'}
+        disabled={sending||liveActive} placeholder={pending?'Add a thought while your stylist considers your message…':'What feels right, what would you change, or what would you like to explore?'}
         onChange={event=>setDraft(event.target.value)}
         onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send()}}}
         aria-describedby="consultation-composer-hint"/>
@@ -142,6 +144,6 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
         <button type="submit" disabled={!canSend}>{sending?'Sending…':'Send message'} <span aria-hidden="true">↗</span></button>
       </div>
     </form>
-    <p className="sc-status">Live voice is not enabled yet. Your typed conversation stays saved.</p>
+    {consultation&&!sending&&!pending&&<ConsultationLive expectedRevision={consultation.revision} onSaved={receive} onActive={setLiveActive}/>}
   </section>;
 }
