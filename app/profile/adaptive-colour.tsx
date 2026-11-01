@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import {useState,type CSSProperties} from 'react';
 import {drapeLeft,type ColourResponse,type TrialAnswer} from '@/lib/colour';
-import {nextAdaptiveComparison,type AdaptiveColourResponse} from '@/lib/colour/adaptive';
+import {comparisonIdentity,seenComparisonIdentities,nextAdaptiveComparison,type AdaptiveColourResponse} from '@/lib/colour/adaptive';
 import styles from './adaptive-colour.module.css';
 export type AdaptiveColourProps={
  referenceUrl:string|undefined;photoId:string;referenceLabel?:string;
@@ -15,21 +15,25 @@ export type AdaptiveColourProps={
 };
 /** Mount key={photoId}; the caller appends exact responses and saves with profile revision CAS. */
 export default function AdaptiveColour(props:AdaptiveColourProps){
- const [current,setCurrent]=useState(()=>nextAdaptiveComparison(props.baseResponses,props.responses));
+ const context={photoId:props.photoId,referenceVersion:props.framing?.sourceVersion??props.photoId};
+ const [current,setCurrent]=useState(()=>nextAdaptiveComparison(props.baseResponses,props.responses,context));
  const [submitted,setSubmitted]=useState<AdaptiveColourResponse|null>(null);
  const [comment,setComment]=useState('');const [saving,setSaving]=useState(false);const [error,setError]=useState('');const [paused,setPaused]=useState(false);
  const extra=submitted&&!props.responses.some(r=>r.trialId===submitted.trialId&&r.photoId===submitted.photoId&&r.revision===submitted.revision)?[...props.responses,submitted]:props.responses;
- const next=nextAdaptiveComparison(props.baseResponses,extra),pair=current.pair;
- const left=drapeLeft(pair.id,props.photoId),right=left==='A'?'B':'A';
- const latest=extra.filter(r=>r.trialId===pair.id&&r.photoId===props.photoId).reduce<AdaptiveColourResponse|undefined>((a,r)=>!a||r.revision>=a.revision?r:a,undefined);
+ const next=nextAdaptiveComparison(props.baseResponses,extra,context);
+ const seen=seenComparisonIdentities(props.baseResponses,extra);
+ const shown=!submitted&&current.pair&&seen.has(comparisonIdentity(current.pair.a.color,current.pair.b.color))?next:current;
+ const pair=shown.pair;
+ const left=drapeLeft(pair?.id??'',props.photoId),right=left==='A'?'B':'A';
+ const latest=extra.filter(r=>r.trialId===pair?.id&&r.photoId===props.photoId).reduce<AdaptiveColourResponse|undefined>((a,r)=>!a||r.revision>=a.revision?r:a,undefined);
  const disabled=saving||props.busy||!props.referenceUrl||!props.photoId;
  const framing=props.framing;
  const viewport:CSSProperties=framing?{aspectRatio:`${framing.crop.width*framing.sourceWidth} / ${framing.crop.height*framing.sourceHeight}`}:{aspectRatio:'3 / 4'};
  const imageStyle:CSSProperties=framing?{position:'absolute',maxWidth:'none',left:`${-100*framing.crop.x/framing.crop.width}%`,top:`${-100*framing.crop.y/framing.crop.height}%`,width:`${100/framing.crop.width}%`,height:`${100/framing.crop.height}%`,objectFit:'fill'}:{objectPosition:`50% ${props.crop?.y??50}%`,transform:`scale(${props.crop?.zoom??1})`};
  const transform=JSON.stringify(framing?{sourceMediaId:framing.sourceMediaId,sourceVersion:framing.sourceVersion,crop:framing.crop}:props.crop??{zoom:1,y:50});
  async function answer(value:TrialAnswer){
-  if(disabled)return false;
-  const response:AdaptiveColourResponse={trialId:pair.id,photoId:props.photoId,revision:(latest?.revision??0)+1,answer:value,confirmedOnDrape:true,comment,presentation:{left,right,aColor:pair.a.color,bColor:pair.b.color,transform}};
+  if(disabled||!pair)return false;
+  const response:AdaptiveColourResponse={trialId:pair.id,photoId:props.photoId,revision:(latest?.revision??0)+1,answer:value,confirmedOnDrape:true,comparisonId:comparisonIdentity(pair.a.color,pair.b.color),comment,presentation:{left,right,aColor:pair.a.color,bColor:pair.b.color,transform,referenceVersion:context.referenceVersion}};
   setSaving(true);setError('');
   try{if(await props.onAnswer(response)===false)throw Error('The observation was not saved. Please retry.');setSubmitted(response);return true;}
   catch(e){setError(e instanceof Error?e.message:'Could not save this observation.');return false;}
@@ -42,8 +46,9 @@ export default function AdaptiveColour(props:AdaptiveColourProps){
   setCurrent(next);setSubmitted(null);setComment('');setError('');
  }
  return <section className={styles.adaptive} aria-label="Continue adaptive colour comparisons">
-  <p className={styles.eyebrow}>YOUR NEXT COLOUR QUESTION</p><h2>Let’s test what is still uncertain</h2>
-  {paused?<div className={styles.notice}><p>Your observations stay saved. Unresolved factors remain uncertain.</p><button type="button" onClick={()=>setPaused(false)}>Keep comparing</button></div>:<>
+  <p className={styles.eyebrow}>YOUR COLOUR STUDY</p><h2>{pair?'A useful next comparison':'Let’s explore a few palettes'}</h2>
+  {pair&&next.recommendPalettes&&<div className={styles.notice}><p>You have provisional directions to try. You can explore five palettes now; further comparison is optional.</p>{props.onContinue&&<button type="button" disabled={saving} onClick={props.onContinue}>See five palette starting points →</button>}</div>}
+  {!pair?<div className={styles.notice}><p>{shown.reason}</p><p>Both, neither and not sure remain valid. Repeating the same pair would not add evidence.</p></div>:paused?<div className={styles.notice}><p>Your observations stay saved. Unresolved factors remain uncertain.</p><button type="button" onClick={()=>setPaused(false)}>Keep comparing</button></div>:<>
    <h3>{pair.axis==='value'?'Depth':pair.axis[0].toUpperCase()+pair.axis.slice(1)} · {pair.family}</h3>
    <div className={styles.panels}>{([left,right] as const).map(side=>{const colour=side==='A'?pair.a:pair.b;return <button type="button" key={side} className={styles.panel} style={{background:colour.color}} aria-label={`Choose ${side}: ${colour.name}`} aria-pressed={submitted?.answer===side} disabled={disabled} onClick={()=>void answer(side)}><span className={styles.tag}>{side}</span><span className={styles.viewport} style={viewport}>{props.referenceUrl?<img src={props.referenceUrl} alt="The same unchanged reference face and neck" style={imageStyle}/>:<span>Reference unavailable. Return to your saved photos.</span>}</span><span className={styles.swatch}/><span className={styles.name}>{colour.name}</span></button>;})}</div>
    <div className={styles.choices}>{(['both','neither','unsure'] as const).map(value=><button key={value} type="button" disabled={disabled} aria-pressed={submitted?.answer===value} onClick={()=>void answer(value)}>{value==='unsure'?'Not sure':value[0].toUpperCase()+value.slice(1)}</button>)}</div>
@@ -52,7 +57,7 @@ export default function AdaptiveColour(props:AdaptiveColourProps){
    {submitted&&<p role="status" className={styles.saved}>Saved: {submitted.answer==='unsure'?'not sure':submitted.answer}. You can continue or change your answer.</p>}
    <details className={styles.context}><summary>Add an observation (optional)</summary><label className={styles.comment}>What do you notice about your face? <span>Your original words are saved with this comparison.</span><textarea value={comment} maxLength={4000} disabled={saving} onChange={event=>setComment(event.target.value)}/></label></details>
   </>}
-  <details className={styles.context}><summary>Why this comparison &amp; what is uncertain</summary><p>{current.reason}</p><p className={styles.control}>{pair.control}</p><div className={styles.evidence}>{next.evidence.map(axis=><p key={axis.axis}><strong>{axis.axis==='value'?'Depth':axis.axis[0].toUpperCase()+axis.axis.slice(1)}</strong>{axis.statement}</p>)}</div><p>These comparisons suggest questions from your observations. They do not measure your colouring or establish a certain result. Both, neither and uncertainty stay in your history without becoming a neutral colour factor.</p><p className={styles.method}>{props.referenceLabel??'Your selected reference.'} Both sides use exactly the same image and crop. This is colour adjacency, not reflected fabric light; lighting and screen differences remain unresolved.</p></details>
-  {props.onContinue&&<button type="button" className={styles.optional} disabled={saving} onClick={props.onContinue}>Explore candidate palettes without claiming certainty →</button>}
+  <details className={styles.context}><summary>Why this comparison &amp; what is uncertain</summary><p>{shown.reason}</p>{pair&&<p className={styles.control}>{pair.control} Display-gamut differences can still affect the comparison.</p>}<div className={styles.evidence}>{next.evidence.map(axis=><p key={axis.axis}><strong>{axis.axis==='value'?'Depth':axis.axis[0].toUpperCase()+axis.axis.slice(1)}</strong>{axis.statement}</p>)}</div><p>These comparisons suggest questions from your observations. They do not measure your colouring. A useful shortlist does not require total certainty. Both, neither and uncertainty stay in your history without becoming a neutral colour factor.</p><p className={styles.method}>{props.referenceLabel??'Your selected reference.'} Both sides use exactly the same image and crop. This is colour adjacency, not reflected fabric light; lighting and screen differences remain unresolved.</p></details>
+  {props.onContinue&&<button type="button" className={styles.optional} disabled={saving} onClick={props.onContinue}>See five palette starting points →</button>}
  </section>;
 }
