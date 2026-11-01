@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     const { data, error } = await serviceClient().rpc('redeem_invite', { p_user: user.id, p_digest: digest });
     if (error) return fail(503, 'Invite redemption unavailable');
     if (data.status === 'activated') return Response.json(data);
+    if (data.status === 'funding_unavailable') return fail(503, 'This invitation is awaiting a funded consultation allowance. Please try again later; your invitation place has not been used.');
     return fail(data.status === 'rate_limited' ? 429 : 403, data.status === 'full' ? 'This invite is full' : data.status === 'rate_limited' ? 'Too many attempts; try again later' : data.status === 'disabled' ? 'This account is disabled' : 'Invite is invalid or expired');
   } catch { return fail(503, 'Invite redemption unavailable'); }
 }

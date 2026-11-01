@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { serviceClient } from './server/supabase';
 import { CONSULTATION_INSTRUCTIONS } from './consultation-provider';
 import { requestText, reportedUsage } from './style/server/provider.mjs';
+import { paidAccountInScope } from './paid-release';
 
 // Official contract checked 2026-11-01:
 // /api/docs/guides/voice-webrtc?api=live and /api/docs/guides/voice-server-controls?api=live
@@ -16,10 +17,10 @@ export const LIVE_PRICING_VERSION='live-60s-3delegations-engineering-reserve-202
 export const LIVE_VOICE_MICROUSD_PER_MINUTE=50_000;
 export function consultationLiveReady():boolean{return process.env.CONSULTATION_LIVE_RELEASE_APPROVED==='true'}
 export function liveAvailability(userId?:string){
-  const testUsers=(process.env.CONSULTATION_LIVE_TEST_USER_ID??process.env.CONSULTATION_TEST_USER_ID??'').split(',').map(value=>value.trim()).filter(Boolean);
+  const scoped=paidAccountInScope(userId,process.env.CONSULTATION_LIVE_TEST_USER_ID??process.env.CONSULTATION_TEST_USER_ID);
   const blocked=!consultationLiveReady()?{code:'live_release_disabled',reason:'GPT-Live release is disabled in this environment.'}
     :process.env.CONSULTATION_LIVE_ENABLED!=='true'?{code:'live_disabled',reason:'GPT-Live is switched off in this environment.'}
-    :testUsers.length>0&&(!userId||!testUsers.includes(userId))?{code:'live_test_scope',reason:'GPT-Live is available only to the configured accounts.'}
+    :!scoped?{code:'live_test_scope',reason:'GPT-Live is available only to the configured accounts.'}
     :!process.env.OPENAI_API_KEY?{code:'live_provider_unconfigured',reason:'The GPT-Live provider is not configured.'}:null;
   return {available:blocked===null,model:LIVE_MODEL,maxSeconds:LIVE_MAX_SECONDS,mode:'full-duplex' as const,code:blocked?.code??'live_ready',reason:blocked?.reason??'GPT-Live is ready. The shared budget is checked before each call.'};
 }
