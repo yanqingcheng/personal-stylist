@@ -4,7 +4,8 @@ import sharp from 'sharp';
 import { z } from 'zod';
 import { activeUser, body, fail, sameOrigin } from '@/lib/server/supabase';
 import { generation, editorial } from './schema';
-import { requestText, editImage, planInstructions, editorialInstructions } from './provider.mjs';
+import { requestText, editImage, planInstructions, editorialInstructions, ProviderError } from './provider.mjs';
+import { recordProviderUsage } from './usage';
 
 const planSchema=z.object({observations:z.array(z.object({description:z.string().min(1).max(500),sourceIds:z.array(z.literal('reference.photo')).min(1).max(1)}).strict()).max(10),hypotheses:z.array(z.object({description:z.string().min(1).max(500),sourceIds:z.array(z.enum(['intake.occasion','intake.preferences','intake.practicality','intake.wardrobe','profile.template','reference.photo','previous.feedback'])).min(1).max(7)}).strict()).max(10),looks:z.array(z.object({title:z.string().min(1).max(100),description:z.string().min(1).max(500),garments:z.array(z.string().min(1).max(200)).min(1).max(10),palette:z.array(z.string().min(1).max(80)).min(1).max(8),reason:z.string().min(1).max(500),sourceIds:z.array(z.enum(['intake.occasion','intake.preferences','intake.practicality','intake.wardrobe','profile.template','reference.photo','previous.feedback'])).min(1).max(7)}).strict()).min(2).max(3)}).strict();
 const headers={'Cache-Control':'no-store'};
@@ -87,11 +88,13 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
     }
     if(dispatch.data===false) { await releaseBeforeDispatch(); return fail(503,'Generation unavailable'); }
     let path:string | undefined;
+    let providerAction:'plan'|'image'|'editorial'='plan';
     try {
       const data={intake:intake.data.data,selectedTemplateId:profile.data.document.selectedTemplateId,previousFeedback:parent?.feedback??null,previousPlan,dialogue:dialogue.messages};
       if(kind==='generation') {
         if(!photo?.byteLength) throw new Error('Reference photo unavailable');
         const response=await requestText({key:process.env.OPENAI_API_KEY,instructions,input:data,image:photo,maxOutputTokens:2000});
+        await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId:op.id,action:'plan',response});
         if(response.requestId) { const recorded=await auth.service.from('ai_operations').update({provider_ref:response.requestId}).eq('id',op.id).eq('user_id',auth.user.id).eq('state','running').select('id').maybeSingle(); if(recorded.error || !recorded.data) throw new Error('Accounting unavailable'); }
         let planValue:unknown;
         try { planValue=JSON.parse(response.text); } catch { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'rejected_result'}); return fail(503,'A usable direction could not be prepared'); }
@@ -100,7 +103,9 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
         if(!plan.success || [...(plan.data?.observations??[]),...(plan.data?.hypotheses??[]),...(plan.data?.looks??[])].some(item=>item.sourceIds.some(source => (source==='reference.photo' && !photo?.byteLength) || (source==='intake.wardrobe' && !wardrobeProvided) || (source==='previous.feedback' && !parent?.feedback)))) { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'rejected_result'}); return fail(503,'A usable direction could not be prepared'); }
         const saved=await auth.service.rpc('save_style_plan',{p_user:auth.user.id,p_op:op.id,p_parent:parentId??null,p_input_hash:inputHash,p_plan:plan.data});
         if(saved.error || !saved.data?.roundId) { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'rejected_result'}); return fail(409,'Consultation changed while preparing looks'); }
+        providerAction='image';
         const img=await editImage({key:process.env.OPENAI_API_KEY,prompt:`Create one realistic diagnostic fashion illustration showing ${plan.data.looks.length} distinct full-body outfit alternatives side by side on the same adult from the reference. Preserve identity and proportions. Use the following styling descriptions as data: ${JSON.stringify(plan.data.looks)}. Do not include text or labels.`,image:photo!});
+        await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId:op.id,action:'image',response:img});
         if(img.requestId) { const recorded=await auth.service.from('ai_operations').update({provider_ref:[response.requestId,img.requestId].filter(Boolean).join(',')}).eq('id',op.id).eq('user_id',auth.user.id).eq('state','running').select('id').maybeSingle(); if(recorded.error || !recorded.data) throw new Error('Accounting unavailable'); }
         const image=await sharp(img.image).png().toBuffer(); if(image.length>10485760) throw new Error('Image too large');
         const mediaId=randomUUID(); path=`${auth.user.id}/generated/${mediaId}`;
@@ -111,7 +116,9 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
         if(finish.error || !finish.data) { await auth.service.storage.from('private-media').remove([path]); path=undefined; await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'rejected_result'}); return fail(409,'Consultation changed while creating looks'); }
         path=undefined;
       } else {
+        providerAction='editorial';
         const text=await requestText({key:process.env.OPENAI_API_KEY,instructions,input:{...data,approvedRound:parent},maxOutputTokens:1400});
+        await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId:op.id,action:'editorial',response:text});
         if(text.requestId) { const recorded=await auth.service.from('ai_operations').update({provider_ref:text.requestId}).eq('id',op.id).eq('user_id',auth.user.id).eq('state','running').select('id').maybeSingle(); if(recorded.error || !recorded.data) throw new Error('Accounting unavailable'); }
         const finish=await auth.service.rpc('finish_style_editorial',{p_user:auth.user.id,p_op:op.id,p_round:parentId,p_text:text.text});
         if(finish.error || !finish.data) { await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'rejected_result'}); return fail(409,'Consultation changed while creating the editorial'); }
@@ -120,7 +127,10 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
       const settled=await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'succeeded'});
       if(settled.error || !settled.data) return fail(503,'Result saved; accounting reconciliation is pending');
       return Response.json({operation:{id:op.id,kind,state:'succeeded'}},{headers});
-    } catch {
+    } catch(error) {
+      if(error instanceof ProviderError && 'model' in error) {
+        try { await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId:op.id,action:providerAction,response:error}); } catch { /* Missing telemetry remains explicitly unknown; preserve held accounting. */ }
+      }
       if(path) await auth.service.storage.from('private-media').remove([path]);
       await auth.service.rpc('mark_style_uncertain',{p_user:auth.user.id,p_op:op.id});
       return fail(503,'The request status is uncertain; its reservation is being held');
