@@ -29,8 +29,9 @@ is reproduced.
 - [My True Style](https://www.mytruestyle.com/kitchener-style-essence-quiz/) is a
   noisy adaptation: its Gamine result heading contains Romantic prose/examples,
   and its Romantic heading contains Gamine prose/examples. Its eye question
-  repeats an answer. These were observed on the page, not inferred scoring bugs.
-  The result text is unsuitable as a target answer key.
+  repeats an answer; direct HTML inspection confirms distinct controls with
+  different Gamine/Classic metadata, not a text-extraction duplicate. The final
+  score calculation was not executed. Its result text is unsuitable as a target.
 
 ## Finite source → factor → gap map
 
@@ -91,7 +92,7 @@ production template, a new schema or an exhaustive intake questionnaire.
 > styling hypotheses, aesthetic impressions and taste in separate records.
 > Preserve local mixtures and contradictions; never collapse them into a global
 > yin–yang average. Give one tentative holistic reading after the observations.
-> Propose two appealing coherent looks and explain the specific garment–region
+> Propose the requested number of appealing coherent looks and explain the specific garment–region
 > interactions being tested. Keep loved details unless explicitly changing them.
 > A celebrity label or caption is a source claim, not visible evidence. Report
 > recognition/caption contamination. Do not infer personality or exact measures.
@@ -174,6 +175,39 @@ holistic method contributes composition-level questions. It does not show one
 method is more accurate. The practical critique improves control design without
 converting agreement into proof. Before a live comparison, ask which detail the
 person wants to retain and what impression they want the outfit to create.
+
+### Clean-reference follow-up: labels withheld from one fresh reader
+
+To improve the failed caption blinding, a **second fresh** native child viewed
+only the two direct event-report photos, cached locally under neutral filenames.
+It received no checklist, names, URLs, published labels or earlier responses.
+These show the same two cases/ensembles; Theron's stance differs from the typing
+collage, so this is a follow-up, not a same-pixel replication. The checklist
+author and practical critic had already seen labels; the follow-up does not erase
+that contamination. The fresh reader recognised the public faces and disclosed
+that identity blinding also failed. Type labels were absent from its inputs.
+
+Its actual observations add a useful whole-composition reading: at left, the
+neckline, lapels and pointed shoes repeat directional edges; exposed neckline/
+ankles provide space around the dark suit; lace and red lip are local accents.
+It also noticed that backdrop/carpet red contributes to photographic coherence,
+which cannot be credited to the clothes alone. At right, overlapping fronts lead
+into the belt; broad reflections and long folds create movement, with bright
+earrings/buckle as smaller accents. Smooth hair repeats the flowing surface.
+
+Its hypotheses differ from the initial checklist: edge repetition may explain
+the left composition, and the right belt may organise fabric fullness rather
+than merely emphasise the waist. It proposed the same cut in matte versus satin
+for **both** cases. The practical critique still applies: such a material swap
+is confounded unless weight/drape remain comparable. No variants were made.
+
+Only after this reader returned did this document compare its reading with the
+typing article's left-positive/right-negative Dramatic captions. The reader
+described both compositions coherently and supplied no type verdict. There is
+therefore no classification match to score. The proposed mechanisms—edge
+repetition, reflective movement, belt organisation—are more useful experimental
+questions than treating the right outfit as a failure. Agreement about reflection
+is robust across these readings; its desirability for either wearer is unknown.
 
 ## What this increment can support
 
