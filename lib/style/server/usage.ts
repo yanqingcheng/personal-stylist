@@ -9,6 +9,7 @@ const responseSchema = z.object({
   requestId:z.unknown().optional(), usage:z.unknown().optional(),
   serviceTier:z.string().max(80).nullish(), serviceTierSource:z.string().max(80).nullish(),
   endpoint:z.string().max(120).nullish(), region:z.string().max(80).nullish(),
+  providerStatus:z.number().int().min(100).max(599).nullish(),providerCode:z.string().regex(/^[a-zA-Z0-9_.:-]{1,120}$/).nullish(),providerErrorType:z.string().regex(/^[a-zA-Z0-9_.:-]{1,120}$/).nullish(),
 });
 type Service = ReturnType<typeof serviceClient>;
 export type UsageAction = 'plan'|'image'|'editorial'|'dialogue'|'composite'|'transcription'|'voice'|'inspection';
@@ -31,6 +32,9 @@ export async function recordProviderUsage({service,userId,operationId,action,res
     endpoint:endpoint ?? (parsed.model.startsWith('gpt-image-')?'images.edits':'responses'),
     serviceTier:parsed.serviceTier ?? 'unknown',serviceTierSource:parsed.serviceTierSource ?? 'unknown',
     region:parsed.region ?? 'global',
+    ...(parsed.providerStatus?{providerStatus:parsed.providerStatus}:{}),
+    ...(parsed.providerCode?{providerCode:parsed.providerCode}:{}),
+    ...(parsed.providerErrorType?{providerErrorType:parsed.providerErrorType}:{}),
   };
   const saved=await service.rpc('record_style_provider_usage',{
     p_user:userId,p_op:operationId,p_action:action,p_model:parsed.model,p_model_source:parsed.modelSource,
