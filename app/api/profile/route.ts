@@ -34,8 +34,8 @@ export async function DELETE(request: Request) {
     const {data: items,error: listError} = await auth.service.from('media').select('object_path').eq('user_id',auth.user.id);
     if (listError) return fail(503,'Deletion incomplete; please retry');
     if (items.length) { const result = await auth.service.storage.from('private-media').remove(items.map(item => item.object_path)); if (result.error) return fail(503,'Deletion incomplete; please retry'); }
-    // This stage cannot create paid operations. Preserve the allowance and counters on the grant.
-    const operations = await auth.service.from('ai_operations').delete().eq('user_id',auth.user.id);
+    // Keep cost and reservation records for reconciliation; detach personal result references.
+    const operations = await auth.service.from('ai_operations').update({round_id:null,result_ref:null}).eq('user_id',auth.user.id);
     if (operations.error) return fail(503,'Deletion incomplete; please retry');
     const rounds = await auth.service.from('rounds').delete().eq('user_id',auth.user.id);
     if (rounds.error) return fail(503,'Deletion incomplete; please retry');

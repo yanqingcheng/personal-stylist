@@ -7,7 +7,18 @@ export async function POST(request:Request) {
   try { const auth = await activeUser(); if (!auth) return fail(401,'Sign in and activate your account');
     // Expired upload tokens can no longer recreate these temporary paths.
     const leases=await auth.service.from('upload_leases').select('id,object_path').eq('user_id',auth.user.id).lt('expires_at',new Date().toISOString());
-    if (!leases.error && leases.data.length) { const removed=await auth.service.storage.from('private-media').remove(leases.data.map(item=>item.object_path)); if (!removed.error) await auth.service.from('upload_leases').delete().eq('user_id',auth.user.id).in('id',leases.data.map(item=>item.id)); }
+    if (!leases.error && leases.data.length) {
+      // A generated result can retain its lease after becoming a ready photo.
+      // Never remove that live object just because its cleanup lease expired.
+      const ready=await auth.service.from('media').select('object_path').eq('user_id',auth.user.id).eq('status','ready').in('object_path',leases.data.map(item=>item.object_path));
+      if (!ready.error) {
+        const live=new Set(ready.data.map(item=>item.object_path));
+        const stale=leases.data.filter(item=>!live.has(item.object_path));
+        const removed=stale.length ? await auth.service.storage.from('private-media').remove(stale.map(item=>item.object_path)) : {error:null};
+        const finished=leases.data.filter(item=>live.has(item.object_path) || !removed.error);
+        if (finished.length) await auth.service.from('upload_leases').delete().eq('user_id',auth.user.id).in('id',finished.map(item=>item.id));
+      }
+    }
     const parsed = schema.safeParse(await body(request)); if (!parsed.success) return fail(400,'Use a JPEG, PNG or WebP up to 10 MB');
     const id = randomUUID(), objectPath = `${auth.user.id}/pending/${id}`;
     const { data, error } = await auth.service.rpc('create_pending_media',{ p_user:auth.user.id,p_id:id,p_path:objectPath,p_kind:parsed.data.kind,p_type:parsed.data.contentType,p_size:parsed.data.byteSize });
