@@ -7,52 +7,40 @@ const responseSchema = z.object({
   model:z.string().regex(/^[a-zA-Z0-9._:-]{1,120}$/),
   modelSource:z.enum(['reported','requested']),
   requestId:z.unknown().optional(), usage:z.unknown().optional(),
+  serviceTier:z.string().max(80).nullish(), serviceTierSource:z.string().max(80).nullish(),
+  endpoint:z.string().max(120).nullish(), region:z.string().max(80).nullish(),
 });
-const rateSchema = z.object({
-  model:z.string().min(1).max(120), version:z.string().min(1).max(120), sourceUrl:z.url().max(500),
-  // The server caller must verify that these rates cover every modality in this request.
-  coversAllModalities:z.literal(true),
-  inputMicrousdPerToken:z.number().finite().nonnegative(),
-  cachedInputMicrousdPerToken:z.number().finite().nonnegative(),
-  outputMicrousdPerToken:z.number().finite().nonnegative(),
-}).strict();
-export type VerifiedUsageRates = z.infer<typeof rateSchema>;
 type Service = ReturnType<typeof serviceClient>;
+export type UsageAction = 'plan'|'image'|'editorial'|'dialogue'|'composite'|'transcription'|'voice'|'inspection';
 
-/** Call after every provider response, before validating/saving its content.
- * No prices are configured by default. A rate card is an operator-verified quote,
- * never a browser value; this helper cannot establish current provider pricing.
- * Missing modality/count information stays unpriced. This never mutates the ledger.
+/** Retain every provider subcall before validating/saving its content.
+ * SQL owns the versioned rate card and operation coverage checks. Estimates and
+ * conservative usage ceilings never populate provider/invoice actual fields.
+ * Missing usage remains unpriced; unknown outcomes retain their full hold.
  */
-export async function recordProviderUsage({service,userId,operationId,action,response,rates}: {
-  service:Service; userId:string; operationId:string; action:'plan'|'image'|'editorial'|'dialogue'|'composite'|'transcription'|'voice'|'inspection';
-  response:unknown; rates?:VerifiedUsageRates;
+export async function recordProviderUsage({service,userId,operationId,action,response}: {
+  service:Service; userId:string; operationId:string; action:UsageAction; response:unknown;
 }) {
   const parsed=responseSchema.parse(response);
-  const operation=await service.from('ai_operations').select('id,pricing_version').eq('id',operationId).eq('user_id',userId).maybeSingle();
-  if(operation.error || !operation.data) throw new Error('Usage operation unavailable');
-  const usage=reportedUsage(parsed.usage);
-  const validatedRates=rates ? rateSchema.parse(rates) : null;
-  const input=usage?.input_tokens, output=usage?.output_tokens, details=usage?.input_tokens_details;
-  const cached=details && typeof details==='object' ? details.cached_tokens : undefined;
-  let estimate:number|null=null;
-  if(validatedRates && parsed.modelSource==='reported' && validatedRates.model===parsed.model &&
-    typeof input==='number' && typeof output==='number' && typeof cached==='number' && cached<=input) {
-    const amount=Math.ceil((input-cached)*validatedRates.inputMicrousdPerToken + cached*validatedRates.cachedInputMicrousdPerToken + output*validatedRates.outputMicrousdPerToken);
-    if(Number.isSafeInteger(amount) && amount>=0) estimate=amount;
-  }
   const requestId=typeof parsed.requestId==='string' && /^[A-Za-z0-9_-]{1,200}$/.test(parsed.requestId) ? parsed.requestId : null;
-  const saved=await service.from('style_provider_usage').upsert({
-    user_id:userId,operation_id:operationId,action,model:parsed.model,model_source:parsed.modelSource,
-    provider_request_id:requestId,reported_usage:usage,pricing_version:operation.data.pricing_version,
-    estimated_microusd:estimate,rate_version:estimate===null ? null : validatedRates?.version,
-    rate_source:estimate===null ? null : validatedRates?.sourceUrl,
-  },{onConflict:'operation_id,action',ignoreDuplicates:true});
-  if(saved.error) throw new Error('Usage could not be recorded');
+  // All current transports use api.openai.com. Images use the direct edits API,
+  // where cache discounts do not apply. An absent text tier stays UNKNOWN.
+  const rawEndpoint=parsed.endpoint?.replace(/^\/v1/, '');
+  const endpoint=rawEndpoint==='/responses'?'responses':rawEndpoint==='/images/edits'?'images.edits':rawEndpoint;
+  const context={
+    endpoint:endpoint ?? (parsed.model.startsWith('gpt-image-')?'images.edits':'responses'),
+    serviceTier:parsed.serviceTier ?? 'unknown',serviceTierSource:parsed.serviceTierSource ?? 'unknown',
+    region:parsed.region ?? 'global',
+  };
+  const saved=await service.rpc('record_style_provider_usage',{
+    p_user:userId,p_op:operationId,p_action:action,p_model:parsed.model,p_model_source:parsed.modelSource,
+    p_request_id:requestId,p_usage:reportedUsage(parsed.usage),p_context:context,
+  });
+  if(saved.error || saved.data!==true)throw new Error('Usage could not be recorded');
 }
 
 export async function readAccountUsage({service,userId}:{service:Service;userId:string}) {
   const result=await service.rpc('read_style_usage',{p_user:userId});
-  if(result.error || !result.data) throw new Error('Usage unavailable');
+  if(result.error || !result.data)throw new Error('Usage unavailable');
   return result.data;
 }
