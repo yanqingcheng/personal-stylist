@@ -103,6 +103,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
   }
 
   return <section className="sc-conversation" aria-label="Your stylist conversation">
+    <header><div><h2>A little conversation.<br/>A more personal edit.</h2><p>Private, saved consultation · supervised native stylist</p></div></header>
     <div className="sc-messages" role="log" aria-label="Saved conversation" aria-live="polite" aria-relevant="additions text" aria-busy={loading}>
       {consultation?.messages.map(message=><article className={`sc-message sc-message--${message.role}`} data-role={message.role} key={message.id}>
         <p className="sc-message-author">{message.role==='user'?'You':'Your stylist'}</p>
