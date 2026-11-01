@@ -4,3 +4,4 @@
 .article .small a{text-decoration:underline;text-underline-offset:3px}
 fieldset.studio-body{border:0;padding:0;min-width:0}
 fieldset.studio-body{width:100%}
+.drape-choice{border:3px solid transparent;color:inherit;width:100%;text-align:inherit}.drape-choice.selected{border-color:#29272a;box-shadow:0 0 0 2px #fff}.drape-choice:focus-visible{outline:3px solid #654c58;outline-offset:3px}
