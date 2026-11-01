@@ -18,3 +18,30 @@ fieldset.studio-body{width:100%}
  /* Keep the keyboard and focused field unobstructed, even on browsers that do not resize the viewport. */
  .studio:has(textarea:focus, input[type=text]:focus) .mobile-step-nav{display:none}
 }
+/* Keep the comparison and its answers together above the phone's continue bar. */
+@media(max-width:700px){
+ .shell:has(.drapes) .topbar{height:48px;min-height:48px}
+ .shell:has(.drapes) .topbar nav{display:none}
+ .studio:has(.drapes){display:flex;flex-direction:column;padding-top:12px}
+ .studio:has(.drapes) .studio-head{padding-bottom:8px;gap:4px}
+ .studio:has(.drapes) .studio-head h1{font-size:28px}
+ .studio:has(.drapes) .studio-head>div:last-child{display:flex;align-items:center;gap:12px}
+ .studio:has(.drapes) .status-line{margin:0}
+ .studio:has(.drapes) .studio-head .eyebrow{display:none}
+ .studio:has(.drapes) .step-line{margin:8px 0}
+ .studio:has(.drapes) .step-line span:not(.active){display:none}
+ .studio:has(.drapes)>details{order:2}
+ .studio:has(.drapes) .studio-body{display:flex;flex-direction:column;margin:8px 0 24px}
+ .studio-body:has(.drapes)>*{order:3}
+ .studio-body:has(.drapes)>.eyebrow{order:0;margin-bottom:6px}
+ .studio-body:has(.drapes)>.section-title{order:0;font-size:26px;margin-bottom:8px}
+ .studio-body:has(.drapes)>.drapes{order:1;margin:4px 0 10px;gap:10px;width:100%}
+ .studio-body:has(.drapes)>.choices{order:2;margin:0 0 12px;flex-wrap:nowrap}
+ .studio-body:has(.drapes) .drape-frame{min-width:0;padding:4px}
+ .studio-body:has(.drapes) .drape-frame img{height:clamp(130px,calc(100svh - 450px),260px);aspect-ratio:auto;object-fit:contain}
+ .studio-body:has(.drapes) .drape-colour{height:40px;font-size:11px}
+ .studio-body:has(.drapes) .choice{padding:10px 8px;min-width:0}
+ .studio-body:has(.drapes)>textarea{scroll-margin-bottom:100px}
+ .studio:has(.drapes) .mobile-step-nav{display:block}
+ .studio:has(.drapes):has(textarea:focus,input[type=text]:focus) .mobile-step-nav{display:none}
+}
