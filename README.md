@@ -59,6 +59,6 @@ Working product title: Personal stylist. Opal is a personal palette name, not th
 
 ## Resume work
 
-Read `docs/implementation-plan.md` and run `br sync --import-only --json` then `br ready --json`. Core implementation is still paused while planning. Commit and push meaningful checkpoints. Private brainstorm material is in the separate private `stylist-notes` repository; it is not included here.
+Read `docs/implementation-plan.md` and run `br sync --import-only --json` then `br ready --json`. Core implementation is authorised and underway. Commit and push meaningful checkpoints. Private brainstorm material is in the separate private `stylist-notes` repository; it is not included here.
 
 Execution entry point: [work packets](docs/work-packets.md), [contracts](docs/execution-spec.md). Total API budget: $50, including calibration. Actual participant capacity follows measured costs; invite ceiling100. Invite phrases are memorable word strings.
