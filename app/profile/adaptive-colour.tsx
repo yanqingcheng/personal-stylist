@@ -1,7 +1,7 @@
 'use client';
 /* Private signed images are displayed directly, with identical source/crop on both sides. */
 /* eslint-disable @next/next/no-img-element */
-import {useState,type CSSProperties} from 'react';
+import {useEffect,useRef,useState,type CSSProperties} from 'react';
 import {drapeLeft,type ColourResponse,type TrialAnswer} from '@/lib/colour';
 import {comparisonIdentity,seenComparisonIdentities,nextAdaptiveComparison,type AdaptiveColourResponse} from '@/lib/colour/adaptive';
 import styles from './adaptive-colour.module.css';
@@ -24,11 +24,18 @@ export default function AdaptiveColour(props:AdaptiveColourProps){
  const seen=seenComparisonIdentities(props.baseResponses,extra);
  const shown=!submitted&&current.pair&&seen.has(comparisonIdentity(current.pair.a.color,current.pair.b.color))?next:current;
  const pair=shown.pair;
+ const comparison=useRef<HTMLElement>(null);const pairId=pair?.id;
+ useEffect(()=>{
+  if(!window.matchMedia('(max-width:700px)').matches)return;
+  const frame=requestAnimationFrame(()=>comparison.current?.scrollIntoView({block:'start',behavior:'instant'}));
+  return()=>cancelAnimationFrame(frame);
+ },[pairId]);
  const left=drapeLeft(pair?.id??'',props.photoId),right=left==='A'?'B':'A';
  const latest=extra.filter(r=>r.trialId===pair?.id&&r.photoId===props.photoId).reduce<AdaptiveColourResponse|undefined>((a,r)=>!a||r.revision>=a.revision?r:a,undefined);
  const disabled=saving||props.busy||!props.referenceUrl||!props.photoId;
  const framing=props.framing;
- const viewport:CSSProperties=framing?{aspectRatio:`${framing.crop.width*framing.sourceWidth} / ${framing.crop.height*framing.sourceHeight}`}:{aspectRatio:'3 / 4'};
+ const ratio=framing?(framing.crop.width*framing.sourceWidth)/(framing.crop.height*framing.sourceHeight):3/4;
+ const viewport:CSSProperties&{'--colour-reference-ratio':number}={aspectRatio:String(ratio),'--colour-reference-ratio':ratio};
  const imageStyle:CSSProperties=framing?{position:'absolute',maxWidth:'none',left:`${-100*framing.crop.x/framing.crop.width}%`,top:`${-100*framing.crop.y/framing.crop.height}%`,width:`${100/framing.crop.width}%`,height:`${100/framing.crop.height}%`,objectFit:'fill'}:{objectPosition:`50% ${props.crop?.y??50}%`,transform:`scale(${props.crop?.zoom??1})`};
  const transform=JSON.stringify(framing?{sourceMediaId:framing.sourceMediaId,sourceVersion:framing.sourceVersion,crop:framing.crop}:props.crop??{zoom:1,y:50});
  async function answer(value:TrialAnswer){
@@ -45,12 +52,12 @@ export default function AdaptiveColour(props:AdaptiveColourProps){
   if(comment!==submitted.comment&&!(await answer(submitted.answer)))return;
   setCurrent(next);setSubmitted(null);setComment('');setError('');
  }
- return <section className={styles.adaptive} aria-label="Continue adaptive colour comparisons">
+ return <section ref={comparison} className={styles.adaptive} data-colour-comparison aria-label="Continue adaptive colour comparisons">
   <p className={styles.eyebrow}>YOUR COLOUR STUDY</p><h2>{pair?'A useful next comparison':'Let’s explore a few palettes'}</h2>
-  {pair&&props.onContinue&&<div className={styles.notice}><p>{next.recommendPalettes?'Try your provisional directions in five palettes.':'Evidence is still open. Explore five contrasting palettes now.'} More comparisons are optional.</p><button type="button" disabled={saving} onClick={props.onContinue}>See five palette starting points →</button></div>}
+  {pair&&props.onContinue&&<div className={styles.notice} data-colour-summary><p>{next.recommendPalettes?'Try your provisional directions in five palettes.':'Evidence is still open. Explore five contrasting palettes now.'} More comparisons are optional.</p><button type="button" disabled={saving} onClick={props.onContinue}>See five palette starting points →</button></div>}
   {!pair?<div className={styles.notice}><p>{shown.reason}</p><p>Both, neither and not sure remain valid. Repeating the same pair would not add evidence.</p></div>:paused?<div className={styles.notice}><p>Your observations stay saved. Unresolved factors remain uncertain.</p><button type="button" onClick={()=>setPaused(false)}>Keep comparing</button></div>:<>
    <h3>{pair.axis==='value'?'Depth':pair.axis[0].toUpperCase()+pair.axis.slice(1)} · {pair.family}</h3>
-   <div className={styles.panels}>{([left,right] as const).map(side=>{const colour=side==='A'?pair.a:pair.b;return <button type="button" key={side} className={styles.panel} style={{background:colour.color}} aria-label={`Choose ${side}: ${colour.name}`} aria-pressed={submitted?.answer===side} disabled={disabled} onClick={()=>void answer(side)}><span className={styles.tag}>{side}</span><span className={styles.viewport} style={viewport}>{props.referenceUrl?<img src={props.referenceUrl} alt="The same unchanged reference face and neck" style={imageStyle}/>:<span>Reference unavailable. Return to your saved photos.</span>}</span><span className={styles.swatch}/><span className={styles.name}>{colour.name}</span></button>;})}</div>
+   <div className={styles.panels}>{([left,right] as const).map(side=>{const colour=side==='A'?pair.a:pair.b;return <button type="button" key={side} className={styles.panel} style={{background:colour.color}} aria-label={`Choose ${side}: ${colour.name}`} aria-pressed={submitted?.answer===side} disabled={disabled} onClick={()=>void answer(side)}><span className={styles.tag}>{side}</span><span className={styles.viewport} data-colour-viewport style={viewport}>{props.referenceUrl?<img src={props.referenceUrl} alt="The same unchanged reference face and neck" style={imageStyle}/>:<span>Reference unavailable. Return to your saved photos.</span>}</span><span className={styles.swatch}/><span className={styles.name}>{colour.name}</span></button>;})}</div>
    <div className={styles.choices}>{(['both','neither','unsure'] as const).map(value=><button key={value} type="button" disabled={disabled} aria-pressed={submitted?.answer===value} onClick={()=>void answer(value)}>{value==='unsure'?'Not sure':value[0].toUpperCase()+value.slice(1)}</button>)}</div>
    {error&&<p role="alert" className={styles.notice}>{error}</p>}
    <div className={styles.actions}><button type="button" className={styles.primary} disabled={!submitted||disabled} onClick={()=>void advance()}>Next useful comparison →</button><button type="button" disabled={saving} onClick={()=>{setPaused(true);props.onPause?.();}}>Pause comparisons</button></div>
