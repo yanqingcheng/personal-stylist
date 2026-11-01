@@ -1,0 +1,1 @@
+.drape-reference-crop{position:relative;display:block;overflow:hidden;margin:0 auto;--comparison-portrait-height:280px}.drape-reference-crop img{display:block}.mobile-step-nav[hidden]{display:none!important}@media(max-width:650px){.drape-reference-crop{--comparison-portrait-height:clamp(145px,23svh,205px)}}
