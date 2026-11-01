@@ -57,20 +57,22 @@ function pairFor(id:string):AdaptivePair|null{
 }
 export type AdaptiveAxisEvidence={axis:Axis;status:'unknown'|'mixed'|'broad'|'provisional';direction:'positive'|'negative'|null;families:number;statement:string;answers:number};
 export type ColourContext={photoId?:string;referenceVersion?:string};
-function inContext(response:ColourResponse|AdaptiveColourResponse,context:ColourContext){
+/** Fingerprint the displayed source and effective crop, never a signed URL. */
+export function colourComparisonVersion(photoId:string,sourceVersion?:string,crop?:{x:number;y:number;width:number;height:number}):string{
+ const framing=crop?[crop.x,crop.y,crop.width,crop.height].map(n=>Number(n.toFixed(6))).join(','):'full';
+ return `ctx1:${sourceVersion??photoId}:${framing}`;
+}
+export function responseInColourContext(response:ColourResponse|AdaptiveColourResponse,context:ColourContext){
  if(context.photoId&&response.photoId!==context.photoId)return false;
  if(!context.referenceVersion)return true;
- const presentation=response.presentation;
- const explicit=presentation&&'referenceVersion' in presentation?presentation.referenceVersion:undefined;
- let version=explicit;
- if(!version&&presentation?.transform){try{version=JSON.parse(presentation.transform).sourceVersion}catch{/* Older framing is explicitly unknown. */}}
- return !version||version===context.referenceVersion;
+ // Unknown legacy framing stays in history, never silently matches a known crop.
+ return response.presentation?.referenceVersion===context.referenceVersion;
 }
 export function adaptiveEvidence(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[],context:ColourContext={}):AdaptiveAxisEvidence[]{
  type Vote={id:string;photoId:string;revision:number;axis:Axis;family:string;answer:TrialAnswer;positiveAnswer:'A'|'B'};
  const votes:Vote[]=[];
- for(const response of base.filter(r=>inContext(r,context))){const pair=drapeTrials.find(item=>item.id===response.trialId);if(pair&&!needsDrapeConfirmation(response))votes.push({...response,id:pair.id,axis:pair.axis,family:pair.hueFamily,positiveAnswer:pair.positiveAnswer});}
- for(const response of extra.filter(r=>inContext(r,context))){const pair=pairFor(response.trialId);if(pair)votes.push({...response,id:pair.id,axis:pair.axis,family:pair.family,positiveAnswer:pair.positiveAnswer});}
+ for(const response of base.filter(r=>responseInColourContext(r,context))){const pair=drapeTrials.find(item=>item.id===response.trialId);if(pair&&pair.evidenceQuality==='display-controlled'&&!needsDrapeConfirmation(response))votes.push({...response,id:pair.id,axis:pair.axis,family:pair.hueFamily,positiveAnswer:pair.positiveAnswer});}
+ for(const response of extra.filter(r=>responseInColourContext(r,context))){const pair=pairFor(response.trialId);if(pair)votes.push({...response,id:pair.id,axis:pair.axis,family:pair.family,positiveAnswer:pair.positiveAnswer});}
  const latest=new Map<string,Vote>();
  for(const vote of votes){const key=JSON.stringify([vote.id,vote.photoId]);const old=latest.get(key);if(!old||vote.revision>=old.revision)latest.set(key,vote);}
  return axes.map(axis=>{
