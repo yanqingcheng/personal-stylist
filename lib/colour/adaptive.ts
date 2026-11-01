@@ -4,10 +4,10 @@
  * screen gamut, lighting, hue perception and juxtaposition remain confounds.
  */
 import {z} from 'zod';
-import {drapeTrials,needsDrapeConfirmation,type Axis,type ColourResponse,type TrialAnswer} from './index';
+import {atlas,drapeTrials,needsDrapeConfirmation,type Axis,type ColourResponse,type TrialAnswer,type Template} from './index';
 export const adaptiveResponseSchema=z.object({
- trialId:z.string().regex(/^AD:(temperature|value|chroma):\d{1,7}$/),photoId:z.string().min(1).max(200),revision:z.number().int().positive(),answer:z.enum(['A','B','both','neither','unsure']),confirmedOnDrape:z.literal(true),comment:z.string().max(4000).optional(),
- presentation:z.object({left:z.enum(['A','B']),right:z.enum(['A','B']),aColor:z.string().max(100),bColor:z.string().max(100),transform:z.string().max(300)}),
+ trialId:z.string().regex(/^AD:(temperature|value|chroma):\d{1,7}$/),photoId:z.string().min(1).max(200),revision:z.number().int().positive(),answer:z.enum(['A','B','both','neither','unsure']),confirmedOnDrape:z.literal(true),comparisonId:z.string().max(200).optional(),comment:z.string().max(4000).optional(),
+ presentation:z.object({left:z.enum(['A','B']),right:z.enum(['A','B']),aColor:z.string().max(100),bColor:z.string().max(100),transform:z.string().max(300),referenceVersion:z.string().max(200).optional()}),
 }).superRefine((r,c)=>{if(r.presentation.left===r.presentation.right)c.addIssue({code:'custom',message:'Comparison sides must differ'});});
 export type AdaptiveColourResponse=z.infer<typeof adaptiveResponseSchema>;
 export function readAdaptiveResponses(value:unknown):AdaptiveColourResponse[]{
@@ -18,8 +18,29 @@ export type AdaptivePair={id:string;axis:Axis;family:string;a:{name:string;color
 const axes:Axis[]=['temperature','value','chroma'];
 const names:Record<Axis,string>={temperature:'temperature',value:'depth',chroma:'chroma'};
 const hues=[{name:'rose',h:15},{name:'teal',h:190},{name:'violet',h:300},{name:'ochre',h:85},{name:'blue',h:250},{name:'green',h:145}];
-const colour=(l:number,c:number,h:number)=>`oklch(${l.toFixed(3)} ${c.toFixed(3)} ${((h+360)%360).toFixed(1)})`;
-/** Sequence changes comparison family/contrast; revisits never become new independent families. */
+/** Identity uses the actual 8-bit sRGB swatches, independent of labels/order.
+ * OKLCH conversion follows CSS Color4/Oklab coordinates. Clipping to this bounded
+ * display gamut is an engineering identity rule, not calibration of a person.
+ * https://www.w3.org/TR/css-color-4/#color-conversion-code
+ */
+export function canonicalColour(input:string):string{
+ const value=input.trim().toLowerCase();
+ const hex=/^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(value);
+ if(hex)return '#'+(hex[1].length===3?[...hex[1]].map(c=>c+c).join(''):hex[1]);
+ const channel=(n:number)=>Math.round(Math.max(0,Math.min(255,n))).toString(16).padStart(2,'0');
+ const rgb=/^rgba?\(([^)]+)\)$/.exec(value);
+ if(rgb){const parts=rgb[1].split('/')[0].trim().split(/[ ,]+/);if(parts.length>=3)return '#'+parts.slice(0,3).map(c=>channel(parseFloat(c)*(c.endsWith('%')?2.55:1))).join('');}
+ const lch=/^oklch\(([\d.]+)(%)?\s+([\d.]+)\s+([\d.+-]+)(?:deg)?\)$/.exec(value);
+ if(lch){const l=Number(lch[1])/(lch[2]?100:1),c=Number(lch[3]),h=Number(lch[4])*Math.PI/180,a=c*Math.cos(h),b=c*Math.sin(h);
+  const x=(l+.3963377774*a+.2158037573*b)**3,y=(l-.1055613458*a-.0638541728*b)**3,z=(l-.0894841775*a-1.291485548*b)**3;
+  const encode=(v:number)=>channel(255*(v<=.0031308?12.92*v:1.055*Math.max(0,v)**(1/2.4)-.055));
+  return '#'+[4.0767416621*x-3.3077115913*y+.2309699292*z,-1.2684380046*x+2.6097574011*y-.3413193965*z,-.0041960863*x-.7034186147*y+1.707614701*z].map(encode).join('');
+ }
+ return value.replace(/\s+/g,' ');
+}
+export const comparisonIdentity=(a:string,b:string)=>[canonicalColour(a),canonicalColour(b)].sort().join('|');
+const colour=(l:number,c:number,h:number)=>canonicalColour(`oklch(${l.toFixed(3)} ${c.toFixed(3)} ${((h+360)%360).toFixed(1)})`);
+/** Legacy indices remain readable, but the scheduler only uses the12 distinct variants per axis. */
 export function adaptivePair(axis:Axis,index:number):AdaptivePair{
  const family=hues[index%hues.length],cycle=Math.floor(index/hues.length),small=cycle%2===1;
  const id=`AD:${axis}:${index}`;
@@ -35,11 +56,21 @@ function pairFor(id:string):AdaptivePair|null{
  return match?adaptivePair(match[1] as Axis,Number(match[2])):null;
 }
 export type AdaptiveAxisEvidence={axis:Axis;status:'unknown'|'mixed'|'broad'|'provisional';direction:'positive'|'negative'|null;families:number;statement:string;answers:number};
-export function adaptiveEvidence(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[]):AdaptiveAxisEvidence[]{
+export type ColourContext={photoId?:string;referenceVersion?:string};
+function inContext(response:ColourResponse|AdaptiveColourResponse,context:ColourContext){
+ if(context.photoId&&response.photoId!==context.photoId)return false;
+ if(!context.referenceVersion)return true;
+ const presentation=response.presentation;
+ const explicit=presentation&&'referenceVersion' in presentation?presentation.referenceVersion:undefined;
+ let version=explicit;
+ if(!version&&presentation?.transform){try{version=JSON.parse(presentation.transform).sourceVersion}catch{/* Older framing is explicitly unknown. */}}
+ return !version||version===context.referenceVersion;
+}
+export function adaptiveEvidence(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[],context:ColourContext={}):AdaptiveAxisEvidence[]{
  type Vote={id:string;photoId:string;revision:number;axis:Axis;family:string;answer:TrialAnswer;positiveAnswer:'A'|'B'};
  const votes:Vote[]=[];
- for(const response of base){const pair=drapeTrials.find(item=>item.id===response.trialId);if(pair&&!needsDrapeConfirmation(response))votes.push({...response,id:pair.id,axis:pair.axis,family:pair.hueFamily,positiveAnswer:pair.positiveAnswer});}
- for(const response of extra){const pair=pairFor(response.trialId);if(pair)votes.push({...response,id:pair.id,axis:pair.axis,family:pair.family,positiveAnswer:pair.positiveAnswer});}
+ for(const response of base.filter(r=>inContext(r,context))){const pair=drapeTrials.find(item=>item.id===response.trialId);if(pair&&!needsDrapeConfirmation(response))votes.push({...response,id:pair.id,axis:pair.axis,family:pair.hueFamily,positiveAnswer:pair.positiveAnswer});}
+ for(const response of extra.filter(r=>inContext(r,context))){const pair=pairFor(response.trialId);if(pair)votes.push({...response,id:pair.id,axis:pair.axis,family:pair.family,positiveAnswer:pair.positiveAnswer});}
  const latest=new Map<string,Vote>();
  for(const vote of votes){const key=JSON.stringify([vote.id,vote.photoId]);const old=latest.get(key);if(!old||vote.revision>=old.revision)latest.set(key,vote);}
  return axes.map(axis=>{
@@ -54,13 +85,33 @@ export function adaptiveEvidence(base:readonly ColourResponse[],extra:readonly A
   return{axis,status,direction,families,statement,answers:rows.length};
  });
 }
-export function nextAdaptiveComparison(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[]):{pair:AdaptivePair;reason:string;evidence:AdaptiveAxisEvidence[]}{
- const evidence=adaptiveEvidence(base,extra);
+export function seenComparisonIdentities(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[]):Set<string>{
+ const seen=new Set<string>();
+ for(const response of base){const pair=drapeTrials.find(t=>t.id===response.trialId);const a=response.presentation?.aHex??pair?.a_hex,b=response.presentation?.bHex??pair?.b_hex;if(a&&b)seen.add(comparisonIdentity(a,b));}
+ for(const response of extra){if(response.comparisonId)seen.add(response.comparisonId);seen.add(comparisonIdentity(response.presentation.aColor,response.presentation.bColor));}
+ return seen;
+}
+export function nextAdaptiveComparison(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[],context:ColourContext={}):{pair:AdaptivePair|null;reason:string;evidence:AdaptiveAxisEvidence[];remaining:number;recommendPalettes:boolean}{
+ const evidence=adaptiveEvidence(base,extra,context),seen=seenComparisonIdentities(base,extra);
+ const available=axes.flatMap(axis=>Array.from({length:hues.length*2},(_,index)=>adaptivePair(axis,index))).filter(pair=>!seen.has(comparisonIdentity(pair.a.color,pair.b.color)));
  const priority={mixed:0,unknown:1,broad:2,provisional:3};
- const ordered=[...evidence].sort((a,b)=>priority[a.status]-priority[b.status]||a.answers-b.answers||axes.indexOf(a.axis)-axes.indexOf(b.axis));
- const target=ordered[0],used=new Set(extra.map(response=>response.trialId));let index=0;
- while(used.has(`AD:${target.axis}:${index}`))index++;
- const pair=adaptivePair(target.axis,index);
- const reason=target.status==='mixed'?`Earlier ${names[target.axis]} answers disagree. Try another controlled hue context; a disagreement need not be forced into one label.`:target.status==='provisional'?`Check the provisional ${names[target.axis]} direction in another context. You can keep exploring or pause; nothing here establishes certainty.`:`${target.statement} This ${pair.family} comparison explores that question next.`;
- return{pair,reason,evidence};
+ const ordered=[...evidence].sort((a,b)=>Number(a.status==='provisional')-Number(b.status==='provisional')||a.answers-b.answers||priority[a.status]-priority[b.status]||axes.indexOf(a.axis)-axes.indexOf(b.axis));
+ const target=ordered.find(axis=>available.some(pair=>pair.axis===axis.axis));
+ const pair=target?available.find(pair=>pair.axis===target.axis)??null:null;
+ const recommendPalettes=!pair||evidence.every(axis=>axis.status==='provisional');
+ const reason=!pair?'You have seen the available distinct comparisons. Some factors may remain inconclusive; compare a few palette starting points rather than repeating the same questions.':target?.status==='mixed'?`Earlier ${names[pair.axis]} answers differ. This unseen pair explores another context without forcing one label.`:target?.status==='provisional'?`A provisional ${names[pair.axis]} direction is available. You can compare a few palettes now, or try this unseen pair.`:`${target?.statement} This unseen ${pair.family} pair adds a different comparison.`;
+ return{pair,reason,evidence,remaining:available.length,recommendPalettes};
+}
+/** A short exploration set, not calibrated suitability or a frozen taxonomy. */
+export function adaptivePaletteChoices(base:readonly ColourResponse[],extra:readonly AdaptiveColourResponse[],context:ColourContext={}):{templates:Template[];evidence:AdaptiveAxisEvidence[];supported:boolean;reason:string}{
+ const evidence=adaptiveEvidence(base,extra,context),directional=evidence.filter(axis=>axis.status==='provisional');
+ const penalty=(template:Template)=>directional.reduce((sum,axis)=>{const coordinate=template.anchor_coords[axes.indexOf(axis.axis)],target=axis.direction==='positive'?.65:-.65;return sum+(coordinate-target)**2;},0);
+ const ranked=[...atlas].sort((a,b)=>penalty(a)-penalty(b)||a.id.localeCompare(b.id));
+ const chosen:Template[]=[];
+ while(chosen.length<5&&ranked.length){
+  let best=0;
+  if(chosen.length){let bestValue=-Infinity;ranked.forEach((candidate,index)=>{const distance=Math.min(...chosen.map(item=>evidence.reduce((sum,axis,i)=>sum+(axis.status==='provisional'?0:(candidate.anchor_coords[i]-item.anchor_coords[i])**2),0)));const value=distance-4*penalty(candidate);if(value>bestValue){bestValue=value;best=index;}});}
+  chosen.push(ranked.splice(best,1)[0]);
+ }
+ return{templates:chosen,evidence,supported:directional.length>0,reason:directional.length?`These five starting points use the provisional directions and keep alternatives for factors that remain open. Your answers do not establish a certain type.`:'The evidence is inconclusive. These five contrasting palettes are exploration options, not a ranking of what suits you. You can choose another palette from the full collection.'};
 }
