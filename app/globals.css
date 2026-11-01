@@ -1,0 +1,24 @@
+@import "tailwindcss";
+:root { color-scheme: light; --background: #f6f3ed; --foreground: #302c31; }
+@theme inline { --color-background: var(--background); --color-foreground: var(--foreground); }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+.site { max-width: 1440px; min-height: 100svh; margin: auto; padding: 0 6vw; display: flex; flex-direction: column; }
+header, footer { display: flex; justify-content: space-between; gap: 20px; }
+header { padding: 30px 0; border-bottom: 1px solid #d9d4cc; font-size: 11px; letter-spacing: .16em; }
+main { width: min(100%, 850px); margin: auto; padding: 65px 0 55px; }
+.eyebrow { text-transform: uppercase; letter-spacing: .19em; font-size: 11px; margin: 0 0 25px; }
+h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(54px, 7.5vw, 100px); line-height: 1.02; letter-spacing: -.055em; margin: 0 0 26px; }
+h1 em { font-weight: 400; color: #725664; }
+.intro { font-size: 18px; line-height: 1.65; max-width: 490px; color: #605963; }
+.swatches { display: flex; gap: 12px; margin-top: 42px; }
+.swatch { flex: 1; min-width: 0; }
+.swatch > div { height: clamp(80px, 11vw, 135px); border: 1px solid #00000008; border-radius: 70px 70px 3px 3px; }
+.swatch > span { display: block; font-size: 12px; margin-top: 12px; }
+.caption { font-size: 11px; color: #68606a; margin-top: 18px; }
+.status { display: flex; gap: 13px; align-items: flex-start; border-top: 1px solid #d9d4cc; margin-top: 38px; padding-top: 24px; }
+.status-mark { height: 7px; width: 7px; border-radius: 50%; background: #797d67; margin-top: 6px; flex-shrink: 0; }
+h2 { margin: 0; font-size: 14px; font-weight: 500; }
+.status p { font-size: 12px; line-height: 1.6; color: #68606a; margin: 7px 0 0; }
+footer { border-top: 1px solid #d9d4cc; padding: 22px 0; color: #68606a; font-size: 10px; line-height: 1.5; }
+@media (max-width: 600px) { header { font-size: 9px; letter-spacing: .09em; } main { padding: 45px 0; } .intro { font-size: 16px; } .swatches { gap: 8px; } footer { flex-direction: column; gap: 6px; } }
