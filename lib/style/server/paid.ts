@@ -26,6 +26,12 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
     if(domain!=='menswear' && domain!=='womenswear') return fail(409,'Choose a clothing workflow before continuing');
     // Requires verified full-request cost bounds and product review before release.
     if(!releaseReady() || process.env.STYLE_PAID_ENABLED!=='true' || process.env.STYLE_VERIFIED_COST_BOUND!=='true' || !process.env.OPENAI_API_KEY) return fail(503,'This feature is not yet available');
+    const dialogueResult=await auth.service.rpc('read_style_dialogue',{p_user:auth.user.id});
+    const dialogueShape=z.object({revision:z.number().int().nonnegative(),requiredQuestionId:z.string().nullable(),messages:z.array(z.object({role:z.enum(['user','stylist']),roundId:z.string(),text:z.string()}).passthrough())}).passthrough();
+    const checkedDialogue=dialogueShape.safeParse(dialogueResult.data);
+    if(dialogueResult.error || !checkedDialogue.success) return fail(503,'Saved conversation unavailable');
+    const dialogue=checkedDialogue.data;
+    if(dialogue.revision!==v.expectedDialogueRevision || dialogue.requiredQuestionId!==null) return fail(409,'Review and answer the latest conversation before continuing');
     const parentId=kind==='generation' ? ('parentRoundId' in v ? v.parentRoundId : undefined) : ('roundId' in v ? v.roundId : undefined);
     if(kind==='generation' && (!('expectedRevision' in v) || v.expectedRevision!==intake.data.revision || !intake.data.data.adultFullBodyConfirmed || !intake.data.data.photoId || !profile.data.document.selectedTemplateId)) return fail(409,'Save a current adult full-body reference and colour selection first');
     let parent=null;
@@ -34,7 +40,7 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
       const result=await auth.service.rpc('read_style_rounds',{p_user:auth.user.id});
       if(result.error || !Array.isArray(result.data)) return fail(503,'Style consultation unavailable');
       parent=result.data.find((item:{id:string})=>item.id===parentId);
-      if(!parent || parent.status!=='succeeded' || (kind==='editorial' && !parent.approved) || (kind==='generation' && !parent.feedback)) return fail(409,'A current direction and saved feedback are required');
+      if(!parent || parent.status!=='succeeded' || (kind==='editorial' && !parent.approved) || (kind==='generation' && !parent.feedback && !dialogue.messages.some(message=>message.role==='user'&&message.roundId===parentId))) return fail(409,'A current direction and saved feedback are required');
       const details=await auth.service.from('style_round_details').select('plan').eq('round_id',parentId).eq('user_id',auth.user.id).maybeSingle();
       if(details.error || !details.data) return fail(503,'Direction unavailable');
       previousPlan=details.data.plan;
@@ -44,8 +50,8 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
     const hashResult=await auth.service.rpc('style_input_hash',{p_document:profile.data.document,p_intake:intake.data.data});
     if(hashResult.error || typeof hashResult.data!=='string') return fail(503,'Style consultation unavailable');
     const inputHash=hashResult.data as string;
-    const payloadHash=createHash('sha256').update(JSON.stringify({kind,inputHash,parentId:parentId??null,feedback:parent?.feedback??null})).digest('hex');
-    const reserved=await auth.service.rpc('reserve_new_style_operation',{p_user:auth.user.id,p_key:v.idempotencyKey,p_hash:payloadHash,p_kind:kind,p_revision:intake.data.revision,p_round:parentId??null});
+    const payloadHash=createHash('sha256').update(JSON.stringify({kind,inputHash,parentId:parentId??null,feedback:parent?.feedback??null,dialogueRevision:dialogue.revision,dialogue:dialogue.messages})).digest('hex');
+    const reserved=await auth.service.rpc('reserve_style_operation_with_dialogue',{p_user:auth.user.id,p_key:v.idempotencyKey,p_hash:payloadHash,p_kind:kind,p_revision:intake.data.revision,p_round:parentId??null,p_dialogue_revision:dialogue.revision});
     if(reserved.error) return fail(503,'Generation unavailable');
     if(reserved.data.error==='budget') return fail(402,'Available generation budget has been used');
     if(['conflict','in_flight','invalid'].includes(reserved.data.error)) return fail(409,'This request conflicts with the current consultation');
@@ -82,7 +88,7 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
     if(dispatch.data===false) { await releaseBeforeDispatch(); return fail(503,'Generation unavailable'); }
     let path:string | undefined;
     try {
-      const data={intake:intake.data.data,selectedTemplateId:profile.data.document.selectedTemplateId,previousFeedback:parent?.feedback??null,previousPlan};
+      const data={intake:intake.data.data,selectedTemplateId:profile.data.document.selectedTemplateId,previousFeedback:parent?.feedback??null,previousPlan,dialogue:dialogue.messages};
       if(kind==='generation') {
         if(!photo?.byteLength) throw new Error('Reference photo unavailable');
         const response=await requestText({key:process.env.OPENAI_API_KEY,instructions,input:data,image:photo,maxOutputTokens:2000});
