@@ -9,17 +9,18 @@ export async function GET() {
   try {
     const auth = await activeUser();
     if (!auth) return fail(401,'Sign in and activate your account');
-    const profile = await auth.service.from('profiles').select('deletion_state').eq('user_id',auth.user.id).maybeSingle();
+    const profile = await auth.service.from('profiles').select('id,deletion_state').eq('user_id',auth.user.id).maybeSingle();
     if (profile.error || profile.data?.deletion_state !== 'active') return fail(403,'Profile unavailable');
     const {data:r,error} = await auth.service.from('colour_references').select('*').eq('user_id',auth.user.id).eq('is_current',true).maybeSingle();
     if (error) return fail(503,'Prepared reference unavailable');
     if (!r) return Response.json({reference:null},{headers});
     const ids = [r.media_id,...r.source_media_ids] as string[];
-    const media = await auth.service.from('media').select('id,object_path,kind').eq('user_id',auth.user.id).eq('status','ready').in('id',ids);
+    const media = await auth.service.from('media').select('id,object_path,kind').eq('user_id',auth.user.id).eq('profile_id',profile.data.id).eq('status','ready').in('id',ids);
     if (media.error) return fail(503,'Reference photos unavailable');
     const generated = media.data.find(item=>item.id===r.media_id && item.kind==='colour_reference');
-    const originals = (r.source_media_ids as string[]).map(id=>media.data.find(item=>item.id===id && item.kind==='colour_portrait'));
-    // A deleted/withdrawn source cannot leave an apparently approved usable reference.
+    const originals = (r.source_media_ids as string[]).map(id=>media.data.find(item=>item.id===id && (item.kind==='colour_portrait'||(r.provenance==='native-prepared'&&item.kind==='archived_source'))));
+    // Native prepared lineage may retain earlier archived originals; API lineage stays current.
+    // Deleted/withdrawn or foreign-profile sources never remain usable.
     if (!generated || originals.some(item=>!item)) return Response.json({reference:null},{headers});
     const signed = await Promise.all([generated,...originals].map(async item=>{
       const result = await auth.service.storage.from('private-media').createSignedUrl(item!.object_path,300);
