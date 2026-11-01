@@ -1,5 +1,15 @@
 # Current decisions and build entry — 1 November 2026
 
+## Current implementation and recording boundary
+
+The owner subsequently authorised Stage 2 implementation and appointed Sol integration driver. The older Stage 1-only status and recording times below are historical. Current target: select the demonstration by **14:45 London, film at 15:00**.
+
+- Live checkpoint `01e9a74` at [the studio](https://stylist.qingsworkshop.com/studio) includes the approved studio design, saved domain-specific style intake, colour mirror, reference review and [private prepared walkthrough](https://stylist.qingsworkshop.com/demo). A native four-photo composite awaits owner review; its approval is separate from original photos and from permission to enable paid generation.
+- The owner explicitly permits prepared/native-generated assets for recording. `/demo` labels prepared content, retains actual feedback locally, and reveals an editorial only after explicit approval of its matching board and option. It does not claim to generate replies or revisions from new browser feedback. Personal assets remain private. No consultation answers or satisfaction may be invented.
+- A **three-round moodboard limit is acceptable for this demo only** if useful. The cap never implies approval; an unfinished consultation stays unfinished. No general cap framework is required.
+- Genuine generation for judges must work with their own inputs. Paid dispatch remains disabled until qualitative prompts are accepted and the existing shared USD 50 accounting boundary is ready. Prepared recording content is not evidence that runtime generation works. Detailed telemetry is optional; labelled before/after provider usage with honest attribution is sufficient for testing.
+- Research-derived silhouette and impression names remain proposals for owner review, not a frozen or validated taxonomy. Source descriptions, regional observations, garment hypotheses, taste and practical constraints stay separate.
+
 **Start here.** Read [how we work](working-agreement.md) for product authority, intent review, parallel work and proportionate testing. This is the authoritative current scope and user-decision summary. It supersedes conflicting release sequencing, auth, demo and product guidance in older plans, work packets and private research. Those documents retain useful detail, not permission to start another stage. This task changes documentation only; implementation stopped after Stage 1. Resume later stages only on the parent’s instruction.
 
 ## Shipped and pending
