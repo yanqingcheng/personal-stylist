@@ -108,3 +108,20 @@
 .sc-composer-actions button{flex-shrink:0;background:var(--sc-ink);color:var(--sc-paper)}
 .sc-conversation>.sc-status{flex-shrink:0;margin:0;padding:10px 20px;font-size:10px;border-left:0;border-top:1px solid var(--sc-line);background:#e8ebe0}
 @media(max-width:700px){.sc-selected-photo img{height:210px}.sc-upload h3{font-size:25px}.sc-photo-strip{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.sc-photo-strip button img{height:60px}.sc-photo-strip button{font-size:7px;padding:4px}.sc-photo-strip button[aria-pressed=true]{padding:3px}.sc-photo-strip button+button{font-size:8px;min-height:44px}.sc-heading h1{font-size:39px}.sc-heading>p{margin-top:9px;font-size:11px}.sc-message-text{font-size:13px}.sc-composer-actions{gap:10px}.sc-composer-actions p{font-size:8px;max-width:175px}.sc-composer-actions button{font-size:11px;padding:11px 13px}.sc-conversation>.sc-status{font-size:9px;padding:8px 15px}.sc-conversation header h2{font-size:25px}}
+/* Keep desktop conversation controls above the persistent consultation bar. */
+@media (min-width: 1000px) {
+  .style-consultation .sc-conversation {
+    height: calc(100svh - 112px);
+    min-height: 0;
+    max-height: 860px;
+    overflow-y: auto;
+  }
+  .style-consultation .sc-conversation > .sc-messages {
+    min-height: 96px;
+    max-height: none;
+  }
+  .style-consultation .sc-conversation > header,
+  .style-consultation .sc-conversation > .sc-composer {
+    flex-shrink: 0;
+  }
+}
