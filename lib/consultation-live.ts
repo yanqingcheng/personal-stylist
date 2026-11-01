@@ -39,10 +39,12 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
     const emit=(event:Record<string,unknown>)=>{try{onEvent(event)}catch{/* Disconnected browser; server still finalizes. */}};
     const settle=async()=>{
       if(finished)return;finished=true;clearTimeout(deadline);if(drain)clearTimeout(drain);signal.removeEventListener('abort',stop);
-      await backend.catch(()=>{});await sequence.catch(()=>{});confirmed=confirmed&&!persistenceFailed&&!backendFailed;
-      if(!confirmed){await service.from('consultation_live_sessions').update({status:'uncertain',backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);await service.rpc('mark_style_uncertain',{p_user:userId,p_op:operationId});emit({type:'uncertain',message:'Live finalization is unconfirmed; its reservation is held.'})}
-      else{const result=await service.rpc('settle_style_operation',{p_user:userId,p_id:operationId,p_outcome:'succeeded'});if(result.error||result.data!==true){await service.rpc('mark_style_uncertain',{p_user:userId,p_op:operationId});emit({type:'uncertain',message:'Conversation saved; accounting reconciliation is pending.'})}else emit({type:'complete'})}
-      socket.terminate();resolve();
+      try{
+        await backend.catch(()=>{});await sequence.catch(()=>{});confirmed=confirmed&&!persistenceFailed&&!backendFailed;
+        if(!confirmed){await closeLiveSession(key,sessionId);await service.from('consultation_live_sessions').update({status:'uncertain',backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);await service.rpc('mark_style_uncertain',{p_user:userId,p_op:operationId});emit({type:'uncertain',message:'Live finalization is unconfirmed; its reservation is held.'})}
+        else{const result=await service.rpc('settle_style_operation',{p_user:userId,p_id:operationId,p_outcome:'succeeded'});if(result.error||result.data!==true){await service.rpc('mark_style_uncertain',{p_user:userId,p_op:operationId});emit({type:'uncertain',message:'Conversation saved; accounting reconciliation is pending.'})}else emit({type:'complete'})}
+      }catch{emit({type:'uncertain',message:'Final accounting could not be confirmed. The reservation remains held.'})}
+      finally{socket.terminate();resolve()}
     };
     const stop=()=>{
       if(closing||finished)return;closing=true;
@@ -74,9 +76,14 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
           const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate.',input:current,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS});
           usage.push({delegationId:id,model:reply.model,modelSource:reply.modelSource,requestId:reply.requestId,reportedUsage:reportedUsage(reply.usage)});
           const recorded=await service.from('consultation_live_sessions').update({backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);if(recorded.error)throw new Error('Usage save failed');
-          if(!closing&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'session.commentary.append',event_id:randomUUID(),delegation_id:id,content:reply.text}));
+          // Each commentary append is limited to 500 tokens. Small UTF-8 chunks
+          // stay conservatively below that cap without guessing a tokenizer.
+          let chunk='';
+          for(const character of reply.text){if(Buffer.byteLength(chunk+character)>300){if(!closing&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'session.commentary.append',event_id:randomUUID(),delegation_id:id,content:chunk}));chunk=''}chunk+=character}
+          if(chunk&&!closing&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'session.commentary.append',event_id:randomUUID(),delegation_id:id,content:chunk}));
         }).catch(()=>{backendFailed=true;stop()});
-      }else if(event.type==='session.closed'){
+      }else if(event.type==='error'){backendFailed=true;stop()}
+      else if(event.type==='session.closed'){
         const seconds=event.usage&&typeof event.usage==='object'&&'seconds'in event.usage?event.usage.seconds:null;
         if(typeof seconds!=='number'||!Number.isFinite(seconds)||seconds<0){stop();return}
         sequence=sequence.then(async()=>{const updated=await service.from('consultation_live_sessions').update({status:'closed',final_seconds:seconds,close_reason:typeof event.reason==='string'?event.reason.slice(0,100):null,backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);if(updated.error)throw new Error('Close save failed');confirmed=!persistenceFailed&&!backendFailed;emit({type:'session.closed',seconds})});
