@@ -42,3 +42,6 @@ next-env.d.ts
 
 # private portraits and local fixtures
 /private/
+
+# Public configuration template contains names only
+!.env.example

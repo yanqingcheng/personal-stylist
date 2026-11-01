@@ -29,7 +29,7 @@ Intended deployment: independent Vercel project, with `stylist.qingsworkshop.com
 
 ## Planned first journey
 
-Portrait and written reflections → identical-photo colour comparisons → provisional colour evidence → separate personal preferences → wearable palette. Keep photos and answers in browser memory initially. Server-side AI endpoints can be added without a database. Supabase Auth, invite-gated accounts, saved profiles and server-side credit limits are now planned in slice 0; see docs/implementation-plan.md.
+Portrait and written reflections → identical-photo colour comparisons → provisional colour evidence → separate personal preferences → wearable palette. Persist private account-owned profiles and media once slice0 access controls are implemented. Server-side AI endpoints can be added without a database. Supabase Auth, invite-gated accounts, saved profiles and server-side credit limits are now planned in slice 0; see docs/implementation-plan.md.
 
 ## Privacy and secrets
 
@@ -48,3 +48,5 @@ Working product title: Personal stylist. Opal is a personal palette name, not th
 ## Resume work
 
 Read `docs/implementation-plan.md` and run `br sync --import-only --json` then `br ready --json`. Core implementation is still paused while planning. Commit and push meaningful checkpoints. Private brainstorm material is in the separate private `stylist-notes` repository; it is not included here.
+
+Execution entry point: [work packets](docs/work-packets.md), [contracts](docs/execution-spec.md). Total API budget: $50, including calibration. Actual participant capacity follows measured costs; invite ceiling100. Invite phrases are memorable word strings.

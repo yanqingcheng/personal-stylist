@@ -16,12 +16,12 @@ Upload photos → answer quizzes and written questions → see drapes, give feed
 
 ## Slice 0: hosting, invited accounts and saved profiles
 
-Next.js, TypeScript, Tailwind and an independent Vercel project. Holding scaffold deployed; anonymous verification, custom DNS and public Git source remain tracked in stylist-jfn. Supabase is now planned for Auth, profiles and usage accounting: this supersedes the original memory-only plan.
+Next.js, TypeScript, Tailwind and an independent Vercel project. Holding scaffold deployed; anonymous verification, custom DNS and public Git source remain tracked in stylist-jfn. See [execution contracts](execution-spec.md) and [work packets](work-packets.md) for the implementation-ready detail. Supabase is now planned for Auth, profiles and usage accounting: this supersedes the original memory-only plan.
 
 - Require authenticated, invite-activated accounts before any paid AI operation; landing and explainer can remain public.
-- One shared attendee invite activates at most 100 distinct accounts. A separate judges invite has an independent capacity, so attendee exhaustion cannot block judge activation. Judge capacity and credit amounts remain configuration decisions.
+- One memorable shared attendee phrase activates at most 100 distinct accounts; live capacity will be lowered to fit measured costs within the $50 total API budget. A separate judges invite has an independent capacity, so attendee exhaustion cannot block judge activation. Budget split, measured allowances and capacity follow execution-spec R4; judge phrase and capacity are independent.
 - Proposed auth default: verified email. Sign-in method and delivery setup must be checked before implementation; 100 accounts does not establish 100 unique humans.
-- Store invite secrets hashed, redeem server-side in a transaction, enforce unique account redemption, expiry/revocation and atomic capacity checks. Retried redemption must not consume another slot. Do not expose invite codes in source, logs or public client configuration.
+- Treat invite phrases as shareable access codes, store a simple normalized digest, redeem server-side in a transaction, enforce unique account redemption, expiry/revocation and atomic capacity checks. Retried redemption must not consume another slot. Do not expose invite codes in source, logs or public client configuration.
 - Enforce per-account credits, request/concurrency limits and a global budget at every model/image endpoint. Reserve a conservative cost allowance atomically BEFORE a provider request, then settle actual usage; use idempotency keys and reconcile uncertain failures without refunding possibly spent calls blindly. Client counters are display only.
 - Reserve a separate judge budget within the total project cap so attendee spend cannot exhaust the demo allowance; judges still have finite limits. Global emergency cutoff applies to everyone.
 - Save factors, evidence, selected colour template, preferences, moodboard rounds/feedback, current step and approval state. Use account-owned database rows with row-level access policies. Portraits and generated boards need private storage and controlled access to support resuming; disclose storage and cloud processing, and implement deletion.
@@ -93,7 +93,7 @@ Each recommendation must satisfy visual harmony, aesthetic affinity, practical s
 
 ## Source material staged for each implementation phase
 
-Private reference checkout: sibling `stylist-notes`, reviewed at commit `7f5f43d`. Re-fetch before implementation because the research agent is adding material. Do not copy private personal examples into this public project.
+Private reference checkout: sibling `stylist-notes`, reviewed at commit `7f5f43d`. Fetch for awareness because the research agent is adding material; implement from this reviewed pin until any new delta is reviewed. Do not copy private personal examples into this public project.
 
 - All stages: `docs/00-decisions-and-status.md`, `05-corrections.md`, `09-complete-product-requirements.md`, `02-style-engine.md`, `13-data-and-agent-contracts.md`; history's chronological decisions confirm the multidimensional Terra Ignota inspiration. Superseded files are not runtime input.
 - Intake/journey: `01-user-journey.md`, `10-colour-first-mvp.md`, `11-site-design.md`, `17-phase1-design-checkpoints.md`.
@@ -110,3 +110,5 @@ Private reference checkout: sibling `stylist-notes`, reviewed at commit `7f5f43d
 The complete vision plus hosted accounts, image generation and shopping is ambitious for six hours. Ship invite-gated saved colour consultation first, then a working iterative moodboard loop, then editorial sourcing if time permits. Keep the full product sequence visible in planning without fake working buttons. Protect the demo/submission buffer. Auth email delivery, image fidelity/latency and live product sourcing are concrete early checks.
 
 Commit and push meaningful checkpoints as requested, including beads JSONL and this plan. Never rely on this workstation's session memory. No secrets, invite values, personal photos or private notes in Git.
+
+Readiness update: $50 API cap approved. Test qualitatively in Codex first, then meter a small API calibration and size actual admissions from cost. OpenAI key safely configured locally; Checklet Supabase token requires refresh. Implementation remains paused until go.
