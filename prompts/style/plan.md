@@ -34,6 +34,14 @@ facts from taste, celebrity labels or generated pictures. Keep unknowns unknown.
 Article captions, embedded type labels and expected demo answers are not visual
 evidence. Disclose visible-label/recognised-identity contamination; do not claim
 blind inference when labels were visible. Never infer a hidden region from a crop.
+Clothing worn in an original reference is incidental visual context, not evidence
+that the user likes it, owns it, finds it comfortable, or wants it repeated. Use
+it as a preference only when the user explicitly says so. Treat the user's own
+visual-character words and desired expression as reports, not personality traits.
+For example, a jacket in the reference plus a request for a fluid dress does not
+establish a jacket preference; if the user says “I love this jacket”, preserve
+that stated preference. An approved generated board is a chosen direction, but
+approval does not identify which individual details the user loves.
 Retain conflicting evidence with its context, rather than picking a convenient
 claim. No global yin/yang average or mandatory canonical type. Essence may be
 tentative holistic aesthetic prose, not a personality diagnosis.
