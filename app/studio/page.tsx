@@ -2,11 +2,12 @@
 /* Private signed media is displayed directly and refreshed; never image-proxied. */
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { z } from "zod";
 import { useEffect, useState } from "react";
 import atlas from "../../data/colour-atlas-31.json";
 import "./studio.css";
 
-type Profile = { document?: { selectedTemplateId?: string; referencePhotoId?: string; photos?: { id: string }[] } };
+type Profile = { document?: { selectedTemplateId?: string; referencePhotoId?: string; photos?: { id: string }[]; answers?: unknown } };
 type Look = { mediaId: string; title?: string; description?: string };
 type Output = { id: string; board: { title: string; options: { title: string }[] }; documentRevision: string; url?: string | null; provenance: "prepared" | "dynamic"; purpose?: "silhouette" | "synthesis" };
 type Job = { state: string; output: Output | null };
@@ -14,6 +15,29 @@ type Consultation = { approvedOutputId: string | null; approvedOutputHash: strin
 type Action = { kind: string; status: string; result: string | null };
 type Round = { id: string; looks: Look[]; approved: boolean; editorial?: string | null; createdAt: string };
 type Style = { intake?: { data?: { wardrobe?: string; preferences?: string } } | null; rounds?: Round[] };
+
+const savedAnswers = z.object({
+  bodyProportionAnswers: z.record(z.string(), z.unknown()).optional(),
+  consultationVibe: z.unknown().optional(),
+});
+const reportedProportion = z.object({
+  questionId: z.string(), answer: z.enum(["A", "B", "both", "neither", "unsure"]),
+  source: z.literal("user-visual-report"),
+});
+const reportedVibe = z.object({
+  source: z.literal("user-report"),
+  recognisable: z.string().optional(), aspiration: z.string().optional(), avoid: z.string().optional(),
+});
+const proportionLabels = [
+  {id:"vertical-impression", choices:{A:"Extended outline", B:"Compact outline", both:"Outline varies", neither:"Neither outline diagram", unsure:"Outline unsure"}},
+  {id:"torso-leg-relation", choices:{A:"More torso length", B:"More leg length", both:"Length relation varies", neither:"Neither length diagram", unsure:"Length relation unsure"}},
+  {id:"shoulder-breadth", choices:{A:"Broader shoulder span", B:"Narrower shoulder span", both:"Shoulder span varies", neither:"Neither shoulder-span diagram", unsure:"Shoulder span unsure"}},
+  {id:"shoulder-edge", choices:{A:"Defined shoulder corners", B:"Rounded shoulder corners", both:"Shoulder edge varies", neither:"Neither shoulder-edge diagram", unsure:"Shoulder edge unsure"}},
+];
+function excerpt(text: string, limit = 95) {
+  const value = text.trim();
+  return value.length > limit ? value.slice(0, limit).trimEnd() + "…" : value;
+}
 
 export default function StudioHub() {
   const [preview, setPreview] = useState(false);
@@ -91,6 +115,19 @@ export default function StudioHub() {
   const heroUrl = preview ? "/design/hub-avatar.webp" : featuredLook?.url;
   const editorial = [...actions].reverse().find(action => action.kind === "editorial" && action.status === "succeeded" && action.result)?.result || [...rounds].reverse().find(r => r.editorial)?.editorial;
   const silhouette = [...savedOutputs].reverse().find(output => output.purpose === "silhouette");
+  const answers = savedAnswers.safeParse(preview ? undefined : profile?.document?.answers);
+  const observations = proportionLabels.flatMap(({id,choices}) => {
+    const answer = reportedProportion.safeParse(answers.success ? answers.data.bodyProportionAnswers?.[id] : undefined);
+    return answer.success && answer.data.questionId === id ? [choices[answer.data.answer]] : [];
+  });
+  const vibe = reportedVibe.safeParse(answers.success ? answers.data.consultationVibe : undefined);
+  const recognisable = vibe.success ? vibe.data.recognisable?.trim() : undefined;
+  const aspiration = vibe.success ? vibe.data.aspiration?.trim() : undefined;
+  const avoid = vibe.success ? vibe.data.avoid?.trim() : undefined;
+  const hasVibe = Boolean(recognisable || aspiration || avoid);
+  const silhouetteApproved = Boolean(silhouette && consultation?.approvedOutputId === silhouette.id && consultation.approvedOutputHash === silhouette.documentRevision);
+  const silhouetteSummary = observations.length ? `User reports: ${observations.join(" · ")}.` : silhouette ? `${silhouette.provenance === "prepared" ? "Supplied prepared" : "Generated"} exploration · ${silhouette.board.options.length} saved directions. Review the illustration together.` : "Your proportions, your preferences. A conversation to begin.";
+  const vibeSummary = [aspiration ? `Aspiration: ${excerpt(aspiration)}` : "", avoid ? `Avoid: ${excerpt(avoid, 75)}` : ""].filter(Boolean).join(" · ");
   const wardrobe = style?.intake?.data?.wardrobe?.trim();
   const ready = state === "ready" || preview;
 
@@ -110,8 +147,8 @@ export default function StudioHub() {
           <section aria-labelledby="hub-signature"><div className="hub-section-line"><h2 id="hub-signature">Your signature</h2><span>THREE WAYS TO SEE YOURSELF</span></div>
             <div className="hub-result-cards">
               <Link className="hub-result hub-colour" href="/profile"><div className="hub-card-top"><span>01</span><span>{palette ? preview ? "EXAMPLE" : "SAVED" : "EXPLORE"} ↗</span></div><div className="hub-palette-art" aria-hidden="true">{(palette ? [...Object.values(palette.neutrals).slice(1,3), ...Object.values(palette.accents).slice(0,3)] : ["#e6e2d8", "#d5d3ca", "#b7b9af", "#8c9487", "#555e54"]).map((hex,i) => <span key={i} style={{backgroundColor:hex}} />)}</div><h3>Colour</h3><strong>{palette ? palette.name : "Find your palette"}</strong><p>{palette ? palette.factor_words.join(" · ") : "See what different colours bring out in you."}</p><span className="hub-card-link">{palette ? "Revisit your colours" : "Begin colour study"} ↗</span></Link>
-              <Link className="hub-result" href="/style?stage=6"><div className="hub-card-top"><span>02</span><span>{silhouette ? "SAVED" : "EXPLORE"} ↗</span></div><div className="hub-shape-art" aria-hidden="true"><i/><i/><i/></div><h3>Silhouette</h3><strong>{silhouette?.board.title || "Shape & movement"}</strong><p>{silhouette ? "Revisit your saved silhouette exploration and the lines you’re considering." : "Your proportions, your preferences. A conversation to begin."}</p><span className="hub-card-link">Explore in consultation ↗</span></Link>
-              <Link className="hub-result" href="/style?stage=7"><div className="hub-card-top"><span>03</span><span>EXPLORE ↗</span></div><div className="hub-vibe-art" aria-hidden="true"><span>✳</span><i/></div><h3>Vibe</h3><strong>That certain something</strong><p>The energy you want to bring. In your own words.</p><span className="hub-card-link">Find your direction ↗</span></Link>
+              <Link className="hub-result" href="/style?stage=6"><div className="hub-card-top"><span>02</span><span>{silhouetteApproved ? "APPROVED" : silhouette ? "SAVED" : observations.length ? "USER REPORTS" : "EXPLORE"} ↗</span></div><div className="hub-shape-art" aria-hidden="true"><i/><i/><i/></div><h3>Silhouette</h3><strong>{silhouette?.board.title || (observations.length ? `${observations.length} saved observations` : "Shape & movement")}</strong><p>{silhouetteSummary}</p><span className="hub-card-link">{silhouette || observations.length ? "Revisit your silhouette" : "Explore in consultation"} ↗</span></Link>
+              <Link className="hub-result" href="/style?stage=7"><div className="hub-card-top"><span>03</span><span>{hasVibe ? "YOUR WORDS" : "EXPLORE"} ↗</span></div><div className="hub-vibe-art" aria-hidden="true"><span>✳</span><i/></div><h3>Vibe</h3><strong>{recognisable ? `You recognise: ${excerpt(recognisable, 75)}` : hasVibe ? "Your desired direction" : "That certain something"}</strong><p>{vibeSummary || (hasVibe ? "Your own description, saved for your consultation." : "The energy you want to bring. In your own words.")}</p><span className="hub-card-link">{hasVibe ? "Revisit your vibe" : "Find your direction"} ↗</span></Link>
             </div><p className="hub-fine">Explore silhouette and vibe in your consultation; saved illustrations are ideas to review together.</p>
           </section>
           <section className="hub-editorial" aria-labelledby="hub-editorial-title"><div><p className="hub-eyebrow">THE STYLE EDIT</p><h2 id="hub-editorial-title">Your story.<br/><em>Beautifully told.</em></h2><p>{editorial ? editorial.slice(0,210) + (editorial.length > 210 ? "…" : "") : "A personal editorial, shaped by the looks you love and the direction you approve."}</p><Link href="/style">{editorial ? "Read your saved editorial" : "Continue your consultation"} ↗</Link></div><div className="hub-editorial-graphic" aria-hidden="true"><span>THE<br/>PERSONAL<br/><em>EDIT.</em></span><i>✳</i></div></section>
