@@ -7,7 +7,8 @@ import { consultationSnapshot } from '@/lib/consultation';
 import { demoDocument } from '@/lib/demo';
 import {resolveConsultationOutput,type ConsultationOutput} from '@/lib/consultation-output';
 import { loadApprovedBodySource } from '@/lib/body-reference';
-export const CONSULTATION_MODEL='gpt-6.1-sol';
+export const CONSULTATION_MODEL='gpt-6.1-terra';
+export const CONSULTATION_REASONING_EFFORT='medium';
 export const CONSULTATION_MAX_OUTPUT_TOKENS=2000;
 export const CONSULTATION_MAX_CONTEXT_BYTES=64000;
 // Product acceptance, verified full-request bounds and explicit enablement are

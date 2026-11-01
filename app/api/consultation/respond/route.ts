@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { activeUser,body,fail,sameOrigin } from '@/lib/server/supabase';
 import { requestText,ProviderError } from '@/lib/style/server/provider.mjs';
 import { recordProviderUsage } from '@/lib/style/server/usage';
-import { consultationAiReady,loadConsultationContext,CONSULTATION_INSTRUCTIONS,CONSULTATION_MODEL,CONSULTATION_MAX_OUTPUT_TOKENS } from '@/lib/consultation-provider';
+import { consultationAiReady,loadConsultationContext,CONSULTATION_INSTRUCTIONS,CONSULTATION_MODEL,CONSULTATION_REASONING_EFFORT,CONSULTATION_MAX_OUTPUT_TOKENS } from '@/lib/consultation-provider';
 import { paidAccountInScope } from '@/lib/paid-release';
 const headers={'Cache-Control':'private, no-store, max-age=0','Vary':'Cookie'};
 const inputSchema=z.object({idempotencyKey:z.uuid(),expectedRevision:z.number().int().nonnegative(),replyTo:z.uuid()}).strict();
@@ -12,7 +12,7 @@ export async function GET(){
  try{const auth=await activeUser();if(!auth)return fail(401,'Sign in to open your consultation');
   const scoped=paidAccountInScope(auth.user.id,process.env.CONSULTATION_TEST_USER_ID);
   const available=scoped&&consultationAiReady()&&process.env.CONSULTATION_AI_ENABLED==='true'&&process.env.CONSULTATION_VERIFIED_COST_BOUND==='true'&&!!process.env.OPENAI_API_KEY;
-  return Response.json({available,model:CONSULTATION_MODEL,reason:available?null:'Autonomous replies are not enabled'},{headers});
+  return Response.json({available,model:CONSULTATION_MODEL,reasoningEffort:CONSULTATION_REASONING_EFFORT,reason:available?null:'Autonomous replies are not enabled'},{headers});
  }catch{return fail(503,'Consultation readiness unavailable');}
 }
 export async function POST(request:Request){
@@ -36,7 +36,7 @@ export async function POST(request:Request){
   let context;
   try{context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:input.expectedRevision,replyTo:input.replyTo});}
   catch(error){if(error instanceof Error&&['context_conflict','target_unavailable'].includes(error.message))return fail(409,'The conversation changed. Reload before requesting a reply');if(error instanceof Error&&error.message==='context_too_large')return fail(409,'This saved conversation exceeds the current bounded reply size. No call was made');return fail(503,'Saved consultation context unavailable');}
-  const hash=createHash('sha256').update(JSON.stringify({context:context.inputHash,replyTo:input.replyTo,model:CONSULTATION_MODEL,maxOutputTokens:CONSULTATION_MAX_OUTPUT_TOKENS})).digest('hex');
+  const hash=createHash('sha256').update(JSON.stringify({context:context.inputHash,replyTo:input.replyTo,model:CONSULTATION_MODEL,reasoningEffort:CONSULTATION_REASONING_EFFORT,maxOutputTokens:CONSULTATION_MAX_OUTPUT_TOKENS})).digest('hex');
   const reserved=await auth.service.rpc('reserve_consultation_operation',{p_user:auth.user.id,p_key:input.idempotencyKey,p_hash:hash,p_revision:input.expectedRevision,p_reply_to:input.replyTo,p_mode:'text'});
   if(reserved.error)return fail(503,'Reply reservation unavailable');
   if(reserved.data?.error==='budget')return fail(402,'The available consultation allowance has been used. Your saved messages remain available');
@@ -51,7 +51,7 @@ export async function POST(request:Request){
   if(dispatch.error||typeof dispatch.data!=='boolean'){await uncertain();return fail(503,'Reply status is uncertain; its reservation remains held');}
   if(!dispatch.data){await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:operation.id,p_outcome:'failed_before_dispatch'});return fail(409,'The consultation changed before dispatch');}
   try{
-   const response=await requestText({key:process.env.OPENAI_API_KEY,instructions:CONSULTATION_INSTRUCTIONS,input:context.input,images:context.images,maxOutputTokens:CONSULTATION_MAX_OUTPUT_TOKENS});
+   const response=await requestText({key:process.env.OPENAI_API_KEY,instructions:CONSULTATION_INSTRUCTIONS,input:context.input,images:context.images,maxOutputTokens:CONSULTATION_MAX_OUTPUT_TOKENS,model:CONSULTATION_MODEL,reasoningEffort:CONSULTATION_REASONING_EFFORT});
    await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId:operation.id,action:'dialogue',response});
    const saved=await auth.service.rpc('append_provider_reply',{p_user:auth.user.id,p_op:operation.id,p_reply_to:input.replyTo,p_revision:input.expectedRevision,p_text:response.text,p_user_text:null,p_board:null});
    if(saved.error||saved.data?.error){await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:operation.id,p_outcome:'rejected_result'});return fail(409,'The reply could not be applied to the changed consultation');}

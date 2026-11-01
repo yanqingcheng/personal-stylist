@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { serviceClient } from './server/supabase';
-import { CONSULTATION_INSTRUCTIONS,loadConsultationContext } from './consultation-provider';
+import { CONSULTATION_INSTRUCTIONS,CONSULTATION_MODEL,loadConsultationContext } from './consultation-provider';
 import { requestText, reportedUsage } from './style/server/provider.mjs';
 import { paidAccountInScope } from './paid-release';
 
@@ -12,6 +12,7 @@ export const LIVE_MODEL='gpt-live-1';
 export const LIVE_MAX_SECONDS=60;
 export const LIVE_MAX_DELEGATIONS=3;
 export const LIVE_BACKEND_OUTPUT_TOKENS=600;
+export const LIVE_BACKEND_REASONING_EFFORT='low';
 export const LIVE_PRICING_VERSION='live-60s-3delegations-engineering-reserve-2026-11-01';
 // Published voice rate $0.05/minute. Backend use is additional, not included.
 export const LIVE_VOICE_MICROUSD_PER_MINUTE=50_000;
@@ -93,8 +94,8 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
           if(closing)return;
           const current={savedContext:context.input,savedRevision:context.snapshot.revision,liveFragments:[...liveFragments]};
           if(Buffer.byteLength(JSON.stringify(current))>64000)throw new Error('Live context exceeds the 64 KB bound');
-          const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate. Inspect only the attached visualEvidence manifest images. If the user means another board, clarify rather than claiming to inspect it.',input:current,images:context.images,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS});
-          usage.push({delegationId:id,model:reply.model,modelSource:reply.modelSource,requestId:reply.requestId,reportedUsage:reportedUsage(reply.usage)});
+          const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate. Inspect only the attached visualEvidence manifest images. If the user means another board, clarify rather than claiming to inspect it.',input:current,images:context.images,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS,model:CONSULTATION_MODEL,reasoningEffort:LIVE_BACKEND_REASONING_EFFORT});
+          usage.push({delegationId:id,model:reply.model,modelSource:reply.modelSource,requestId:reply.requestId,reportedUsage:reportedUsage(reply.usage),endpoint:reply.endpoint,serviceTier:reply.serviceTier,serviceTierSource:reply.serviceTierSource});
           const recorded=await service.from('consultation_live_sessions').update({backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);if(recorded.error)throw new Error('Usage save failed');
           // Each commentary append is limited to 500 tokens. Small UTF-8 chunks
           // stay conservatively below that cap without guessing a tokenizer.

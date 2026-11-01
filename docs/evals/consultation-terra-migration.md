@@ -1,0 +1,11 @@
+# Scoped consultation model change
+
+Checked 1 November 2026. Typed consultation uses `gpt-6.1-terra` with medium reasoning; GPT-Live's delegated visual stylist uses Terra with low reasoning and its existing 600-token limit. The voice session remains `gpt-live-1`. Planning, render inspection and editorial retain their existing Sol default; image models are unchanged.
+
+The official [Terra model page](https://developers.openai.com/api/docs/models/gpt-6.1-terra) documents vision and these reasoning settings. Its standard input/output prices are $1/$5 per million tokens, with cache writes priced separately. The [Responses reference](https://developers.openai.com/api/reference/typescript/resources/responses) specifies that `service_tier: default` requests standard processing; a reported response tier takes precedence in retained telemetry. A read-only model-list request confirmed access. This is not a paid quality trial.
+
+Native Codex review retained the existing prompt and examined three synthetic conversational obligations: preserve a loved texture while changing a rejected neckline; treat reference clothing as incidental when future outfits are requested; and treat a narrowed generated waist as a rendering problem rather than new body evidence. The contract supports each without requiring a type label or more chat before Next. This was qualitative prompt reasoning by the development model, not measured Terra performance.
+
+Transport-intercept checks executed the actual typed route and Live monitor: Terra/effort settings, two owned image buffers and their role/hash manifest, fresh saved history, output limits and usage recording reached the provider boundary. The actual provider serializer retained cache-write/TTL details, requested standard processing, and preserved default Sol and Sunburst calls for other workloads. Foreign/stale/unavailable board cases remained blocked. All responses in these checks were synthetic transport fixtures; no paid provider call was made.
+
+Remaining limitation: live Terra response quality and latency have not been measured by a new paid trial. Existing successful Sol text and image-generation evidence does not establish Terra quality. Usage estimates and conservative usage ceilings are separate from provider-reconciled invoice amounts.
