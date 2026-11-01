@@ -9,7 +9,8 @@ const inputSchema=z.object({idempotencyKey:z.uuid(),expectedRevision:z.number().
 const disabled=()=>Response.json({error:'Autonomous replies are not enabled. Your saved message is still available for the supervised consultation.',code:'autonomous_disabled'},{status:503,headers});
 export async function GET(){
  try{const auth=await activeUser();if(!auth)return fail(401,'Sign in to open your consultation');
-  const available=consultationAiReady()&&process.env.CONSULTATION_AI_ENABLED==='true'&&process.env.CONSULTATION_VERIFIED_COST_BOUND==='true'&&!!process.env.OPENAI_API_KEY;
+  const scoped=!process.env.CONSULTATION_TEST_USER_ID||auth.user.id===process.env.CONSULTATION_TEST_USER_ID;
+  const available=scoped&&consultationAiReady()&&process.env.CONSULTATION_AI_ENABLED==='true'&&process.env.CONSULTATION_VERIFIED_COST_BOUND==='true'&&!!process.env.OPENAI_API_KEY;
   return Response.json({available,model:CONSULTATION_MODEL,reason:available?null:'Autonomous replies are not enabled'},{headers});
  }catch{return fail(503,'Consultation readiness unavailable');}
 }
@@ -18,6 +19,7 @@ export async function POST(request:Request){
  try{
   const auth=await activeUser();if(!auth)return fail(401,'Sign in to open your consultation');
   const parsed=inputSchema.safeParse(await body(request));if(!parsed.success)return fail(400,'Invalid reply request');
+  if(process.env.CONSULTATION_TEST_USER_ID&&auth.user.id!==process.env.CONSULTATION_TEST_USER_ID)return disabled();
   if(!consultationAiReady()||process.env.CONSULTATION_AI_ENABLED!=='true'||process.env.CONSULTATION_VERIFIED_COST_BOUND!=='true'||!process.env.OPENAI_API_KEY)return disabled();
   const input=parsed.data;
   // A retry can arrive after its target was answered and the session revision

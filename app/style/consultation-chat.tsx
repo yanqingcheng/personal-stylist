@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { consultationSchema, type ConsultationMessage, type ConsultationSnapshot } from '@/lib/consultation';
-import ConsultationVoice from './consultation-voice';
 
 export type ConsultationChatProps = {
   activeBoardId?:string|null;
   onMessages?:(messages:ConsultationMessage[])=>void;
+  onSnapshot?:(snapshot:ConsultationSnapshot)=>void;
 };
 
-export default function ConsultationChat({activeBoardId=null,onMessages}:ConsultationChatProps) {
+export default function ConsultationChat({activeBoardId=null,onMessages,onSnapshot}:ConsultationChatProps) {
   const [consultation,setConsultation]=useState<ConsultationSnapshot|null>(null);
   const [draft,setDraft]=useState('');
   const [sending,setSending]=useState(false);
@@ -21,17 +21,20 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
   const alive=useRef(true);
   const submitLock=useRef(false);
   const callback=useRef(onMessages);
+  const snapshotCallback=useRef(onSnapshot);
   const retry=useRef<{idempotencyKey:string;text:string;activeBoardId:string|null}|null>(null);
   const end=useRef<HTMLDivElement>(null);
   const pending=Boolean(consultation?.pendingCount);
 
   useEffect(()=>{callback.current=onMessages},[onMessages]);
+  useEffect(()=>{snapshotCallback.current=onSnapshot},[onSnapshot]);
   useEffect(()=>{void fetch('/api/consultation/respond',{cache:'no-store'}).then(r=>r.json()).then(data=>setAutonomous(data.available===true)).catch(()=>setAutonomous(false))},[]);
   const receive=useCallback((snapshot:ConsultationSnapshot)=>{
     if(!alive.current || (current.current && snapshot.revision<current.current.revision)) return;
     const changed=!current.current || snapshot.revision!==current.current.revision;
     current.current=snapshot;
     setConsultation(snapshot);
+    snapshotCallback.current?.(snapshot);
     if(changed) callback.current?.(snapshot.messages);
   },[]);
 
@@ -139,6 +142,6 @@ export default function ConsultationChat({activeBoardId=null,onMessages}:Consult
         <button type="submit" disabled={!canSend}>{sending?'Sending…':'Send message'} <span aria-hidden="true">↗</span></button>
       </div>
     </form>
-    {consultation&&<ConsultationVoice expectedRevision={consultation.revision} activeBoardId={activeBoardId} onSaved={receive}/>}
+    <p className="sc-status">Live voice is not enabled yet. Your typed conversation stays saved.</p>
   </section>;
 }
