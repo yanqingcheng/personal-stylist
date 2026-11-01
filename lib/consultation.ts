@@ -4,7 +4,7 @@ export const consultationInput=z.object({
  expectedRevision:z.number().int().nonnegative(),activeBoardId:z.string().min(1).max(200).nullable().optional(),
 }).strict();
 export const consultationMessage=z.object({
- id:z.uuid(),role:z.enum(['user','stylist']),text:z.string(),source:z.enum(['user','native-codex']),
+ id:z.uuid(),role:z.enum(['user','stylist']),text:z.string(),source:z.enum(['user','native-codex','api']),
  createdAt:z.string(),replyTo:z.uuid().nullable(),activeBoardId:z.string().nullable(),
 });
 export const consultationSnapshot=z.object({
