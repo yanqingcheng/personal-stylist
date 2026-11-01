@@ -5,3 +5,5 @@
 @media(max-width:700px){.conversationHead{grid-template-columns:1fr;gap:8px}.conversation{margin-top:35px}.messageCard{max-width:92%;padding:19px}.compose .actions{display:grid}.compose .actions button{width:100%}}
 
 .assistantLabel{font-size:12px;line-height:1.6;color:var(--muted);padding:12px 0;border-bottom:1px solid var(--line)}.dialogueNotice button{margin-top:12px;min-height:44px;border:1px solid var(--ink);background:transparent;padding:10px 14px;color:var(--ink)}
+
+.fitDiscussion{margin:0 0 40px;padding:30px;background:#eaece3}.fitIntro{max-width:730px;margin-bottom:28px}.fitIntro h3{font:36px/1.1 Georgia,serif;letter-spacing:-.035em;margin:12px 0}.fitIntro>p:last-child{font-size:14px;line-height:1.7;color:var(--muted)}.fitDiscussion .aspiration{grid-column:1/-1}.fitDiscussion textarea{min-height:110px}.fitDiscussion .fine{max-width:780px;margin-top:25px}@media(max-width:700px){.fitDiscussion{padding:24px 20px}.fitIntro h3{font-size:32px}}
