@@ -4,11 +4,19 @@ A private, colour-first consultation for the DevDay Community Hackathon, London,
 
 [Live personal stylist](https://stylist.qingsworkshop.com) · [Current decisions and worker entry](docs/current-decisions.md) · [Launch evidence](docs/launch-status.md)
 
-## Status
+## The idea
 
-Stage 1 is live: password/invite access, private account-owned photographs, revisioned profile saves and return, identical-photo colour comparisons, explicit selection from 31 provisional templates, separate palette exclusions, export without photos and a public colour-system guide. Real sign-in, invite boundaries, two-account profile/media isolation and late-upload containment passed acceptance. Post-expiry upload cleanup still awaits verification.
+Personal stylist is a collaborative exploration of colour, silhouette and vibe. The user compares colours against the same portrait, shares their preferences and practical needs, and reviews visual style suggestions with the stylist. The app keeps observations, user preferences and uncertainty distinct: a proposed palette or outfit is something to discuss, not a diagnosis or a promise of fit.
 
-The studio also supports a saved style consultation, including text and GPT-Live conversation, style intake, feedback and approval. A synthetic-microphone Live call was exercised; a human microphone and delegated backend reasoning have not been verified. Prepared walkthrough images are labelled as such and are not evidence of generation from new feedback. Application API tests generated a body-grounded three-look styling image and a neutral two-image edit using synthetic inputs; the latter was persisted and recovered after reload. These tests establish that those runtime paths worked for the tested inputs, not universal fidelity or fit. Feature availability depends on deployment configuration and spending limits. A recorded demo is not yet supplied. See [current decisions](docs/current-decisions.md) for the latest implementation checkpoint; older entries there are historical.
+The colour system adapts existing seasonal-colour frameworks into continuous temperature, value and chroma factors and 31 proposed templates. Silhouette and vibe exploration similarly use visual questions and user feedback. These are illustrative design tools, not validated measurements or classifications. [Read the colour guide](https://stylist.qingsworkshop.com/colour-system).
+
+## What's working
+
+Invite-gated accounts can save and resume a consultation, upload private account-owned photos, compare identical-photo colour drapes, choose a provisional palette and record style preferences. The body reference is the user's selected original photograph, not an AI-generated replacement. The studio supports text and GPT-Live conversation, dynamically generated style ideas, feedback and revision, and explicit approval. Features depend on account admission, deployment configuration and available allowance.
+
+Application API tests produced a body-grounded three-look styling image and a neutral two-image edit with synthetic inputs; the latter persisted and reloaded. These tests show the paths worked for those inputs, not universal image fidelity or fit. A synthetic-microphone Live call was exercised; human microphone use and delegated backend reasoning remain unverified. An illustrated image editorial is switched off pending testing. The colour study's sign-in, invite boundaries, two-account isolation and late-upload containment were tested; post-expiry cleanup still awaits verification. See [launch evidence](docs/launch-status.md), noting that older entries describe earlier checkpoints.
+
+The runtime uses OpenAI APIs for text and vision, neutral reference edits, style image generation and feedback-driven revision, and full-duplex GPT-Live. The checked-in provider configuration names `gpt-6.1-sol` for text/vision, `gpt-image-2.5-sunburst` for style images, `gpt-image-2.5-sunburst-2026-09-08` for neutral composites, and `gpt-live-1` for Live. Runtime calls are separate from development-time Codex experiments. Outputs are illustrations and require user judgement.
 
 ## Development
 
@@ -41,10 +49,16 @@ Photographs are stored privately under their account and normalized before displ
 
 The atlas and drape definitions were adapted from reviewed project research at revision `7f5f43d`; only sanitized structured colour data was imported. Expanded taxonomy, anchor positions and HEX palettes are illustrative and unvalidated. Public references include [The Concept Wardrobe’s seasonal guides](https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides) and [colour dimensions](https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/what-is-color-analysis). [Atlas source credits](data/colour-atlas-31.json) record their uses. Private research, portraits and personal examples are not distributed. “Opal” is a palette name, not the app name.
 
-The Next.js scaffold (`create-next-app` 16.4.3), initial holding page and private research predate the 11:00 hackathon build window. The consultation implementation was built during the hackathon. Framework logos/icons are scaffold assets. Prepared styling imagery used for the walkthrough is labelled and kept private.
+The Next.js scaffold (`create-next-app` 16.4.3), initial holding page and private research predate the 11:00 hackathon build window. The consultation implementation was built during the hackathon. Framework logos/icons are scaffold assets. Private research, portraits and personal examples are not distributed.
 
-## Codex contribution and recovery
+## How Codex helped build it
 
-Codex work produced the [saved colour-study interface](app/profile/page.tsx), [invite-gated profile/media backend](app/api), [colour evidence logic](lib/colour/index.ts) and [SQL ownership/concurrency boundaries](supabase/migrations/20261101000000_foundation.sql). Focused Sol review led to save-conflict, A/B placement and interrupted-upload fixes; [the review record](docs/reviews/stage1-review-request.md) describes those changes and their evidence. These describe Codex’s development contributions; the studio also has separately configured runtime AI features, with the testing limits described above.
+The product idea and factor-based system were developed collaboratively through conversation with GPT and Codex: exploring existing frameworks, questioning their limits, and shaping colour, silhouette and vibe into a user-directed consultation. Before paid application API calls, Codex's built-in image generation supported visual and prompt experiments; those experiments were development work, not proof of the runtime API paths described above.
 
-Resume from [current decisions](docs/current-decisions.md), then the assigned [work packet](docs/work-packets.md). Tracker writes/export belong to the primary checkout’s integration owner. Total API budget is USD 50 including tests. See [public-readiness audit](docs/public-readiness-audit.md) for this documentation pass and its limits.
+Codex agents implemented and reviewed parallel pieces of the product, and user feedback repeatedly redirected the journey and prompts. Examples include the [saved colour-study interface](app/profile/page.tsx), [colour evidence logic](lib/colour/index.ts), [consultation generation](lib/consultation-generation.ts) and [account ownership boundaries](supabase/migrations/20261101000000_foundation.sql). Focused review led to save-conflict, A/B placement and interrupted-upload fixes; the [review record](docs/reviews/stage1-review-request.md) describes the changes and evidence.
+
+## Access and budget
+
+Judges and attendees need an invitation supplied privately; funded admission is subject to the available pool and account allowance. The authorised shared API budget is USD 100 including tests, with protected owner funds and separate admission controls. Availability is limited by actual configured funding, reservations and provider capacity; a paused or exhausted consultation remains saved. Do not put invitation phrases or credentials in the repository.
+
+For implementation context, see [current decisions](docs/current-decisions.md) and [work packets](docs/work-packets.md); older historical decisions may have been superseded by later implementation. Tracker writes belong to the primary checkout’s integration owner.
