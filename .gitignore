@@ -45,3 +45,9 @@ next-env.d.ts
 
 # Public configuration template contains names only
 !.env.example
+
+# Local credentials and browser captures (may contain private account data)
+/.secrets/
+/screenshots/
+/test-results/
+/playwright-report/
