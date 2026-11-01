@@ -69,7 +69,7 @@ export default function StudioHub() {
   const ready = state === "ready" || preview;
 
   return <div className="hub-page">
-    {preview && <div className="hub-preview">DESIGN PREVIEW · FICTIONAL MODEL & EXAMPLE PALETTE · NOT YOUR SAVED RESULTS <Link href="/studio">Exit preview ↗</Link></div>}
+    {preview && <div className="hub-preview">DESIGN PREVIEW · FICTIONAL MODEL & EXAMPLE PALETTE · NOT YOUR SAVED RESULTS <a href="/studio">Exit preview ↗</a></div>}
     <header className="hub-header"><Link className="hub-brand" href="/">personal<span>stylist ✳</span></Link><nav aria-label="Studio navigation"><a href="#overview">Overview</a><a href="#library">Your library</a><Link href="/style">Consultation ↗</Link></nav></header>
     <main className="hub-main" id="overview">
       <div className="hub-heading"><div><p className="hub-eyebrow">THE PERSONAL EDIT / YOUR STUDIO</p><h1>All the pieces.<br/><em>All you.</em></h1></div><p>A place for what you’ve discovered.<br/>And everything you’re becoming.</p></div>
