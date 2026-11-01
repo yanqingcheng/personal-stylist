@@ -1,4 +1,13 @@
-/* Keep the complete comparison sheet in view above the phone's Next bar. */
+/* Show the complete comparison sheet with room for its caption and Next bar. */
+.style-consultation .sc-sheet img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: clamp(260px, 55svh, 600px);
+  margin-inline: auto;
+  object-fit: contain;
+}
+
 @media (max-width: 700px) {
   .style-consultation .sc-sheet img {
     width: auto;
