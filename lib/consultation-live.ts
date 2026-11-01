@@ -63,7 +63,8 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
         const item=part.data;if(item.end_ms<item.start_ms||item.end_ms>120000){stop();return}
         const role=item.type==='session.input_transcript.delta'?'user':'stylist';liveFragments.push({role,delta:item.delta,startMs:item.start_ms,endMs:item.end_ms});
         sequence=sequence.then(async()=>{const saved=await service.rpc('append_live_fragment',{p_user:userId,p_op:operationId,p_event:item.event_id,p_role:role,p_delta:item.delta,p_start:item.start_ms,p_end:item.end_ms});if(saved.error||saved.data?.error)throw new Error('Transcript save failed');emit({type:'transcript',role,delta:item.delta,startMs:item.start_ms,endMs:item.end_ms,consultation:saved.data?.consultation})}).catch(()=>{persistenceFailed=true;stop()});
-      }else if(event.type==='session.delegation.created'&&!closing){
+      }else if(event.type==='session.input_transcript.delta'||event.type==='session.output_transcript.delta'){persistenceFailed=true;stop()}
+      else if(event.type==='session.delegation.created'&&!closing){
         const raw=event.delegation,id=raw&&typeof raw==='object'&&'id'in raw?raw.id:null;
         if(typeof id!=='string'||seen.has(id))return;seen.add(id);
         if(++delegations>LIVE_MAX_DELEGATIONS){stop();return}
@@ -85,6 +86,7 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
         }).catch(()=>{backendFailed=true;stop()});
       }else if(event.type==='error'){backendFailed=true;stop()}
       else if(event.type==='session.closed'){
+        closing=true;
         const seconds=event.usage&&typeof event.usage==='object'&&'seconds'in event.usage?event.usage.seconds:null;
         if(typeof seconds!=='number'||!Number.isFinite(seconds)||seconds<0){stop();return}
         sequence=sequence.then(async()=>{const updated=await service.from('consultation_live_sessions').update({status:'closed',final_seconds:seconds,close_reason:typeof event.reason==='string'?event.reason.slice(0,100):null,backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);if(updated.error)throw new Error('Close save failed');confirmed=!persistenceFailed&&!backendFailed;emit({type:'session.closed',seconds})});
