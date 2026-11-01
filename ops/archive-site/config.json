@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "routes": [
+    { "src": "/api(?:/.*)?", "status": 410, "headers": { "Cache-Control": "no-store" } },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
