@@ -1,6 +1,5 @@
 import {activeUser, body, fail, sameOrigin} from '@/lib/server/supabase';
 import {generateConsultation, generationInput, readGenerationJobs} from '@/lib/consultation-generation';
-export const runtime='nodejs';
 export const maxDuration=300;
 const headers={'Cache-Control':'private, no-store, max-age=0','Vary':'Cookie'};
 export async function GET(){
