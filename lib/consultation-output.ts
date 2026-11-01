@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {createHash} from 'node:crypto';
 import type {serviceClient} from '@/lib/server/supabase';
 import {demoDocument} from '@/lib/demo';
-const boardSchema=demoDocument.shape.boards.unwrap().element;
+const boardSchema=demoDocument.shape.boards.unwrap().element.omit({path:true});
 const generatedResult=z.object({id:z.uuid(),board:boardSchema,assetPath:z.string().min(1),documentRevision:z.string().regex(/^[a-f0-9]{64}$/),provenance:z.enum(['dynamic','prepared'])});
 type Service=ReturnType<typeof serviceClient>;
 export type ConsultationOutput={board:z.infer<typeof boardSchema>;assetPath:string;documentRevision:string;provenance:'dynamic'|'prepared';jobId?:string};
