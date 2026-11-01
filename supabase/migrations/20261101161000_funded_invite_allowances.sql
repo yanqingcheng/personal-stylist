@@ -5,7 +5,7 @@
 -- changed. Caps are assigned once at activation, never refreshed by redemption.
 create table public.invite_allowance_policies (
   cohort text primary key check (cohort in ('judge','attendee')),
-  allowance_microusd bigint not null default 0 check (allowance_microusd between 0 and 50000000),
+  allowance_microusd bigint not null default 0 check (allowance_microusd between 0 and 100000000),
   editorial_hold_microusd bigint not null default 0 check (editorial_hold_microusd >= 0 and editorial_hold_microusd <= allowance_microusd),
   enabled boolean not null default false,
   check (not enabled or allowance_microusd > 0)
@@ -40,7 +40,7 @@ begin
   select * into b from public.budget_control where id=true for update;
   select * into pool from public.budget_pools where cohort=i.cohort for update;
   if policy.cohort is null or not policy.enabled or b.id is null or pool.cohort is null
-     or b.total_limit_microusd not between 0 and 50000000
+     or b.total_limit_microusd not between 0 and 100000000
      or b.spent_microusd < 0 or b.reserved_microusd < 0
      or exists(select 1 from public.budget_pools where limit_microusd < 0 or spent_microusd < 0 or reserved_microusd < 0
                or spent_microusd+reserved_microusd > limit_microusd or (cohort='development' and limit_microusd > 5000000))
@@ -64,23 +64,15 @@ end $$;
 revoke all on function public.redeem_invite(uuid,text) from public,anon,authenticated;
 grant execute on function public.redeem_invite(uuid,text) to service_role;
 
--- Operator example ONLY, not executed by this migration. Re-read the ledger
--- immediately before configuring. The 16:48 operator snapshot reported global
--- spent31.5/held3 and existing unspent grant commitments3: only12.5 is uncommitted.
--- judge45.5/attendee0/development4.5 preserves total50 and existing balances and
--- permits ONE new judge12.5. Attendee policy stays disabled, with no new funding.
--- This cannot cover the requested full journey: neutral2+crop2+three sheets9+
--- typed0.5+editorial0.5=14; Live adds2, making16. Exhaustion remains unfinished.
--- Do not call this policy a fully funded full-journey release or refund unknowns.
--- After applying, configure in one privileged transaction under the same lock:
--- begin;
--- select pg_advisory_xact_lock(hashtextextended('style-ledger',0));
--- update public.budget_pools set limit_microusd=45500000 where cohort='judge';
--- update public.budget_pools set limit_microusd=0 where cohort='attendee';
--- update public.budget_pools set limit_microusd=4500000 where cohort='development';
--- update public.invite_allowance_policies set allowance_microusd=12500000,
---   editorial_hold_microusd=500000,enabled=true where cohort='judge';
--- update public.invite_allowance_policies set enabled=false where cohort='attendee';
--- commit;
--- Account caps share the existing global/pool ledger on every actual dispatch.
--- Exhaustion pauses the saved consultation; it never implies approval.
+-- Configure only after the recording freeze. The owner authorised a total100USD
+-- ceiling; existing balances/holds remain authoritative. Current pools are
+-- judge90/attendee5/development5. A new judge cap16USD (including.50 editorial
+-- hold) covers one neutral2 + crop2 + silhouette3 + synthesis3 + revision3 +
+-- text.50 + Live2 + texteditorial.50 sequence at current ledger allowances.
+-- Funding admission subtracts all existing unspent account commitments. If not
+-- enough remains, activation waits without consuming an invite place.
+-- update public.invite_allowance_policies set allowance_microusd=16000000,
+-- editorial_hold_microusd=500000,enabled=true where cohort='judge';
+-- Attendee allowance/policy stays disabled pending a deliberate smaller slice.
+-- Every dispatch still checks the same global/pool/account ledger. No approval
+-- is implied by exhaustion. These are accounting allowances, not actual prices.
