@@ -6,6 +6,7 @@ import{consultationAiReady,loadConsultationContext,normaliseConsultationImage}fr
 import{EDITORIAL_LAYOUT_VERSION,requestEditorialLayout,validateEditorialSpread}from'@/lib/consultation-editorial-layout';
 import{recordProviderUsage}from'@/lib/style/server/usage';
 import{ProviderError}from'@/lib/style/server/provider.mjs';
+export const maxDuration=180;
 const headers={'Cache-Control':'private, no-store','Vary':'Cookie'};
 const sourceSchema=z.object({editorialActionId:z.uuid(),outputId:z.string().min(1).max(200),documentRevision:z.string().regex(/^[a-f0-9]{64}$/),expectedRevision:z.coerce.number().int().nonnegative()}).strict();
 const postSchema=sourceSchema.extend({idempotencyKey:z.uuid()}).strict();
