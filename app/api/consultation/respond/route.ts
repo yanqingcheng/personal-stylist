@@ -48,7 +48,7 @@ export async function POST(request:Request){
   if(dispatch.error||typeof dispatch.data!=='boolean'){await uncertain();return fail(503,'Reply status is uncertain; its reservation remains held');}
   if(!dispatch.data){await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:operation.id,p_outcome:'failed_before_dispatch'});return fail(409,'The consultation changed before dispatch');}
   try{
-   const response=await requestText({key:process.env.OPENAI_API_KEY,instructions:CONSULTATION_INSTRUCTIONS,input:context.input,maxOutputTokens:CONSULTATION_MAX_OUTPUT_TOKENS});
+   const response=await requestText({key:process.env.OPENAI_API_KEY,instructions:CONSULTATION_INSTRUCTIONS,input:context.input,images:context.images,maxOutputTokens:CONSULTATION_MAX_OUTPUT_TOKENS});
    await recordProviderUsage({service:auth.service,userId:auth.user.id,operationId:operation.id,action:'dialogue',response});
    const saved=await auth.service.rpc('append_provider_reply',{p_user:auth.user.id,p_op:operation.id,p_reply_to:input.replyTo,p_revision:input.expectedRevision,p_text:response.text,p_user_text:null,p_board:null});
    if(saved.error||saved.data?.error){await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:operation.id,p_outcome:'rejected_result'});return fail(409,'The reply could not be applied to the changed consultation');}
