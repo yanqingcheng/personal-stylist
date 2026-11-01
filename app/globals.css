@@ -5,3 +5,14 @@
 fieldset.studio-body{border:0;padding:0;min-width:0}
 fieldset.studio-body{width:100%}
 .drape-choice{border:3px solid transparent;color:inherit;width:100%;text-align:inherit}.drape-choice.selected{border-color:#29272a;box-shadow:0 0 0 2px #fff}.drape-choice:focus-visible{outline:3px solid #654c58;outline-offset:3px}
+
+.mobile-step-nav{display:none}
+@media(max-width:700px){
+ .studio{padding-bottom:calc(190px + env(safe-area-inset-bottom, 0px))}
+ .desktop-step-primary{display:none}
+ .mobile-step-nav{display:block;position:fixed;z-index:20;left:0;right:0;bottom:0;padding:12px max(22px,env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(22px,env(safe-area-inset-left, 0px));background:var(--paper);border-top:1px solid var(--line);box-shadow:0 -5px 16px #29272a12}
+ .mobile-step-nav p{font-size:12px;line-height:1.4;margin:0 0 8px;color:#655f60}
+ .mobile-step-nav .button{width:100%}
+ /* Keep the keyboard and focused field unobstructed, even on browsers that do not resize the viewport. */
+ .studio:has(textarea:focus, input[type=text]:focus) .mobile-step-nav{display:none}
+}
