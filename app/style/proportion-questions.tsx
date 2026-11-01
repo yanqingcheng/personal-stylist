@@ -8,7 +8,7 @@ const questionIds=['vertical-impression','torso-leg-relation','shoulder-breadth'
 const choiceSchema=z.enum(['A','B','both','neither','unsure']);
 const answerSchema=z.object({questionId:z.enum(questionIds),answer:choiceSchema,statement:z.string().min(1).max(700),source:z.literal('user-visual-report'),updatedAt:z.string()});
 export type ProportionAnswer=z.infer<typeof answerSchema>;
-export type ProportionQuestionsProps={onComplete?:(answers:ProportionAnswer[])=>void;onSaved?:(answers:ProportionAnswer[],complete:boolean)=>void};
+export type ProportionQuestionsProps={onComplete?:(answers:ProportionAnswer[])=>void;onSkip?:()=>void|Promise<void>;onSaved?:(answers:ProportionAnswer[],complete:boolean)=>void};
 type QuestionId=typeof questionIds[number];
 type Choice=z.infer<typeof choiceSchema>;
 type Saved=Partial<Record<QuestionId,ProportionAnswer>>;
@@ -54,15 +54,23 @@ export function ProportionDiagram({questionId,side}:{questionId:QuestionId;side:
  </svg>;
 }
 
-export default function ProportionQuestions({onComplete,onSaved}:ProportionQuestionsProps){
- const [saved,setSaved]=useState<Saved>({});const [drafts,setDrafts]=useState<Partial<Record<QuestionId,Choice>>>({});const [index,setIndex]=useState(0);const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);const [status,setStatus]=useState('');const [error,setError]=useState('');const [finished,setFinished]=useState(false);
- const callbacks=useRef({onComplete,onSaved});const mounted=useRef(true);const lock=useRef(false);
- useEffect(()=>{callbacks.current={onComplete,onSaved}},[onComplete,onSaved]);
+export default function ProportionQuestions({onComplete,onSaved,onSkip}:ProportionQuestionsProps){
+ const [saved,setSaved]=useState<Saved>({});const [drafts,setDrafts]=useState<Partial<Record<QuestionId,Choice>>>({});const [index,setIndex]=useState(0);const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);const [skipping,setSkipping]=useState(false);const [status,setStatus]=useState('');const [error,setError]=useState('');const [finished,setFinished]=useState(false);
+ const callbacks=useRef({onComplete,onSaved,onSkip});const mounted=useRef(true);const lock=useRef(false);
+ useEffect(()=>{callbacks.current={onComplete,onSaved,onSkip}},[onComplete,onSaved,onSkip]);
  const load=useCallback(async()=>{setLoading(true);setError('');try{const response=await fetch('/api/profile',{cache:'no-store'});if(!response.ok)throw new Error(response.status===401?'Sign in to save your observations.':'Your observations could not be loaded.');const value:unknown=await response.json();const result=profileSchema.parse(value);if(result.profile.deletion_state&&result.profile.deletion_state!=='active')throw new Error('Your profile is unavailable.');const answers=readAnswers(result.profile.document);if(!mounted.current)return;setSaved(answers);const missing=questionIds.findIndex(id=>!answers[id]);setIndex(missing<0?0:missing);setStatus(ordered(answers).length?'Your saved observations are here. You can change any answer.':'');callbacks.current.onSaved?.(ordered(answers),questionIds.every(id=>!!answers[id]));}catch(reason){if(mounted.current)setError(reason instanceof Error&&!(reason instanceof z.ZodError)?reason.message:'Your observations could not be loaded.');}finally{if(mounted.current)setLoading(false)}},[]);
  useEffect(()=>{mounted.current=true;const timer=setTimeout(()=>void load(),0);return()=>{mounted.current=false;clearTimeout(timer)}},[load]);
  const question=questions[index];const choice=drafts[question.id]??saved[question.id]?.answer;const complete=questionIds.every(id=>!!saved[id]);
+ async function skipForNow(){
+  const skip=callbacks.current.onSkip;
+  if(!skip||loading||saving||skipping||lock.current)return;
+  lock.current=true;setSkipping(true);setError('');setStatus('Continuing without adding answers…');
+  try{await skip();if(mounted.current)setStatus('Your saved observations are kept. You can return later.');}
+  catch(reason){if(mounted.current){setStatus('');setError(reason instanceof Error?reason.message:'Could not continue yet. Your saved observations are unchanged.');}}
+  finally{lock.current=false;if(mounted.current)setSkipping(false)}
+ }
  async function saveAndContinue(){
-  if(!choice||loading||saving||lock.current)return;lock.current=true;setSaving(true);setError('');setStatus('Saving your observation…');
+  if(!choice||loading||saving||skipping||lock.current)return;lock.current=true;setSaving(true);setError('');setStatus('Saving your observation…');
   try{
    // Read immediately before the revisioned merge so other profile fields and
    // other question answers are preserved; a concurrent save still returns409.
@@ -83,14 +91,15 @@ export default function ProportionQuestions({onComplete,onSaved}:ProportionQuest
  return <section className={styles.panel} aria-label="Visual proportion observations">
   <header className={styles.header}><p className={styles.eyebrow}>YOUR OBSERVATIONS · {index+1} / {questions.length}</p><span>{ordered(saved).length} saved</span></header>
   <h2 className={styles.title}>{finished?'Your observations are saved.':question.title}</h2>
+  {onSkip&&!finished&&<div className={styles.actions} style={{marginTop:0,marginBottom:18}}><p className={styles.note} style={{marginBottom:0}}>Optional — you can return later.</p><button type="button" className={styles.secondary} disabled={loading||saving||skipping} onClick={()=>void skipForNow()}>{skipping?'Continuing…':'Skip for now →'}</button></div>}
   {finished?<><p className={styles.copy}>These remain your reports. They do not determine a body type, measurement or clothing preference.</p><button type="button" className={styles.secondary} onClick={()=>{setFinished(false);setIndex(0)}}>Review my answers</button></>:<>
    <p className={styles.copy}>{question.prompt}</p><p className={styles.note}>{question.note}</p>
-   <fieldset className={styles.fieldset} disabled={loading||saving}><legend className={styles.diagramNote}>Original schematic diagrams · illustrations, not photographs or measurements of you</legend>
+   <fieldset className={styles.fieldset} disabled={loading||saving||skipping}><legend className={styles.diagramNote}>Original schematic diagrams · illustrations, not photographs or measurements of you</legend>
     <div className={styles.pictures}>{(['A','B'] as const).map((side,i)=><button type="button" key={side} aria-pressed={choice===side} className={`${styles.picture} ${choice===side?styles.selected:''}`} onClick={()=>{setDrafts(values=>({...values,[question.id]:side}));setStatus('');setError('')}}><span className={styles.letter}>{side}</span><ProportionDiagram questionId={question.id} side={side}/><strong>{question.labels[i]}</strong></button>)}</div>
     <div className={styles.otherChoices}>{(['both','neither','unsure'] as const).map(answer=><button type="button" key={answer} aria-pressed={choice===answer} className={choice===answer?styles.selected:''} onClick={()=>{setDrafts(values=>({...values,[question.id]:answer}));setStatus('');setError('')}}>{answer==='unsure'?'Not sure':answer==='both'?'Both / varies':'Neither'}</button>)}</div>
    </fieldset>
    {choice&&<p className={styles.selection}>{saved[question.id]?.answer===choice?'Saved observation: ':'Your selection: '}{statementFor(question,choice)}</p>}
-   <div className={styles.actions}><button type="button" className={styles.secondary} disabled={index===0||loading||saving} onClick={()=>{setIndex(value=>Math.max(0,value-1));setError('');setStatus('')}}>← Back</button><button type="button" className={styles.primary} disabled={!choice||loading||saving} onClick={()=>void saveAndContinue()}>{saving?'Saving…':index===questions.length-1?'Save and continue':'Save & next'} <span aria-hidden="true">→</span></button></div>
+   <div className={styles.actions}><button type="button" className={styles.secondary} disabled={index===0||loading||saving||skipping} onClick={()=>{setIndex(value=>Math.max(0,value-1));setError('');setStatus('')}}>← Back</button><button type="button" className={styles.primary} disabled={!choice||loading||saving||skipping} onClick={()=>void saveAndContinue()}>{saving?'Saving…':index===questions.length-1?'Save and continue':'Save & next'} <span aria-hidden="true">→</span></button></div>
   </>}
   <p className={styles.status} role="status">{loading?'Loading saved observations…':status}</p>{error&&<p className={styles.error} role="alert">{error} {!ordered(saved).length&&<button type="button" onClick={()=>void load()}>Try loading again</button>}</p>}
   {complete&&!finished&&<p className={styles.note}>All four answers are saved. Reviewing them does not assign a type.</p>}
