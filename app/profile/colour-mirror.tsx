@@ -43,7 +43,7 @@ export default function ColourMirror(props: Props) {
   }
   const framing = props.framing;
   const framedViewport = framing ? { aspectRatio: `${framing.crop.width * framing.sourceWidth} / ${framing.crop.height * framing.sourceHeight}`, height: "auto" } : undefined;
-  const framedImage = framing ? { position: "absolute" as const, left: `${-100 * framing.crop.x / framing.crop.width}%`, top: `${-100 * framing.crop.y / framing.crop.height}%`, width: `${100 / framing.crop.width}%`, height: `${100 / framing.crop.height}%`, objectFit: "fill" as const, transform: "none" } : { objectPosition: `50% ${props.crop.y}%`, transform: `translateY(${(50 - props.crop.y) * (props.crop.zoom * 1.12 - 1)}%) scale(${props.crop.zoom * 1.12})` };
+  const framedImage = framing ? { position: "absolute" as const, maxWidth: "none", left: `${-100 * framing.crop.x / framing.crop.width}%`, top: `${-100 * framing.crop.y / framing.crop.height}%`, width: `${100 / framing.crop.width}%`, height: `${100 / framing.crop.height}%`, objectFit: "fill" as const, transform: "none" } : { objectPosition: `50% ${props.crop.y}%`, transform: `translateY(${(50 - props.crop.y) * (props.crop.zoom * 1.12 - 1)}%) scale(${props.crop.zoom * 1.12})` };
   const colours = personalPalette(props.template, []).swatches;
   const [choices, setChoices] = useState([5, 11]);
   const [active, setActive] = useState(0);

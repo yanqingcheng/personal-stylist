@@ -1,5 +1,13 @@
 # Current decisions and build entry — 1 November 2026
 
+## Owner update — 1 November, 15:40: actual nine-step journey
+
+This explicit order supersedes older sequencing and optional-voice notes below: (1) upload face pictures; (2) draping; (3) upload separate body pictures; (4) create/review a body-shape reference; (5) answer a few visual proportion questions; (6) first silhouette-focused mockup; (7) a few essence/vibe questions, including desired impression; (8) final moodboards combining colour, silhouette and vibe; (9) one meaningful demo iteration preserving liked looks/details, with explicit final approval. Prepared image outputs are the only agreed walkthrough shortcut. Uploads, arbitrary-input text/GPT-Live, answers, feedback and approval must be actual and saved. A generated body reference is an interpretation, never replacement anatomy evidence; face photos are not body evidence.
+
+Implementation checkpoint: deployed `099db16` has real text and GPT-Live, saved prepared-sheet generation/rejection/revision/approval and palette sliders. One synthetic-microphone Live call closed at 56 seconds with audio, interruption and reload continuity; human microphone and delegated backend reasoning remain unverified. Body-source upload/reference, illustrated proportion questions and ordered silhouette→vibe→combined-board stages are active implementation work, not shipped claims. A first dynamic image attempt stopped after planning; no image was published and its reservation remains held. The owner authorized bounded paid tests after relevant Codex review within the existing USD50 total.
+
+Owners: Sol integrates the route/stage UX and framing/composite controls; native factor lane owns separate body-source upload/reference; native composite lane owns illustrated proportion questions; native prompt/visual lane owns body-grounded generation and evidence clarification. Uncertainty, taste, practicality and visible regional evidence stay separate. Stable look numbers and parent-output IDs support feedback such as “keep1and4”; labels do not establish approval.
+
 ## Current implementation and recording boundary
 
 The owner subsequently authorised Stage 2 implementation and appointed Sol integration driver. The older Stage 1-only status and recording times below are historical. Current target: select the demonstration by **14:45 London, film at 15:00**.

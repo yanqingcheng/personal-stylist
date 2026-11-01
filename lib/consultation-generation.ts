@@ -85,7 +85,10 @@ export async function generateConsultation(auth:Auth,input:Input){
    const previous=await auth.service.from('consultation_generation_jobs').select('result').eq('id',preparedParentId).eq('user_id',auth.user.id).eq('profile_id',ctx.profileId).eq('status','succeeded').maybeSingle();
    const owned=generationOutput.safeParse(previous.data?.result);if(owned.success)preparedParentId=owned.data.board.id;
   }
-  const board=preparedParentId?demo?.document.boards.find((board,index,boards)=>board.kind==='revision'&&boards.findIndex(item=>item.id===preparedParentId)<index&&boards.some(item=>item.id===preparedParentId)):demo?.document.boards.find(board=>board.kind==='initial');
+  const phasePrefix=purpose==='silhouette'?'silhouette-':'final-';
+  const phaseBoards=demo?.document.boards.filter(board=>board.id.startsWith(phasePrefix));
+  const boards=phaseBoards?.length?phaseBoards:demo?.document.boards;
+  const board=preparedParentId?boards?.find((board,index,all)=>board.kind==='revision'&&all.findIndex(item=>item.id===preparedParentId)<index&&all.some(item=>item.id===preparedParentId)):boards?.find(board=>board.kind==='initial');
   if(!demo||!board)return pending(['No owned prepared image matches this request. Choose dynamic generation to create a new sheet.'],'prepared_unavailable');
   const path=auth.user.id+'/demo/'+board.path;
   try{await pixels(auth,path);}catch{return pending(['The owned prepared image is unavailable.']);}

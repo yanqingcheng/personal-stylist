@@ -31,7 +31,7 @@ export async function POST(request:Request) {
 
 export async function GET() {
   try { const auth=await activeUser(); if(!auth) return fail(401,'Sign in and activate your account');
-    const {data,error}=await auth.service.from('media').select('id,status,created_at').eq('user_id',auth.user.id).in('status',['pending','failed']);
+    const {data,error}=await auth.service.from('media').select('id,status,created_at').eq('user_id',auth.user.id).eq('kind','colour_portrait').in('status',['pending','failed']);
     if(error) return fail(503,'Pending uploads unavailable');
     return Response.json({pending:data},{headers:{'Cache-Control':'no-store'}});
   } catch { return fail(503,'Pending uploads unavailable'); }

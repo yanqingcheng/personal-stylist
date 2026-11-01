@@ -86,7 +86,7 @@ export async function loadConsultationContext({service,userId,expectedRevision,r
   operation:mode==='text'?'reply-to-saved-user-message':'reply-to-voice-transcript',
   targetMessage:target?{text:target.text,activeBoardId:target.activeBoardId}:null,
   history:snapshot.data.messages.map(({role,source,text,activeBoardId})=>({role,source,text,activeBoardId})),
-  profileReports:{reflections:profile.data.document.reflections??null,selectedTemplateId:profile.data.document.selectedTemplateId??null,taste:profile.data.document.taste??null},
+  profileReports:{reflections:profile.data.document.reflections??null,selectedTemplateId:profile.data.document.selectedTemplateId??null,taste:profile.data.document.taste??null,bodyProportionAnswers:profile.data.document.answers?.bodyProportionAnswers??null,consultationVibe:profile.data.document.answers?.consultationVibe??null,journeyStage:profile.data.document.answers?.consultationStage??null},
   styleIntakeReports:intake.data?.data??null,savedStylePlans:plans.data??[],preparedBoards,preparedReferences,activeOutput:activeOutput?{board:activeOutput.board,documentRevision:activeOutput.documentRevision,provenance:activeOutput.provenance}:null,
   approvedOutput:{id:snapshot.data.approvedOutputId,hash:snapshot.data.approvedOutputHash},
   visualEvidence:{images:imageEvidence,gaps:visualGaps},
