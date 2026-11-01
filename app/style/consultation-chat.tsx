@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { consultationSchema, type ConsultationMessage, type ConsultationSnapshot } from '@/lib/consultation';
 import ConsultationLive from './consultation-live';
+import {requestSavedStylistReply} from './saved-stylist-reply';
 
 export type ConsultationChatProps = {
   activeBoardId?:string|null;
@@ -15,6 +16,8 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
   const [draft,setDraft]=useState('');
   const [sending,setSending]=useState(false);
   const [error,setError]=useState('');
+  const [replyError,setReplyError]=useState('');
+  const [replySending,setReplySending]=useState(false);
   const [connectionError,setConnectionError]=useState('');
   const [loading,setLoading]=useState(true);
   const [autonomous,setAutonomous]=useState(false);
@@ -22,6 +25,8 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
   const current=useRef<ConsultationSnapshot|null>(null);
   const alive=useRef(true);
   const submitLock=useRef(false);
+  const replyLock=useRef(false);
+  const replyErrorTarget=useRef<string|null>(null);
   const callback=useRef(onMessages);
   const snapshotCallback=useRef(onSnapshot);
   const retry=useRef<{idempotencyKey:string;text:string;activeBoardId:string|null}|null>(null);
@@ -34,6 +39,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
   const receive=useCallback((snapshot:ConsultationSnapshot)=>{
     if(!alive.current || (current.current && snapshot.revision<current.current.revision)) return;
     const changed=!current.current || snapshot.revision!==current.current.revision;
+    if(replyErrorTarget.current&&snapshot.messages.some(message=>message.role==='stylist'&&message.replyTo===replyErrorTarget.current)){setReplyError('');replyErrorTarget.current=null}
     current.current=snapshot;
     setConsultation(snapshot);
     snapshotCallback.current?.(snapshot);
@@ -84,7 +90,7 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
     if(target && list) list.scrollTop=list.scrollHeight;
   },[lastMessageId]);
 
-  const canSend=Boolean(consultation && draft.trim() && draft.length<=12000 && !sending && !pending && !liveActive);
+  const canSend=Boolean(consultation && draft.trim() && draft.length<=12000 && !sending && !replySending && !pending && !liveActive);
 
   async function send() {
     if(!canSend || submitLock.current || !current.current) return;
@@ -110,17 +116,21 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
         : 'Your message could not be confirmed. Your draft is still here; check the conversation before trying again.');
       if(!parsed.success) throw new Error('Your message could not be confirmed. Your draft is still here; check the conversation before trying again.');
       if(alive.current) {setDraft(value=>value===text?'':value);retry.current=null;setError('');}
-      if(autonomous){
-        const reply=await fetch('/api/consultation/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idempotencyKey:crypto.randomUUID(),expectedRevision:parsed.data.revision,replyTo:attempt.idempotencyKey})});
-        const result=await reply.json();const saved=consultationSchema.safeParse(result.consultation);if(saved.success)receive(saved.data);
-        if(!reply.ok)throw new Error(result.error||'Your message is saved, but the stylist reply is unavailable.');
-      }
+      if(autonomous)await requestReply();
     } catch(reason) {
       if(alive.current) setError(reason instanceof Error?reason.message:'Your message could not be confirmed. Your draft is still here.');
     } finally {
       submitLock.current=false;
       if(alive.current)setSending(false);
     }
+  }
+
+  async function requestReply(){
+    if(replyLock.current||liveActive)return;
+    replyLock.current=true;setReplySending(true);setReplyError('');
+    replyErrorTarget.current=current.current?.pendingReplyTo??null;
+    try{const result=await requestSavedStylistReply();if(result.snapshot)receive(result.snapshot);if(!alive.current)return;const resolved=result.replyTo&&current.current?.messages.some(message=>message.role==='stylist'&&message.replyTo===result.replyTo);if(!resolved){replyErrorTarget.current=result.replyTo;setReplyError(result.error||'')}}
+    finally{replyLock.current=false;if(alive.current)setReplySending(false)}
   }
 
   return <section className="sc-conversation" aria-label="Your stylist conversation">
@@ -137,13 +147,15 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
       </div>}
       <div ref={end}/>
     </div>
-    <p className="sc-status" role="status">{loading?'Opening your conversation…':!consultation?'Your conversation has not loaded yet.':sending?'Saving your message…':pending?'Message saved · Awaiting your stylist’s reply.':'Your conversation is saved to your account.'}</p>
+    <p className="sc-status" role="status">{loading?'Opening your conversation…':!consultation?'Your conversation has not loaded yet.':replySending?'Requesting the saved stylist reply…':sending?'Saving your message…':pending?'Message saved · Awaiting your stylist’s reply.':'Your conversation is saved to your account.'}</p>
     {connectionError&&<p className="sc-status sc-status--error" role="status">{connectionError}</p>}
     {error&&<p className="sc-status sc-status--error" role="alert">{error}</p>}
+    {replyError&&<p className="sc-status sc-status--error" role="alert">{replyError} <a href="/usage">View allowance &amp; usage ↗</a></p>}
+    {pending&&<div className="sc-status"><button type="button" disabled={sending||replySending||liveActive||!autonomous} onClick={()=>void requestReply()}>{replySending?'Checking saved reply…':'Retry saved stylist reply'}</button> <a href="/usage">View allowance &amp; usage ↗</a>{!autonomous&&<p>Autonomous replies are currently unavailable. Your saved message remains available for a supervised reply.</p>}</div>}
     <form className="sc-composer" onSubmit={event=>{event.preventDefault();void send()}}>
       <label htmlFor="consultation-message">{activeBoardId?'Your thoughts on this outfit study':'Tell your stylist'}</label>
       <textarea id="consultation-message" name="message" rows={3} maxLength={12000} value={draft}
-        disabled={sending||liveActive} placeholder={pending?'Add a thought while your stylist considers your message…':'What feels right, what would you change, or what would you like to explore?'}
+        disabled={sending||replySending||liveActive} placeholder={pending?'Add a thought while your stylist considers your message…':'What feels right, what would you change, or what would you like to explore?'}
         onChange={event=>setDraft(event.target.value)}
         onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send()}}}
         aria-describedby="consultation-composer-hint"/>
@@ -152,6 +164,6 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
         <button type="submit" disabled={!canSend}>{sending?'Sending…':'Send message'} <span aria-hidden="true">↗</span></button>
       </div>
     </form>
-    {consultation&&!sending&&!pending&&<ConsultationLive expectedRevision={consultation.revision} onSaved={receive} onActive={setLiveActive}/>}
+    {consultation&&!sending&&!replySending&&!pending&&<ConsultationLive expectedRevision={consultation.revision} onSaved={receive} onActive={setLiveActive}/>}
   </section>;
 }
