@@ -19,6 +19,7 @@ create policy own_profile on public.profiles for select to authenticated using (
 create policy own_media on public.media for select to authenticated using (user_id = auth.uid() and exists (select 1 from public.access_grants g where g.user_id=auth.uid() and g.active));
 create policy own_rounds on public.rounds for select to authenticated using (user_id = auth.uid() and exists (select 1 from public.access_grants g where g.user_id=auth.uid() and g.active));
 revoke all on all tables in schema public from anon, authenticated;
+grant all on all tables in schema public to service_role;
 grant select on public.access_grants, public.profiles, public.media, public.rounds to authenticated;
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values ('private-media','private-media',false,10485760,array['image/jpeg','image/png','image/webp']) on conflict (id) do nothing;
 -- All write RPCs use service_role only; the web server passes a verified auth user ID.
