@@ -5,11 +5,11 @@ alter table public.style_price_bounds add constraint style_price_bounds_kind_che
 
 create function public.colour_generation_sources_valid(p_user uuid,p_profile uuid,p_document jsonb,p_sources uuid[])
 returns boolean language sql stable security invoker set search_path=public,pg_temp as $$
- select coalesce(cardinality(p_sources)=4
- and (select count(distinct x) from unnest(p_sources) x)=4
+ select coalesce(cardinality(p_sources) between 2 and 4
+ and (select count(distinct x) from unnest(p_sources) x)=cardinality(p_sources)
  and jsonb_typeof(p_document->'photos')='array'
  and (select count(*) from public.media m where m.id=any(p_sources) and m.user_id=p_user
-      and m.profile_id=p_profile and m.kind='colour_portrait' and m.status='ready')=4
+      and m.profile_id=p_profile and m.kind='colour_portrait' and m.status='ready')=cardinality(p_sources)
  and not exists(select 1 from unnest(p_sources) x where not exists(
    select 1 from jsonb_array_elements(case when jsonb_typeof(p_document->'photos')='array' then p_document->'photos' else '[]'::jsonb end) photo
    where photo->>'id'=x::text)),false)

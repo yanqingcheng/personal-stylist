@@ -5,8 +5,9 @@ export const colourGenerationRequest = z.object({
   idempotencyKey:z.uuid(),
   expectedRevision:z.number().int().nonnegative(),
   consent:z.literal(true),
-  sources:z.array(z.object({id:z.uuid(),lightingRole:z.enum(['daylight','indoor-colour-cast','supporting','unknown'])}).strict()).length(4),
-}).strict().refine(value=>new Set(value.sources.map(source=>source.id)).size===4,{message:'Choose four different source photos'});
+  // A single source parses so the route can return an actionable 409.
+  sources:z.array(z.object({id:z.uuid(),lightingRole:z.enum(['daylight','indoor-colour-cast','supporting','unknown'])}).strict()).min(1).max(4),
+}).strict().refine(value=>new Set(value.sources.map(source=>source.id)).size===value.sources.length,{message:'Choose different source photos'});
 
 export const COLOUR_COMPOSITE_PROMPT_VERSION = 'neutral-light-generic-v1';
 // Root owns explicit prompt acceptance. Neither an environment flag nor a browser

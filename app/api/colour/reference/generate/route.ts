@@ -16,15 +16,16 @@ export async function POST(request:Request) {
   try {
     const auth=await activeUser(); if (!auth) return fail(401,'Sign in and activate your account');
     const parsed=colourGenerationRequest.safeParse(await body(request));
-    if (!parsed.success) return fail(400,'Choose four different source photos and confirm processing consent');
+    if (!parsed.success) return fail(400,'Choose two to four different source photos and confirm processing consent');
     const input=parsed.data, sourceIds=input.sources.map(source=>source.id);
+    if (sourceIds.length<2) return fail(409,'Add at least two original photos to prepare a multi-photo portrait');
     const profile=await auth.service.from('profiles').select('id,revision,document,deletion_state').eq('user_id',auth.user.id).maybeSingle();
     if (profile.error || !profile.data || profile.data.deletion_state!=='active') return fail(404,'Profile unavailable');
     if (profile.data.revision!==input.expectedRevision) return fail(409,'Your profile changed. Reload before preparing a portrait');
     const listed=photoList.safeParse(profile.data.document?.photos);
-    if (!listed.success || sourceIds.some(id=>!listed.data.some(photo=>photo.id===id))) return fail(409,'Save all four original photos to your profile first');
+    if (!listed.success || sourceIds.some(id=>!listed.data.some(photo=>photo.id===id))) return fail(409,'Save the selected original photos to your profile first');
     const media=await auth.service.from('media').select('id,object_path,content_type,byte_size').eq('user_id',auth.user.id).eq('profile_id',profile.data.id).eq('kind','colour_portrait').eq('status','ready').in('id',sourceIds);
-    if (media.error || media.data.length!==4) return fail(409,'One or more source photos are unavailable');
+    if (media.error || media.data.length!==sourceIds.length) return fail(409,'One or more source photos are unavailable');
     const gate=colourGenerationGate();
     // Intentionally before any reservation, download, upload or model invocation.
     // Image 2.5's $2 estimate is not a verified maximum; env flags cannot bypass it.
