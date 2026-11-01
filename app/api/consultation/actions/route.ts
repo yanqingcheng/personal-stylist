@@ -46,6 +46,13 @@ export async function POST(request:Request){
   if(reserved.error)return fail(503,'Editorial reservation unavailable');
   if(reserved.data?.error)return Response.json({...created.data,error:reserved.data.error==='budget'?'Available editorial allowance is exhausted':'Editorial is unavailable for the current approval or price configuration'},{status:reserved.data.error==='budget'?402:409,headers});
   const operation=reserved.data.operation;
+  // Link the durable reservation before dispatch so a crash/uncertain call is
+  // visible through this job rather than looking like an unstarted request.
+  const linked=await auth.service.from('consultation_actions').update({operation_id:operation.id}).eq('id',input.idempotencyKey).eq('user_id',auth.user.id).eq('status','pending').select('id').maybeSingle();
+  if(linked.error||(reserved.data.created&&!linked.data)){
+   if(reserved.data.created)await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:operation.id,p_outcome:'failed_before_dispatch'});
+   return fail(503,'Editorial reservation could not be linked to its saved job');
+  }
   if(!reserved.data.created)return Response.json({...created.data,operation},{status:202,headers});
   const uncertain=async()=>{await auth.service.rpc('mark_style_uncertain',{p_user:auth.user.id,p_op:operation.id});await auth.service.from('consultation_actions').update({status:'uncertain'}).eq('id',input.idempotencyKey).eq('user_id',auth.user.id).eq('operation_id',operation.id)};
   let dispatch;
