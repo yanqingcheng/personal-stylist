@@ -6,6 +6,21 @@ A private personal stylist exploring colour, silhouette and vibe, built for the 
 
 [Draft retrospective](docs/retrospective.md) · [Public-source audit](docs/public-readiness-audit.md) · [Historical launch evidence](docs/launch-status.md)
 
+## Screenshots
+
+Captured from the production application at `b3d6ab4` on 1 November 2026. The studio uses a fictional adult reference and synthetic test preferences; its three-look illustration is an actual application API output. No private participant photographs are shown. Material descriptions are desired specifications, not verified fibre claims. These views do not demonstrate validated colour typing. [Screenshot provenance](docs/screenshots/README.md).
+
+![Homepage with AI-generated textile concept artwork](docs/screenshots/homepage.png)
+
+![Desktop studio showing a saved API-generated three-look illustration for a fictional adult](docs/screenshots/studio-desktop.png)
+
+<details>
+<summary>Phone studio</summary>
+
+<img src="docs/screenshots/studio-phone.png" alt="Phone studio showing the same fictional adult's saved three-look illustration" width="390" />
+
+</details>
+
 ## The idea
 
 Personal stylist is a collaborative exploration of colour, silhouette and vibe. The user compares colours against the same portrait, shares their preferences and practical needs, and reviews visual style suggestions with the stylist. The app keeps observations, user preferences and uncertainty distinct: a proposed palette or outfit is something to discuss, not a diagnosis or a promise of fit.
