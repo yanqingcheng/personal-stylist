@@ -2,6 +2,8 @@
 
 Colour-first personal styling consultation for the DevDay Community Hackathon, London, 1 November 2026.
 
+[Live holding page](https://personal-stylist-mauve.vercel.app) · [Implementation plan](docs/work-packets.md)
+
 ## Current status
 
 Hosting scaffold and an explicitly labelled holding page only. Photo upload, draping, classification and AI analysis are not implemented yet. No database, authentication, analytics or external font requests.
@@ -25,11 +27,21 @@ npm start
 
 ## Hosting
 
-Intended deployment: independent Vercel project, with `stylist.qingsworkshop.com` as the proposed custom domain. A domain is not live until deployment and DNS verification succeed.
+The holding page is deployed at https://personal-stylist-mauve.vercel.app. The proposed custom domain `stylist.qingsworkshop.com` is pending DNS verification; use the Vercel link for now.
 
 ## Planned first journey
 
 Portrait and written reflections → identical-photo colour comparisons → provisional colour evidence → separate personal preferences → wearable palette. Persist private account-owned profiles and media once slice0 access controls are implemented. Supabase Auth, invite-gated accounts, saved profiles and server-side credit limits are now planned in slice 0; see docs/implementation-plan.md.
+
+## Planned complete consultation
+
+Upload photos → answer questions → compare drapes and select a colour template → iteratively refine on-user style moodboards → explicitly approve a direction → receive editorial recommendations. Save underlying factors and evidence separately from derived labels; save unfinished consultations so users can return.
+
+Decisions API is planned for bounded judgments that avoid unnecessary larger calls; GPT for nuanced interpretation and outfit synthesis; GPT Image 2.5 for visual generation; optional GPT-Live for moodboard feedback. Gather and clarify feedback before rendering again. These integrations are not implemented or cost-tested yet. A 3D wardrobe remains an exploratory idea, not a promised feature.
+
+## Demo submission
+
+The submission video will be at most 90 seconds, showing a working consultation, one feedback-driven revision, and a concrete example of Codex helping build the product. Video pending. Record real app behaviour and label any edited waiting time or seeded examples. Public demo assets must be explicitly approved for publication; private reference photos stay out of this repository.
 
 ## Privacy and secrets
 
