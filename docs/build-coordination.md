@@ -19,3 +19,23 @@ Verification: pure colour/evidence invariants; real SQL concurrency and RLS/two-
 Demo: <=90 seconds, real working app, one meaningful feedback revision, return to saved profile and concrete Codex contribution. User is prospective demo subject; no public use of personal photos without publication consent. No secret answers seeded into inference. Capture build evidence as work proceeds. Protect15:30 freeze/16:30 handoff and flag feasibility risks early.
 
 Latest user direction: minimise churn and overengineering. Every child brief must have explicit deliverable, file scope and stopping boundary. Tests must protect meaningful user outcomes, not mirror implementation/internal state. Prioritise a complete working journey; use focused evidence, no mandatory review cycles or speculative abstractions. Sol reviews ready changes and reports concrete material defects; Terra fixes and integrates.
+
+
+## Branch stewardship snapshot — 1 November 2026
+
+Canonical review source is fetched `origin/main`; this snapshot used `5bf30cd`. Local primary `main` is stale and carries shared tracker changes, so it is not the integration source. The active integration checkout owns `lane/sol-build-driver-20261101`; `staging/sol-judges-20261101` matched canonical at this snapshot. Worktree activity can change immediately; recheck before cleanup.
+
+An inventory of 127 local/remote refs and 47 worktrees found 20 non-canonical refs fully ancestor-merged and 93 more patch-equivalent. Public hygiene commit `191f1f2` landed as `13f4aeb`. Patch-ID exceptions need semantic comparison rather than automatic merging:
+
+| Branch suffix / source commit | Disposition against canonical |
+| --- | --- |
+| `adaptive-colour` / `77429b5` | Superseded by the expanded `lib/colour/adaptive.ts` implementation, which identifies the earlier heuristic. |
+| `plan-ready` / `871884d` | Current working agreement contains the updated Sol-led ownership; earlier wording is historical. |
+| `sol-generation-progress-20261101` / `2aab7dd` | Integrated with changes as `5ca7d46`, followed by the client timing correction `382d156`. |
+| `sol-recording-image-size-20261101` and `sol-recording-desktop-size-20261101` / `2f154f1` | Mobile rules retained inside the larger current recording stylesheet. |
+| `typology-walkthrough-20261101` / `cd9d32f` | Superseded by the expanded public walkthrough with 21 Line and 14 Presence profiles. |
+| `sol-colour-no-repeat-20261101` / `34b9053` | Palette continuation exists unconditionally in current UI; an extra inline mobile-nav hiding rule differs. Integration owner should assess that remaining hunk against current CSS before retiring this branch. |
+
+Uncommitted work was present in the primary tracker, integration dialogue route, mobile-photo-upload checkout, create-disabled checkout and an untracked body-reference module in the generation-eligibility checkout. Preserve these and ask their owners to return or explicitly retire them; this inventory does not grant authority to stage them.
+
+No worktree or branch was deleted. Kernel process-cwd inspection encountered permission-denied entries, so it could not establish that apparently idle worktrees were unoccupied. Deletion requires current ownership confirmation, complete liveness evidence, clean status and recoverable refs. Keep active worktrees even when their commits are merged. This snapshot records provenance, not an alternative tracker or a claim that all branches are retired.
