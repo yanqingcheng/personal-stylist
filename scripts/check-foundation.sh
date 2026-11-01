@@ -14,7 +14,7 @@ create table storage.buckets(id text primary key,name text,public boolean,file_s
 SQL
 docker exec -i "$box" psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261101000000_foundation.sql >/dev/null
 docker exec -i "$box" psql -U postgres -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
-insert into auth.users(id) values ('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002'),('00000000-0000-0000-0000-000000000003');
+insert into auth.users(id) values ('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002'),('00000000-0000-0000-0000-000000000003'),('00000000-0000-0000-0000-000000000004');
 insert into public.invites(digest,cohort,capacity,active) values ('test-attendee','attendee',1,true),('test-judge','judge',1,true);
 SQL
 docker exec "$box" psql -U postgres -At -c "select redeem_invite('00000000-0000-0000-0000-000000000001','test-attendee')->>'status'" >/tmp/stylist-race-a-$$ & a=$!
@@ -28,10 +28,11 @@ do $$ declare r jsonb; winner uuid; begin
  r:=redeem_invite(winner,'test-attendee'); if r->>'status'<>'activated' then raise exception 'duplicate activation failed'; end if;
  r:=redeem_invite('00000000-0000-0000-0000-000000000003','test-judge'); if r->>'status'<>'activated' then raise exception 'judge admission failed'; end if;
  if (select redeemed_count from invites where cohort='attendee')<>1 then raise exception 'capacity incorrect'; end if;
- r:=redeem_invite('00000000-0000-0000-0000-000000000002','invalid'); if r->>'status' not in ('invalid','activated') then raise exception 'invalid invite accepted'; end if;
+ r:=redeem_invite('00000000-0000-0000-0000-000000000004','invalid'); if r->>'status'<>'invalid' then raise exception 'invalid invite accepted'; end if;
  r:=save_profile(winner,0,'1',null,'{"version":1,"answers":{"note":"saved"}}'::jsonb); if r->'profile'->>'revision'<>'1' then raise exception 'save failed'; end if;
  r:=save_profile(winner,0,'2',null,'{}'::jsonb); if r->>'error'<>'conflict' then raise exception 'stale save accepted'; end if;
 end $$;
+do $$ begin if has_function_privilege('authenticated','public.redeem_invite(uuid,text)','execute') or has_function_privilege('anon','public.save_profile(uuid,integer,text,text,jsonb)','execute') then raise exception 'untrusted role has privileged RPC'; end if; end $$;
 grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
