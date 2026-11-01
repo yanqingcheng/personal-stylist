@@ -1,18 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { retailerSearchLinks } from '@/lib/shop-links';
+import { approvedGarmentQueries, retailerSearchLinks } from '@/lib/shop-links';
 
 type Look = { id: string; title: string; description?: string };
 type Props = { approved: boolean; outputId: string; documentRevision: string; looks: Look[]; constraints?: string[] };
 
 function LookSearch({ look }: { look: Look }) {
   // Do not transmit consultation prose, photos, or personal details to a retailer.
-  const [query, setQuery] = useState('');
+  const suggestions = approvedGarmentQueries(look);
+  const [query, setQuery] = useState(suggestions[0] ?? '');
   const links = retailerSearchLinks(query);
   return <details style={{ borderTop: '1px solid #c5c9bb', padding: '16px 0' }}>
     <summary style={{ cursor: 'pointer' }}>{look.title}</summary>
     {look.description && <p>{look.description}</p>}
+    {suggestions.length > 1 && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>{suggestions.map(suggestion => <button type="button" key={suggestion} aria-pressed={query === suggestion} onClick={() => setQuery(suggestion)}>{suggestion}</button>)}</div>}
     <label style={{ display: 'block', margin: '12px 0' }}>
       Garment and colour to search for
       <input value={query} maxLength={240} onChange={event => setQuery(event.target.value)} placeholder="e.g. teal textured notch neck top" style={{ display: 'block', width: '100%', padding: 12, marginTop: 8 }} />
@@ -27,7 +29,7 @@ export default function ShopLinks({ approved, outputId, documentRevision, looks,
   if (!approved || !looks.length) return null;
   return <section aria-label="Search for similar pieces" style={{ marginTop: 32 }}>
     <h3>Search for similar pieces</h3>
-    <p>Use your approved looks as a shopping brief. Search one garment at a time, with its colour and the details you want to keep.</p>
+    <p>Start with the garment and colour terms from your approved looks. Choose a piece, then edit its search to keep the details you love.</p>
     {constraints.length > 0 && <><p>Keep these requirements in view:</p><ul>{constraints.map((constraint, index) => <li key={index}>{constraint}</li>)}</ul></>}
     <div key={`${outputId}:${documentRevision}`}>
       {looks.map(look => <LookSearch key={look.id} look={look} />)}
