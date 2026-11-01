@@ -1,0 +1,1879 @@
+{
+  "version": "31-repair-v2",
+  "source_revision": "7f5f43d0e0056a44e1854819079d6a890bc2463f",
+  "status": "one coherent proposed taxonomy; palette swatches illustrative and not draping-validated",
+  "sources": [
+    {
+      "name": "The Concept Wardrobe — complete seasonal guides",
+      "url": "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides",
+      "use": "Qualitative twelve-season descriptions, wardrobe colour roles, characteristic differences."
+    },
+    {
+      "name": "The Concept Wardrobe — three dimensions",
+      "url": "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/what-is-color-analysis",
+      "use": "Temperature, value and chroma in the conventional twelve-season framework."
+    },
+    {
+      "name": "GetWardrobe — twelve seasons",
+      "url": "https://help.getwardrobe.com/latest/items/12-color-seasons/",
+      "use": "Cross-check characteristic neutral and accent recommendations."
+    },
+    {
+      "name": "Soft Summer Palette — alternative sixteen-season expansion",
+      "url": "https://softsummerpalette.com/the-16-season-color-analysis-system/",
+      "use": "Known supplementary names Soft Spring, Clear Summer, Clear Autumn, Soft Winter."
+    },
+    {
+      "name": "ColorAnalysis.tools — other sixteen-season approaches",
+      "url": "https://coloranalysis.tools/16-season-color-analysis",
+      "use": "Shows expanded-season naming is not standardised."
+    },
+    {
+      "name": "The Colour Doc — limits of photography",
+      "url": "https://colourdoc.co.uk/journal/why-your-phone-cant-tell-you-your-colour-season",
+      "use": "Cautions about lighting, white balance, facial inference and virtual draping."
+    }
+  ],
+  "types": [
+    {
+      "id": "cool-light-muted",
+      "name": "Sea Mist",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        -1.0,
+        1.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        -1.0,
+        1.0,
+        -1.0
+      ],
+      "factor_words": [
+        "cool",
+        "light",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F5F4F6",
+        "light_layer": "#E0E3E9",
+        "mid_base": "#9C9FAD",
+        "dark_bottom": "#545F73",
+        "dark_formal": "#404358"
+      },
+      "accents": {
+        "red": "#DDB1B4",
+        "pink": "#E0BCCC",
+        "coral": "#CBA0AB",
+        "yellow": "#E2E1BA",
+        "green": "#A2C8BA",
+        "teal": "#A1C9D3",
+        "blue": "#B0BEDD",
+        "violet": "#C4BBDC"
+      },
+      "accent_names": {
+        "red": "rose-red",
+        "pink": "dusty mauve",
+        "coral": "muted rose-coral",
+        "yellow": "greyed lemon",
+        "green": "eucalyptus",
+        "teal": "slate teal",
+        "blue": "slate blue",
+        "violet": "dusty violet"
+      },
+      "nearest_12": [
+        "Light Summer",
+        "True Summer",
+        "Soft Summer"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-frost",
+      "name": "Frost",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Light Summer",
+      "conventional_alias": "Light Summer",
+      "coords": [
+        -0.65,
+        1.0,
+        -0.4
+      ],
+      "anchor_coords": [
+        -0.65,
+        1.0,
+        -0.4
+      ],
+      "factor_words": [
+        "cool",
+        "light",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F6F4F6",
+        "light_layer": "#E2DCE6",
+        "mid_base": "#B2B8C2",
+        "dark_bottom": "#657084",
+        "dark_formal": "#40576A"
+      },
+      "accents": {
+        "red": "#C57D9B",
+        "pink": "#DFB5C9",
+        "coral": "#D9A8B8",
+        "yellow": "#E2DDBA",
+        "green": "#9FBDB6",
+        "teal": "#8CBEC6",
+        "blue": "#A1BAD8",
+        "violet": "#B09ACB"
+      },
+      "accent_names": {
+        "red": "rose-red",
+        "pink": "dusty mauve",
+        "coral": "muted rose-coral",
+        "yellow": "greyed lemon",
+        "green": "eucalyptus",
+        "teal": "slate teal",
+        "blue": "slate blue",
+        "violet": "dusty violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/light-summer-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "cool-light-vivid",
+      "name": "Icy Spark",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "Clear Summer (some 16-season systems)",
+      "coords": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "anchor_coords": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "factor_words": [
+        "cool",
+        "light",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F7F7FB",
+        "light_layer": "#E1E8F0",
+        "mid_base": "#9AA6B9",
+        "dark_bottom": "#3A4258",
+        "dark_formal": "#242A3E"
+      },
+      "accents": {
+        "red": "#FF9EA8",
+        "pink": "#FFA9D3",
+        "coral": "#F26F8A",
+        "yellow": "#EEE444",
+        "green": "#25DCB2",
+        "teal": "#00D7F9",
+        "blue": "#A0BCFF",
+        "violet": "#C8B2FF"
+      },
+      "accent_names": {
+        "red": "cranberry",
+        "pink": "fuchsia",
+        "coral": "pinky coral",
+        "yellow": "clear lemon",
+        "green": "emerald",
+        "teal": "cyan teal",
+        "blue": "royal blue",
+        "violet": "blue-violet"
+      },
+      "nearest_12": [
+        "Bright Winter",
+        "True Winter",
+        "Light Summer"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-rainstone",
+      "name": "Rainstone",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "True Summer",
+      "conventional_alias": "True Summer",
+      "coords": [
+        -1.0,
+        0.35,
+        -0.7
+      ],
+      "anchor_coords": [
+        -1.0,
+        0.35,
+        -0.7
+      ],
+      "factor_words": [
+        "cool",
+        "medium",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F0EFF1",
+        "light_layer": "#CDD1DA",
+        "mid_base": "#9297A6",
+        "dark_bottom": "#545E71",
+        "dark_formal": "#414C61"
+      },
+      "accents": {
+        "red": "#B95F7F",
+        "pink": "#CD9EBB",
+        "coral": "#C5A1AE",
+        "yellow": "#CED0A7",
+        "green": "#79A5A1",
+        "teal": "#629BAE",
+        "blue": "#6F91BC",
+        "violet": "#9585B5"
+      },
+      "accent_names": {
+        "red": "rose-red",
+        "pink": "dusty mauve",
+        "coral": "muted rose-coral",
+        "yellow": "greyed lemon",
+        "green": "eucalyptus",
+        "teal": "slate teal",
+        "blue": "slate blue",
+        "violet": "dusty violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/true-summer-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "opal-heather",
+      "name": "Heather",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Soft Summer",
+      "conventional_alias": "Soft Summer",
+      "coords": [
+        -0.65,
+        0.15,
+        -1.0
+      ],
+      "anchor_coords": [
+        -0.65,
+        0.15,
+        -1.0
+      ],
+      "factor_words": [
+        "cool",
+        "medium",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#ECE9EA",
+        "light_layer": "#D2C9CE",
+        "mid_base": "#97949D",
+        "dark_bottom": "#5C626D",
+        "dark_formal": "#4D4E5C"
+      },
+      "accents": {
+        "red": "#AD7889",
+        "pink": "#BA9FAE",
+        "coral": "#BE9EAA",
+        "yellow": "#C4BD9C",
+        "green": "#8AA69D",
+        "teal": "#80A0AA",
+        "blue": "#8296B0",
+        "violet": "#9A8FAA"
+      },
+      "accent_names": {
+        "red": "rose-red",
+        "pink": "dusty mauve",
+        "coral": "muted rose-coral",
+        "yellow": "greyed lemon",
+        "green": "eucalyptus",
+        "teal": "slate teal",
+        "blue": "slate blue",
+        "violet": "dusty violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/soft-summer-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "cool-medium-medium",
+      "name": "Iris",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "anchor_coords": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "factor_words": [
+        "cool",
+        "medium",
+        "moderate"
+      ],
+      "neutrals": {
+        "light_shirt": "#F5F4F6",
+        "light_layer": "#DDE0E7",
+        "mid_base": "#9296A5",
+        "dark_bottom": "#475061",
+        "dark_formal": "#343748"
+      },
+      "accents": {
+        "red": "#C06873",
+        "pink": "#BD7599",
+        "coral": "#E1617B",
+        "yellow": "#C4BF66",
+        "green": "#3E9C82",
+        "teal": "#2995AA",
+        "blue": "#6781C2",
+        "violet": "#8D78BD"
+      },
+      "accent_names": {
+        "red": "blue-red",
+        "pink": "cool rose",
+        "coral": "rosy coral",
+        "yellow": "lemon",
+        "green": "cool green",
+        "teal": "blue teal",
+        "blue": "periwinkle",
+        "violet": "lavender"
+      },
+      "nearest_12": [
+        "True Summer",
+        "True Winter",
+        "Bright Winter"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-starlight",
+      "name": "Starlight",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "True Winter",
+      "conventional_alias": "True Winter",
+      "coords": [
+        -1.0,
+        -0.35,
+        0.7
+      ],
+      "anchor_coords": [
+        -1.0,
+        -0.35,
+        0.7
+      ],
+      "factor_words": [
+        "cool",
+        "medium",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#FDFDFE",
+        "light_layer": "#E1E3EB",
+        "mid_base": "#848899",
+        "dark_bottom": "#2B2E3C",
+        "dark_formal": "#10101B"
+      },
+      "accents": {
+        "red": "#D31B48",
+        "pink": "#E8328D",
+        "coral": "#DF637C",
+        "yellow": "#E2D62E",
+        "green": "#058961",
+        "teal": "#04A9B4",
+        "blue": "#1C52C2",
+        "violet": "#743EB5"
+      },
+      "accent_names": {
+        "red": "cranberry",
+        "pink": "fuchsia",
+        "coral": "pinky coral",
+        "yellow": "clear lemon",
+        "green": "emerald",
+        "teal": "cyan teal",
+        "blue": "royal blue",
+        "violet": "blue-violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/true-winter-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "opal-electric",
+      "name": "Electric",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Bright Winter",
+      "conventional_alias": "Bright Winter",
+      "coords": [
+        -0.65,
+        -0.15,
+        1.0
+      ],
+      "anchor_coords": [
+        -0.65,
+        -0.15,
+        1.0
+      ],
+      "factor_words": [
+        "cool",
+        "medium",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#FBFCFE",
+        "light_layer": "#E2E8F0",
+        "mid_base": "#7A7F90",
+        "dark_bottom": "#30303C",
+        "dark_formal": "#14141E"
+      },
+      "accents": {
+        "red": "#E40A4E",
+        "pink": "#F1149B",
+        "coral": "#EC3775",
+        "yellow": "#F1DB14",
+        "green": "#00B177",
+        "teal": "#00C2C4",
+        "blue": "#236BE8",
+        "violet": "#942AE0"
+      },
+      "accent_names": {
+        "red": "cranberry",
+        "pink": "fuchsia",
+        "coral": "pinky coral",
+        "yellow": "clear lemon",
+        "green": "emerald",
+        "teal": "cyan teal",
+        "blue": "royal blue",
+        "violet": "blue-violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/bright-winter-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "cool-deep-muted",
+      "name": "Storm",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "Soft Winter (some 16-season systems)",
+      "coords": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "factor_words": [
+        "cool",
+        "deep",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#E8E7EA",
+        "light_layer": "#C2C3CC",
+        "mid_base": "#838897",
+        "dark_bottom": "#484857",
+        "dark_formal": "#292835"
+      },
+      "accents": {
+        "red": "#664145",
+        "pink": "#694B59",
+        "coral": "#B57888",
+        "yellow": "#7E7D59",
+        "green": "#35584D",
+        "teal": "#31565F",
+        "blue": "#414D67",
+        "violet": "#504864"
+      },
+      "accent_names": {
+        "red": "rose-red",
+        "pink": "dusty mauve",
+        "coral": "muted rose-coral",
+        "yellow": "greyed lemon",
+        "green": "eucalyptus",
+        "teal": "slate teal",
+        "blue": "slate blue",
+        "violet": "dusty violet"
+      },
+      "nearest_12": [
+        "Soft Summer",
+        "True Summer",
+        "Deep Winter"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-inkwell",
+      "name": "Inkwell",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Deep Winter",
+      "conventional_alias": "Dark Winter",
+      "coords": [
+        -0.65,
+        -1.0,
+        0.4
+      ],
+      "anchor_coords": [
+        -0.65,
+        -1.0,
+        0.4
+      ],
+      "factor_words": [
+        "cool",
+        "deep",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F5F7",
+        "light_layer": "#D7D9E0",
+        "mid_base": "#747D8E",
+        "dark_bottom": "#2B2E38",
+        "dark_formal": "#161822"
+      },
+      "accents": {
+        "red": "#A71F48",
+        "pink": "#C74676",
+        "coral": "#B55F74",
+        "yellow": "#C7BD6E",
+        "green": "#247855",
+        "teal": "#096D7D",
+        "blue": "#254B9A",
+        "violet": "#6E3D96"
+      },
+      "accent_names": {
+        "red": "cranberry",
+        "pink": "fuchsia",
+        "coral": "pinky coral",
+        "yellow": "clear lemon",
+        "green": "emerald",
+        "teal": "cyan teal",
+        "blue": "royal blue",
+        "violet": "blue-violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/dark-winter-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "cool-deep-vivid",
+      "name": "Nocturne",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        -1.0,
+        -1.0,
+        1.0
+      ],
+      "anchor_coords": [
+        -1.0,
+        -1.0,
+        1.0
+      ],
+      "factor_words": [
+        "cool",
+        "deep",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F5F4F6",
+        "light_layer": "#DADDE5",
+        "mid_base": "#888D9D",
+        "dark_bottom": "#3E4655",
+        "dark_formal": "#272936"
+      },
+      "accents": {
+        "red": "#920032",
+        "pink": "#951364",
+        "coral": "#ED375C",
+        "yellow": "#857E00",
+        "green": "#005E4A",
+        "teal": "#005A69",
+        "blue": "#213EAD",
+        "violet": "#5B29A0"
+      },
+      "accent_names": {
+        "red": "cranberry",
+        "pink": "fuchsia",
+        "coral": "pinky coral",
+        "yellow": "clear lemon",
+        "green": "emerald",
+        "teal": "cyan teal",
+        "blue": "royal blue",
+        "violet": "blue-violet"
+      },
+      "nearest_12": [
+        "Deep Winter",
+        "True Winter",
+        "Bright Winter"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-light-muted",
+      "name": "Chalk",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        1.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        0.0,
+        1.0,
+        -1.0
+      ],
+      "factor_words": [
+        "neutral",
+        "light",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E5DDD8",
+        "mid_base": "#A59E9B",
+        "dark_bottom": "#564F57",
+        "dark_formal": "#3F3741"
+      },
+      "accents": {
+        "red": "#DDB2AE",
+        "pink": "#E3BBC4",
+        "coral": "#D4A19C",
+        "yellow": "#E6DFB9",
+        "green": "#A9C6B0",
+        "teal": "#A0CBC8",
+        "blue": "#A9C0DC",
+        "violet": "#CAB9D8"
+      },
+      "accent_names": {
+        "red": "muted ruby",
+        "pink": "rose pink",
+        "coral": "rose coral",
+        "yellow": "butter yellow",
+        "green": "sage",
+        "teal": "dusty teal",
+        "blue": "denim blue",
+        "violet": "greyed purple"
+      },
+      "nearest_12": [
+        "Light Summer",
+        "Soft Summer",
+        "True Summer"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-light-medium",
+      "name": "Pearl",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "anchor_coords": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "factor_words": [
+        "neutral",
+        "light",
+        "moderate"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E5DDD8",
+        "mid_base": "#A59E9B",
+        "dark_bottom": "#514A52",
+        "dark_formal": "#39323C"
+      },
+      "accents": {
+        "red": "#FEA19A",
+        "pink": "#FFACC0",
+        "coral": "#E9798B",
+        "yellow": "#F0E086",
+        "green": "#8DD09E",
+        "teal": "#6CD5D1",
+        "blue": "#8FC1FF",
+        "violet": "#D5AEF4"
+      },
+      "accent_names": {
+        "red": "ruby",
+        "pink": "rose",
+        "coral": "coral rose",
+        "yellow": "yellow",
+        "green": "green",
+        "teal": "balanced teal",
+        "blue": "sapphire",
+        "violet": "violet"
+      },
+      "nearest_12": [
+        "Light Spring",
+        "Light Summer",
+        "True Spring"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-light-vivid",
+      "name": "Glint",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        1.0,
+        1.0
+      ],
+      "anchor_coords": [
+        0.0,
+        1.0,
+        1.0
+      ],
+      "factor_words": [
+        "neutral",
+        "light",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E5DDD8",
+        "mid_base": "#A59E9B",
+        "dark_bottom": "#514A52",
+        "dark_formal": "#332C35"
+      },
+      "accents": {
+        "red": "#FFA09A",
+        "pink": "#FFACC0",
+        "coral": "#F66D83",
+        "yellow": "#FADF3B",
+        "green": "#6AD98C",
+        "teal": "#00DDD8",
+        "blue": "#8FC1FF",
+        "violet": "#DAA9FF"
+      },
+      "accent_names": {
+        "red": "clear ruby",
+        "pink": "hot rose",
+        "coral": "bright rose coral",
+        "yellow": "bright yellow",
+        "green": "leaf green",
+        "teal": "rich teal",
+        "blue": "electric blue",
+        "violet": "amethyst"
+      },
+      "nearest_12": [
+        "Light Spring",
+        "Bright Spring",
+        "True Spring"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-medium-muted",
+      "name": "Pebble",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "factor_words": [
+        "neutral",
+        "medium",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E3DAD5",
+        "mid_base": "#9D9592",
+        "dark_bottom": "#4B454C",
+        "dark_formal": "#352F38"
+      },
+      "accents": {
+        "red": "#A37B77",
+        "pink": "#A8848C",
+        "coral": "#CA8D87",
+        "yellow": "#C2BC96",
+        "green": "#76917C",
+        "teal": "#678F8D",
+        "blue": "#70859F",
+        "violet": "#8F7F9C"
+      },
+      "accent_names": {
+        "red": "muted ruby",
+        "pink": "rose pink",
+        "coral": "rose coral",
+        "yellow": "butter yellow",
+        "green": "sage",
+        "teal": "dusty teal",
+        "blue": "denim blue",
+        "violet": "greyed purple"
+      },
+      "nearest_12": [
+        "Soft Autumn",
+        "Soft Summer",
+        "True Autumn"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-medium-medium",
+      "name": "Mosaic",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "anchor_coords": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "factor_words": [
+        "neutral",
+        "medium",
+        "moderate"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E3DAD5",
+        "mid_base": "#9D9592",
+        "dark_bottom": "#464047",
+        "dark_formal": "#302A32"
+      },
+      "accents": {
+        "red": "#C16965",
+        "pink": "#C37488",
+        "coral": "#E55F74",
+        "yellow": "#CCBC62",
+        "green": "#599A6B",
+        "teal": "#249996",
+        "blue": "#5686C0",
+        "violet": "#9974B5"
+      },
+      "accent_names": {
+        "red": "ruby",
+        "pink": "rose",
+        "coral": "coral rose",
+        "yellow": "yellow",
+        "green": "green",
+        "teal": "balanced teal",
+        "blue": "sapphire",
+        "violet": "violet"
+      },
+      "nearest_12": [
+        "Bright Spring",
+        "Bright Winter",
+        "Soft Autumn"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-medium-vivid",
+      "name": "Kaleidoscope",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "anchor_coords": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "factor_words": [
+        "neutral",
+        "medium",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E3DAD5",
+        "mid_base": "#9D9592",
+        "dark_bottom": "#464047",
+        "dark_formal": "#29242B"
+      },
+      "accents": {
+        "red": "#E2484A",
+        "pink": "#E05983",
+        "coral": "#F4506A",
+        "yellow": "#D5BB00",
+        "green": "#01A452",
+        "teal": "#009A97",
+        "blue": "#2383E9",
+        "violet": "#A662D4"
+      },
+      "accent_names": {
+        "red": "clear ruby",
+        "pink": "hot rose",
+        "coral": "bright rose coral",
+        "yellow": "bright yellow",
+        "green": "leaf green",
+        "teal": "rich teal",
+        "blue": "electric blue",
+        "violet": "amethyst"
+      },
+      "nearest_12": [
+        "Bright Spring",
+        "Bright Winter",
+        "True Spring"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-deep-muted",
+      "name": "Shale",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        -1.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        0.0,
+        -1.0,
+        -1.0
+      ],
+      "factor_words": [
+        "neutral",
+        "deep",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E1D7D2",
+        "mid_base": "#958C89",
+        "dark_bottom": "#413B42",
+        "dark_formal": "#2C272E"
+      },
+      "accents": {
+        "red": "#66423F",
+        "pink": "#6C4B52",
+        "coral": "#C17971",
+        "yellow": "#827B58",
+        "green": "#3D5744",
+        "teal": "#315856",
+        "blue": "#3B4F67",
+        "violet": "#554661"
+      },
+      "accent_names": {
+        "red": "muted ruby",
+        "pink": "rose pink",
+        "coral": "rose coral",
+        "yellow": "butter yellow",
+        "green": "sage",
+        "teal": "dusty teal",
+        "blue": "denim blue",
+        "violet": "greyed purple"
+      },
+      "nearest_12": [
+        "Deep Autumn",
+        "Soft Autumn",
+        "True Autumn"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-deep-medium",
+      "name": "Garnet",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "anchor_coords": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "factor_words": [
+        "neutral",
+        "deep",
+        "moderate"
+      ],
+      "neutrals": {
+        "light_shirt": "#F4F0EC",
+        "light_layer": "#E1D7D2",
+        "mid_base": "#958C89",
+        "dark_bottom": "#3B363C",
+        "dark_formal": "#272228"
+      },
+      "accents": {
+        "red": "#7F2F2E",
+        "pink": "#823A4F",
+        "coral": "#E1445D",
+        "yellow": "#8B7B19",
+        "green": "#1A5F33",
+        "teal": "#005C5A",
+        "blue": "#1F4E84",
+        "violet": "#5E3B77"
+      },
+      "accent_names": {
+        "red": "ruby",
+        "pink": "rose",
+        "coral": "coral rose",
+        "yellow": "yellow",
+        "green": "green",
+        "teal": "balanced teal",
+        "blue": "sapphire",
+        "violet": "violet"
+      },
+      "nearest_12": [
+        "Deep Autumn",
+        "Deep Winter",
+        "True Autumn"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "neutral-deep-vivid",
+      "name": "Black Opal",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "New: neutral / deep / vivid",
+      "coords": [
+        0.0,
+        -1.0,
+        1.0
+      ],
+      "anchor_coords": [
+        0.0,
+        -1.0,
+        1.0
+      ],
+      "factor_words": [
+        "neutral",
+        "deep",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#EEE9E7",
+        "light_layer": "#C7C0C2",
+        "mid_base": "#89858A",
+        "dark_bottom": "#312C35",
+        "dark_formal": "#171923"
+      },
+      "accents": {
+        "red": "#940018",
+        "pink": "#9C0A4A",
+        "coral": "#F23351",
+        "yellow": "#8C7B00",
+        "green": "#00612E",
+        "teal": "#005C5A",
+        "blue": "#004C93",
+        "violet": "#6A2094"
+      },
+      "accent_names": {
+        "red": "clear ruby",
+        "pink": "hot rose",
+        "coral": "bright rose coral",
+        "yellow": "bright yellow",
+        "green": "leaf green",
+        "teal": "rich teal",
+        "blue": "electric blue",
+        "violet": "amethyst"
+      },
+      "nearest_12": [
+        "Deep Winter",
+        "Bright Winter",
+        "True Winter"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "warm-light-muted",
+      "name": "Linen",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "Soft Spring (some 16-season systems)",
+      "coords": [
+        1.0,
+        1.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        1.0,
+        1.0,
+        -1.0
+      ],
+      "factor_words": [
+        "warm",
+        "light",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F5EBDE",
+        "light_layer": "#E4D5C1",
+        "mid_base": "#B9AA91",
+        "dark_bottom": "#6D594A",
+        "dark_formal": "#453A31"
+      },
+      "accents": {
+        "red": "#DCB3A8",
+        "pink": "#E4BDB7",
+        "coral": "#C4937E",
+        "yellow": "#EEDCB8",
+        "green": "#B9C3A3",
+        "teal": "#A3CBC0",
+        "blue": "#A2C3D9",
+        "violet": "#D4B6CE"
+      },
+      "accent_names": {
+        "red": "terracotta red",
+        "pink": "salmon rose",
+        "coral": "soft apricot",
+        "yellow": "ochre",
+        "green": "olive sage",
+        "teal": "sea green",
+        "blue": "soft aqua-blue",
+        "violet": "smoky plum"
+      },
+      "nearest_12": [
+        "Soft Autumn",
+        "True Autumn",
+        "Light Spring"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-honey",
+      "name": "Honey",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Light Spring",
+      "conventional_alias": "Light Spring",
+      "coords": [
+        0.65,
+        1.0,
+        0.4
+      ],
+      "anchor_coords": [
+        0.65,
+        1.0,
+        0.4
+      ],
+      "factor_words": [
+        "warm",
+        "light",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F8F1DF",
+        "light_layer": "#E9D9C0",
+        "mid_base": "#BCA68D",
+        "dark_bottom": "#655A4B",
+        "dark_formal": "#40483E"
+      },
+      "accents": {
+        "red": "#DA7469",
+        "pink": "#EBA4AD",
+        "coral": "#F3AD84",
+        "yellow": "#E9CB70",
+        "green": "#93BC82",
+        "teal": "#65B8AD",
+        "blue": "#7AAFC2",
+        "violet": "#AD92B9"
+      },
+      "accent_names": {
+        "red": "clear scarlet",
+        "pink": "coral pink",
+        "coral": "persimmon coral",
+        "yellow": "sunshine yellow",
+        "green": "yellow-green",
+        "teal": "clear turquoise",
+        "blue": "clear aqua-blue",
+        "violet": "red-violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/light-spring-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "warm-light-vivid",
+      "name": "Sunburst",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "anchor_coords": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "factor_words": [
+        "warm",
+        "light",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F8EFE2",
+        "light_layer": "#E5D4BE",
+        "mid_base": "#BAA88D",
+        "dark_bottom": "#624E3D",
+        "dark_formal": "#413229"
+      },
+      "accents": {
+        "red": "#FFA28B",
+        "pink": "#FFB0A5",
+        "coral": "#FB7C51",
+        "yellow": "#FFD88D",
+        "green": "#B0CC53",
+        "teal": "#00E0C0",
+        "blue": "#6FC9FF",
+        "violet": "#FC98ED"
+      },
+      "accent_names": {
+        "red": "clear scarlet",
+        "pink": "coral pink",
+        "coral": "persimmon coral",
+        "yellow": "sunshine yellow",
+        "green": "yellow-green",
+        "teal": "clear turquoise",
+        "blue": "clear aqua-blue",
+        "violet": "red-violet"
+      },
+      "nearest_12": [
+        "Light Spring",
+        "True Spring",
+        "Bright Spring"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-amberwood",
+      "name": "Amberwood",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "True Autumn",
+      "conventional_alias": "True Autumn",
+      "coords": [
+        1.0,
+        -0.35,
+        -0.7
+      ],
+      "anchor_coords": [
+        1.0,
+        -0.35,
+        -0.7
+      ],
+      "factor_words": [
+        "warm",
+        "medium",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F1E2C7",
+        "light_layer": "#D3B991",
+        "mid_base": "#A08154",
+        "dark_bottom": "#594632",
+        "dark_formal": "#3D3D2D"
+      },
+      "accents": {
+        "red": "#A9533C",
+        "pink": "#BE8073",
+        "coral": "#CE784A",
+        "yellow": "#D9AA43",
+        "green": "#76813D",
+        "teal": "#3D7D68",
+        "blue": "#4B7287",
+        "violet": "#82536B"
+      },
+      "accent_names": {
+        "red": "terracotta red",
+        "pink": "salmon rose",
+        "coral": "soft apricot",
+        "yellow": "ochre",
+        "green": "olive sage",
+        "teal": "sea green",
+        "blue": "soft aqua-blue",
+        "violet": "smoky plum"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/true-autumn-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "opal-thyme",
+      "name": "Thyme",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Soft Autumn",
+      "conventional_alias": "Soft Autumn",
+      "coords": [
+        0.65,
+        -0.15,
+        -1.0
+      ],
+      "anchor_coords": [
+        0.65,
+        -0.15,
+        -1.0
+      ],
+      "factor_words": [
+        "warm",
+        "medium",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F1E7D8",
+        "light_layer": "#E1D2BE",
+        "mid_base": "#A89A7E",
+        "dark_bottom": "#645B49",
+        "dark_formal": "#4A4437"
+      },
+      "accents": {
+        "red": "#B67A70",
+        "pink": "#CF9A92",
+        "coral": "#CE967A",
+        "yellow": "#D0B780",
+        "green": "#9AA37E",
+        "teal": "#6D998E",
+        "blue": "#809EAD",
+        "violet": "#A0818E"
+      },
+      "accent_names": {
+        "red": "terracotta red",
+        "pink": "salmon rose",
+        "coral": "soft apricot",
+        "yellow": "ochre",
+        "green": "olive sage",
+        "teal": "sea green",
+        "blue": "soft aqua-blue",
+        "violet": "smoky plum"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/soft-autumn-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "warm-medium-medium",
+      "name": "Marigold",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "anchor_coords": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "factor_words": [
+        "warm",
+        "medium",
+        "moderate"
+      ],
+      "neutrals": {
+        "light_shirt": "#F8EFE2",
+        "light_layer": "#E4D2BA",
+        "mid_base": "#B3A082",
+        "dark_bottom": "#554435",
+        "dark_formal": "#3E3027"
+      },
+      "accents": {
+        "red": "#C06B58",
+        "pink": "#C5766C",
+        "coral": "#E96F45",
+        "yellow": "#DDB461",
+        "green": "#80924B",
+        "teal": "#339985",
+        "blue": "#3C8CB9",
+        "violet": "#AB6EA2"
+      },
+      "accent_names": {
+        "red": "tomato red",
+        "pink": "peach pink",
+        "coral": "coral",
+        "yellow": "golden yellow",
+        "green": "leaf green",
+        "teal": "turquoise",
+        "blue": "blue turquoise",
+        "violet": "orchid"
+      },
+      "nearest_12": [
+        "True Autumn",
+        "True Spring",
+        "Bright Spring"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-sunstone",
+      "name": "Sunstone",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "True Spring",
+      "conventional_alias": "True Spring",
+      "coords": [
+        1.0,
+        0.35,
+        0.7
+      ],
+      "anchor_coords": [
+        1.0,
+        0.35,
+        0.7
+      ],
+      "factor_words": [
+        "warm",
+        "medium",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#FCF2D8",
+        "light_layer": "#E6D4AD",
+        "mid_base": "#BA965C",
+        "dark_bottom": "#5D5036",
+        "dark_formal": "#36473D"
+      },
+      "accents": {
+        "red": "#DD5136",
+        "pink": "#F0808E",
+        "coral": "#F68A50",
+        "yellow": "#F2C431",
+        "green": "#6ABB42",
+        "teal": "#18AFA0",
+        "blue": "#328FC0",
+        "violet": "#A35BA5"
+      },
+      "accent_names": {
+        "red": "clear scarlet",
+        "pink": "coral pink",
+        "coral": "persimmon coral",
+        "yellow": "sunshine yellow",
+        "green": "yellow-green",
+        "teal": "clear turquoise",
+        "blue": "clear aqua-blue",
+        "violet": "red-violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/true-spring-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "opal-citrus",
+      "name": "Citrus",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Bright Spring",
+      "conventional_alias": "Bright Spring",
+      "coords": [
+        0.65,
+        0.15,
+        1.0
+      ],
+      "anchor_coords": [
+        0.65,
+        0.15,
+        1.0
+      ],
+      "factor_words": [
+        "warm",
+        "medium",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#FAF5E9",
+        "light_layer": "#E4D8C5",
+        "mid_base": "#9C9986",
+        "dark_bottom": "#404941",
+        "dark_formal": "#1C3436"
+      },
+      "accents": {
+        "red": "#E93648",
+        "pink": "#FA5B91",
+        "coral": "#FE7855",
+        "yellow": "#F2D42E",
+        "green": "#24C85D",
+        "teal": "#06BDB2",
+        "blue": "#338FDA",
+        "violet": "#9B4CC6"
+      },
+      "accent_names": {
+        "red": "clear scarlet",
+        "pink": "coral pink",
+        "coral": "persimmon coral",
+        "yellow": "sunshine yellow",
+        "green": "yellow-green",
+        "teal": "clear turquoise",
+        "blue": "clear aqua-blue",
+        "violet": "red-violet"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/bright-spring-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "warm-deep-muted",
+      "name": "Smokewood",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "",
+      "coords": [
+        1.0,
+        -1.0,
+        -1.0
+      ],
+      "anchor_coords": [
+        1.0,
+        -1.0,
+        -1.0
+      ],
+      "factor_words": [
+        "warm",
+        "deep",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F8EFE2",
+        "light_layer": "#E3D0B6",
+        "mid_base": "#AC9877",
+        "dark_bottom": "#4F3F31",
+        "dark_formal": "#392C24"
+      },
+      "accents": {
+        "red": "#66433A",
+        "pink": "#6D4C47",
+        "coral": "#B16F54",
+        "yellow": "#897858",
+        "green": "#4C5438",
+        "teal": "#34584F",
+        "blue": "#345164",
+        "violet": "#5D4458"
+      },
+      "accent_names": {
+        "red": "terracotta red",
+        "pink": "salmon rose",
+        "coral": "soft apricot",
+        "yellow": "ochre",
+        "green": "olive sage",
+        "teal": "sea green",
+        "blue": "soft aqua-blue",
+        "violet": "smoky plum"
+      },
+      "nearest_12": [
+        "Deep Autumn",
+        "True Autumn",
+        "Soft Autumn"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    },
+    {
+      "id": "opal-copper",
+      "name": "Copper",
+      "origin": "traditional_12_embedded",
+      "canonical_season": "Deep Autumn",
+      "conventional_alias": "Dark Autumn",
+      "coords": [
+        0.65,
+        -1.0,
+        -0.4
+      ],
+      "anchor_coords": [
+        0.65,
+        -1.0,
+        -0.4
+      ],
+      "factor_words": [
+        "warm",
+        "deep",
+        "muted"
+      ],
+      "neutrals": {
+        "light_shirt": "#F0DCC3",
+        "light_layer": "#C8A88A",
+        "mid_base": "#826B53",
+        "dark_bottom": "#3E3225",
+        "dark_formal": "#28211C"
+      },
+      "accents": {
+        "red": "#993C32",
+        "pink": "#A96563",
+        "coral": "#B8623E",
+        "yellow": "#BA913F",
+        "green": "#607238",
+        "teal": "#276D61",
+        "blue": "#355F73",
+        "violet": "#7D4864"
+      },
+      "accent_names": {
+        "red": "terracotta red",
+        "pink": "salmon rose",
+        "coral": "soft apricot",
+        "yellow": "ochre",
+        "green": "olive sage",
+        "teal": "sea green",
+        "blue": "soft aqua-blue",
+        "violet": "smoky plum"
+      },
+      "nearest_12": [],
+      "evidence_status": "established seasonal correspondence; HEX colours remain illustrative, not calibrated",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/dark-autumn-a-comprehensive-guide"
+      ]
+    },
+    {
+      "id": "warm-deep-vivid",
+      "name": "Ember",
+      "origin": "experimental_27",
+      "canonical_season": null,
+      "conventional_alias": "Clear Autumn (some 16-season systems)",
+      "coords": [
+        1.0,
+        -1.0,
+        1.0
+      ],
+      "anchor_coords": [
+        1.0,
+        -1.0,
+        1.0
+      ],
+      "factor_words": [
+        "warm",
+        "deep",
+        "vivid"
+      ],
+      "neutrals": {
+        "light_shirt": "#F2E4CF",
+        "light_layer": "#D0B38A",
+        "mid_base": "#987146",
+        "dark_bottom": "#453528",
+        "dark_formal": "#28231C"
+      },
+      "accents": {
+        "red": "#8C1E00",
+        "pink": "#A00F11",
+        "coral": "#FA4F15",
+        "yellow": "#9C7300",
+        "green": "#485800",
+        "teal": "#005E4F",
+        "blue": "#005379",
+        "violet": "#800E76"
+      },
+      "accent_names": {
+        "red": "clear scarlet",
+        "pink": "coral pink",
+        "coral": "persimmon coral",
+        "yellow": "sunshine yellow",
+        "green": "yellow-green",
+        "teal": "clear turquoise",
+        "blue": "clear aqua-blue",
+        "violet": "red-violet"
+      },
+      "nearest_12": [
+        "Bright Spring",
+        "True Spring",
+        "Deep Autumn"
+      ],
+      "evidence_status": "invented palette, unvalidated; HEX colours illustrative",
+      "source_urls": [
+        "https://theconceptwardrobe.com/colour-analysis-comprehensive-guides/complete-seasonal-guides"
+      ]
+    }
+  ],
+  "drape_trials": [
+    {
+      "id": "T1",
+      "axis": "T",
+      "prompt": "Which does more for the face: cool raspberry or equally vivid warm tomato red?",
+      "a": "Cool raspberry",
+      "b": "Warm tomato",
+      "a_hex": "#C53A68",
+      "b_hex": "#D65A37",
+      "polarity": "B+"
+    },
+    {
+      "id": "T2",
+      "axis": "T",
+      "prompt": "Which near-face green is more harmonious: blue-leaning teal or yellow-leaning leaf green?",
+      "a": "Blue teal",
+      "b": "Leaf green",
+      "a_hex": "#368E9E",
+      "b_hex": "#7E9B39",
+      "polarity": "B+"
+    },
+    {
+      "id": "T3",
+      "axis": "T",
+      "prompt": "Which yellow is kinder to the face: lemon yellow or golden yellow?",
+      "a": "Lemon yellow",
+      "b": "Golden yellow",
+      "a_hex": "#E5D856",
+      "b_hex": "#E0B44A",
+      "polarity": "B+"
+    },
+    {
+      "id": "V1",
+      "axis": "V",
+      "prompt": "Which carries your face better: pale rose or deep berry (similar temperature)?",
+      "a": "Pale rose",
+      "b": "Deep berry",
+      "a_hex": "#DDA5B4",
+      "b_hex": "#8C385A",
+      "polarity": "A+"
+    },
+    {
+      "id": "V2",
+      "axis": "V",
+      "prompt": "Which blue works better near your face: pale periwinkle or deeper indigo?",
+      "a": "Pale periwinkle",
+      "b": "Deep indigo",
+      "a_hex": "#A3B8E3",
+      "b_hex": "#354C9A",
+      "polarity": "A+"
+    },
+    {
+      "id": "C1",
+      "axis": "C",
+      "prompt": "Which same-family teal works: clear saturated teal or smoky teal?",
+      "a": "Clear teal",
+      "b": "Smoky teal",
+      "a_hex": "#12A5A9",
+      "b_hex": "#6B999A",
+      "polarity": "A+"
+    },
+    {
+      "id": "C2",
+      "axis": "C",
+      "prompt": "Which pink near your face: clear rose or dusty rose?",
+      "a": "Clear rose",
+      "b": "Dusty rose",
+      "a_hex": "#D8497E",
+      "b_hex": "#B68C9B",
+      "polarity": "A+"
+    },
+    {
+      "id": "C3",
+      "axis": "C",
+      "prompt": "Which blue near your face: crisp cobalt or greyed denim blue?",
+      "a": "Crisp cobalt",
+      "b": "Greyed denim",
+      "a_hex": "#3460C8",
+      "b_hex": "#7289B1",
+      "polarity": "A+"
+    }
+  ],
+  "secondary_questions": [
+    "white vs ivory (check, not axis-isolating)",
+    "black vs charcoal vs espresso",
+    "favourite coloured clothes and colours disliked",
+    "natural hair colour, dyed hair, prior season diagnoses",
+    "photo lighting and makeup quality"
+  ],
+  "preference": "After each comparison ask separately whether the user would WANT to wear either colour, independent of face-flattering choice."
+}
