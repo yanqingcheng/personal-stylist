@@ -74,6 +74,9 @@ export default function StylePage() {
     restoredDialogueRound.current=latest.id;
     const saved=sessionStorage.getItem(key);
     if(saved){const restored:unknown=JSON.parse(saved);if(typeof restored==='object'&&restored!==null&&'text' in restored&&typeof restored.text==='string'){
+     if('id' in restored&&typeof restored.id==='string'&&dialogue?.messages.some(message=>message.id===restored.id&&message.role==='user'&&message.text===restored.text&&message.roundId===latest.id)){
+      sessionStorage.removeItem(key);dialogueRetry.current=null;return;
+     }
      // Synchronize the unsent draft from browser storage once per owned round.
      // eslint-disable-next-line react-hooks/set-state-in-effect
      setFeedback(restored.text.slice(0,8000));
@@ -83,7 +86,7 @@ export default function StylePage() {
    }
    if(feedback)sessionStorage.setItem(key,JSON.stringify(dialogueRetry.current?.text===feedback?dialogueRetry.current:{text:feedback}));else sessionStorage.removeItem(key);
   }catch{/* Browser storage can be unavailable; the current text remains in memory. */}
- },[latest?.id,feedback]);
+ },[latest?.id,feedback,dialogue?.messages]);
  return <div className={styles.page}><header className={styles.header}><Link href="/" className={styles.brand}>PERSONAL STYLIST <span>/ THE STYLE STUDY</span></Link><Link href="/profile">Your colour study ↗</Link></header>
  <main className={styles.main}><div className={styles.intro}><div><p className={styles.kicker}>A PERSONAL EDIT · 01</p><h1>Style, on <em>your terms.</em></h1><p className={styles.lede}>A thoughtful starting point for getting dressed like yourself. Tell us what you love, then shape your edit together.</p></div><div className={styles.introNote}><span>THE PROCESS</span><p>Tell us → Explore looks → Refine → Make it yours</p></div></div>
  {loading?<p className={styles.notice} role="status">Opening your style study…</p>:!data?<div className={styles.panel}><h2>Let’s try that again.</h2><p>{message}</p><div className={styles.actions}><button onClick={()=>void load()}>Retry</button><Link href="/login">Sign in</Link></div></div>:<>
