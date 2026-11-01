@@ -29,7 +29,7 @@ Intended deployment: independent Vercel project, with `stylist.qingsworkshop.com
 
 ## Planned first journey
 
-Portrait and written reflections → identical-photo colour comparisons → provisional colour evidence → separate personal preferences → wearable palette. Persist private account-owned profiles and media once slice0 access controls are implemented. Server-side AI endpoints can be added without a database. Supabase Auth, invite-gated accounts, saved profiles and server-side credit limits are now planned in slice 0; see docs/implementation-plan.md.
+Portrait and written reflections → identical-photo colour comparisons → provisional colour evidence → separate personal preferences → wearable palette. Persist private account-owned profiles and media once slice0 access controls are implemented. Supabase Auth, invite-gated accounts, saved profiles and server-side credit limits are now planned in slice 0; see docs/implementation-plan.md.
 
 ## Privacy and secrets
 

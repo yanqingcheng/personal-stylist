@@ -1,6 +1,6 @@
 # Work packets for “go”
 
-Read [execution-spec.md](execution-spec.md) (R0–R8) and [implementation-plan.md](implementation-plan.md) first. These files govern over older bead prose where they conflict. No product implementation has been authorised yet. Scope is the complete journey, delivered in working checkpoints; no assumption it all fits before17:00.
+Read [execution-spec.md](execution-spec.md) (R0–R9) and [implementation-plan.md](implementation-plan.md) first. These files govern over older bead prose where they conflict. No product implementation has been authorised yet. Scope is the complete journey, delivered in working checkpoints; no assumption it all fits before17:00.
 
 Each packet below is an execution-task unless labelled decision/test-charter. Its input is this repo plus the specified R-sections and the source map in the implementation plan. Private source checkout can be obtained from `yanqingcheng/stylist-notes` using authorised access; pin reviewed commit7f5f43d, review later deltas before adoption. No private photos or personal examples enter public source. Missing credentials do not prevent pure domain/UI work.
 
@@ -10,7 +10,7 @@ Depends: none. Owner: lead implementation agent; account owner supplies fresh Ch
 
 Inputs: R0,R4,R8; authorisation to retrieve OpenAI key from local secrets; $50 total. On a replacement workstation configure secrets through its secure store, never this document. Existing key is only in primary ignored .env.local, not copied to worktrees or Git.
 
-Output: `docs/launch-status.md` updated with project reference (nonsecret), auth method, callback URL, chosen models/settings/prices, approved pool allocation, image latency/fidelity result, usable live account capacities, unresolved prerequisites. This is two phases, not a cyclic whole-packet prerequisite: P00a setup/qualitative decisions unlock P02; P00b metered calibration depends on P03 and the P09 LookSpec contract. It owns a minimal provider probe harness through the paid wrapper; it does not depend on completed P07/P10 screens. P10 live acceptance follows this probe. First get qualitative Codex experiments working; then begin API metering only through the spend wrapper P03. Probe costs count inside proposed $5 development allocation. Verify private consenting reference availability; no arbitrary public-person photos.
+Output: `docs/launch-status.md` updated with project reference (nonsecret), auth method, callback URL, chosen models/settings/prices, approved pool allocation, image latency/fidelity result, usable live account capacities, unresolved prerequisites. This is two phases, not a cyclic whole-packet prerequisite: P00a setup/qualitative decisions unlock P02; P00b metered calibration depends on P03, P05 owned upload/finalize/read capability and the P09 LookSpec contract. It owns a minimal provider probe harness through the paid wrapper; it does not depend on completed P07/P10 screens. P10 live acceptance follows this probe. First get qualitative Codex experiments working; then begin API metering only through the spend wrapper P03. Probe costs count inside proposed $5 development allocation. Verify private consenting reference availability; no arbitrary public-person photos.
 
 Auth: fresh management token for Checklet account; inspect organisation/project slot, create dedicated personal-stylist project only when go authorises setup. Check region/plan before accepting paid infrastructure; ask before a paid upgrade, since $50 authorises API spend only. Reuse authorised configured SMTP/OAuth infrastructure if available; don't extract another app's OAuth secrets without explicit need/authority. OTP delivery test to non-team account, or supported OAuth end-to-end. Check venue shared-IP rate limits.
 
@@ -110,7 +110,7 @@ Done: unapproved/stale inputs rejected; approved grammar reflected; dislikes/pra
 
 ## P13 — integrated acceptance and release (test-charter + execution-task)
 
-Depends: P01,P02,P03,P05,P06,P08 for colour checkpoint; additionally P11/P12 for full journey; P07 checks are conditional on photo-observation feature being enabled. Colour checkpoint can be released earlier with honest scope. Inputs R0–R8.
+Depends: P01,P02,P03,P05,P06,P08 for colour checkpoint; additionally P11/P12 for full journey; P07 checks are conditional on photo-observation feature being enabled. Colour checkpoint can be released earlier with honest scope. Inputs R0–R9.
 
 Deliver test evidence, tested live URL, setup/provenance, recorded <=90-second actual working demo and concrete Codex contribution. Use a private consented portrait at demo time; do not publish identifiable photos without permission. A fictional prerecorded example is labelled and does not certify live on-user generation. Public explanatory/demo material must not require an invite; actual paid consultation intentionally does.
 
