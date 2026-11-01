@@ -33,7 +33,7 @@ export async function POST(request:Request){
   if(dispatch.error||dispatch.data!==true){if(dispatch.data===false)await auth.service.rpc('settle_style_operation',{p_user:auth.user.id,p_id:op.id,p_outcome:'failed_before_dispatch'});else await uncertain();return fail(503,'Live call unavailable; uncertain reservations remain held')}
   let providerSessionId:string|undefined;
   try{
-   const created=await createLiveSession({key:process.env.OPENAI_API_KEY!,sdp:input.sdp,history:context.snapshot.messages});providerSessionId=created.session.id;
+   const created=await createLiveSession({key:process.env.OPENAI_API_KEY!,sdp:input.sdp,history:context.snapshot.messages,savedContext:context.input});providerSessionId=created.session.id;
    const bound=await auth.service.rpc('bind_live_consultation',{p_user:auth.user.id,p_op:op.id,p_session:created.session.id});
    if(bound.error||!bound.data?.bound)throw new Error('Live binding failed');
    const answer=await auth.service.from('consultation_live_sessions').update({sdp_answer:created.transport.sdp}).eq('operation_id',op.id).eq('user_id',auth.user.id).select('operation_id').maybeSingle();if(answer.error||!answer.data)throw new Error('SDP save failed');
