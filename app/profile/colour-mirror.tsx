@@ -9,6 +9,14 @@ import styles from "./colour-mirror.module.css";
 type Props = {
   referenceUrl: string | undefined;
   referenceLabel: string;
+  /** Parent validates source identity/version before supplying an oriented-source rectangle. */
+  framing?: {
+    sourceMediaId: string;
+    sourceVersion: string;
+    sourceWidth: number;
+    sourceHeight: number;
+    crop: { x: number; y: number; width: number; height: number };
+  };
   template: Template;
   favourites: string[];
   crop: { zoom: number; y: number };
@@ -33,6 +41,9 @@ export default function ColourMirror(props: Props) {
     setNavigation({ id: template.id, point: next });
     if (template.id !== props.template.id) props.onTemplate(template.id);
   }
+  const framing = props.framing;
+  const framedViewport = framing ? { aspectRatio: `${framing.crop.width * framing.sourceWidth} / ${framing.crop.height * framing.sourceHeight}`, height: "auto" } : undefined;
+  const framedImage = framing ? { position: "absolute" as const, left: `${-100 * framing.crop.x / framing.crop.width}%`, top: `${-100 * framing.crop.y / framing.crop.height}%`, width: `${100 / framing.crop.width}%`, height: `${100 / framing.crop.height}%`, objectFit: "fill" as const, transform: "none" } : { objectPosition: `50% ${props.crop.y}%`, transform: `translateY(${(50 - props.crop.y) * (props.crop.zoom * 1.12 - 1)}%) scale(${props.crop.zoom * 1.12})` };
   const colours = personalPalette(props.template, []).swatches;
   const [choices, setChoices] = useState([5, 11]);
   const [active, setActive] = useState(0);
@@ -45,7 +56,7 @@ export default function ColourMirror(props: Props) {
         <div className={styles.portraits}>{choices.map((choice, side) => <article key={side}>
           <button type="button" className={`${styles.frame} ${side === active ? styles.active : ""}`} style={{ background: colours[choice].hex }} onClick={() => setActive(side)} aria-pressed={active === side} aria-label={`Change colour ${side === 0 ? "A" : "B"}: ${name(choice)}`}>
             <span className={styles.side}>{side === 0 ? "A" : "B"}{active === side ? " · EDITING" : " · TAP TO EDIT"}</span>
-            <span className={styles.crop}>{props.referenceUrl ? <img src={props.referenceUrl} alt="Your unchanged face and neck reference" style={{ objectPosition: `50% ${props.crop.y}%`, transform: `translateY(${(50 - props.crop.y) * (props.crop.zoom * 1.12 - 1)}%) scale(${props.crop.zoom * 1.12})` }} /> : <span>Reference unavailable. Return to your photos.</span>}</span>
+            <span className={styles.crop} style={framedViewport}>{props.referenceUrl ? <img src={props.referenceUrl} alt="Your unchanged face and neck reference" style={framedImage} /> : <span>Reference unavailable. Return to your photos.</span>}</span>
             <span className={styles.drape} aria-hidden="true" />
           </button>
           <div className={styles.caption}><div><strong>{name(choice)}</strong><small>{colours[choice].hex}</small></div><button type="button" onClick={() => props.onFavourite(colours[choice].hex)} aria-pressed={props.favourites.includes(colours[choice].hex)} aria-label={`${props.favourites.includes(colours[choice].hex) ? "Remove" : "Keep"} ${name(choice)} favourite`}>{props.favourites.includes(colours[choice].hex) ? "♥" : "♡"}</button></div>
@@ -65,7 +76,7 @@ export default function ColourMirror(props: Props) {
         <p>Tap a colour to change portrait <strong>{active === 0 ? "A" : "B"}</strong>.</p>
         {[{ title: "Everyday foundations", start: 0, end: 5 }, { title: "A little more expression", start: 5, end: 13 }].map(group => <div className={styles.group} key={group.title}><h3>{group.title}<span>{group.end - group.start}</span></h3><div className={styles.swatches}>{colours.slice(group.start, group.end).map((colour, i) => <button type="button" key={colour.id} style={{ background: colour.hex }} title={colour.name || colour.role} aria-label={`Try ${colour.name || colour.role.replaceAll("_", " ")}, ${colour.hex}, on ${active === 0 ? "A" : "B"}`} aria-pressed={choices[active] === group.start + i} onClick={() => setChoices(previous => previous.map((value, side) => side === active ? group.start + i : value))}><span>{choices[active] === group.start + i ? "✓" : props.favourites.includes(colour.hex) ? "♥" : ""}</span></button>)}</div></div>)}
         <p className={styles.selection} aria-live="polite">On {active === 0 ? "A" : "B"}: {current.name || current.role.replaceAll("_", " ")} · {current.hex}</p>
-        <details className={styles.details}><summary>Frame your face and neck</summary><p>Use one shared crop for both sides. Keep your face and neck visible.</p><label>Zoom <input type="range" min="1" max="3" step="0.05" value={props.crop.zoom} onChange={e => props.onCrop({ ...props.crop, zoom: Number(e.target.value) })} /></label><label>Vertical position <input type="range" min="0" max="100" value={props.crop.y} onChange={e => props.onCrop({ ...props.crop, y: Number(e.target.value) })} /></label></details>
+        {!framing && <details className={styles.details}><summary>Adjust framing manually</summary><p>Use one shared crop for both sides. Keep your face and neck visible.</p><label>Zoom <input type="range" min="1" max="3" step="0.05" value={props.crop.zoom} onChange={e => props.onCrop({ ...props.crop, zoom: Number(e.target.value) })} /></label><label>Vertical position <input type="range" min="0" max="100" value={props.crop.y} onChange={e => props.onCrop({ ...props.crop, y: Number(e.target.value) })} /></label></details>}
         <div className={styles.favourites}><strong>Your favourites · {props.favourites.length}</strong><div>{props.favourites.map(hex => <button type="button" key={hex} onClick={() => props.onFavourite(hex)} aria-label={`Remove ${hex} favourite`}><i style={{ background: hex }} />{hex} ×</button>)}</div><p>Favourites describe your taste. They don’t change your colour evidence. Use Save my palette to keep changes.</p></div>
       </div>
     </div>
