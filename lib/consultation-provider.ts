@@ -4,6 +4,7 @@ import { z } from 'zod';
 import sharp from 'sharp';
 import type { serviceClient } from '@/lib/server/supabase';
 import { consultationSnapshot } from '@/lib/consultation';
+import { consultationHistory } from '@/lib/consultation-history';
 import { demoDocument } from '@/lib/demo';
 import {resolveConsultationOutput,type ConsultationOutput} from '@/lib/consultation-output';
 import { loadApprovedBodySource } from '@/lib/body-reference';
@@ -25,10 +26,6 @@ export const CONSULTATION_INSTRUCTIONS=[
  'Prepared boards are pre-existing illustrations, not new images made from this message. Never claim to generate, revise, upload or purchase anything. No tool calls, retailer/stock claims or invented user answers. When activeOutput is supplied, discuss that exact resolved board rather than substituting historical prepared metadata. Distinguish prepared source content from live user words and from earlier native or API stylist replies.',
  'Rejecting every option is valid. Preserve stated likes and clarify a useful direction. There is no round-count completion rule. Chat words do not silently approve an output: explicit approval is recorded by the application action and applies only to its current saved output/hash. Never claim satisfaction or an approved editorial that the saved application state does not establish.',
 ].join('\n\n');
-const providerSnapshot=consultationSnapshot.extend({messages:z.array(z.object({
- id:z.uuid(),role:z.enum(['user','stylist']),text:z.string(),source:z.enum(['user','native-codex','api']),
- createdAt:z.string(),replyTo:z.uuid().nullable(),activeBoardId:z.string().nullable(),
-}))});
 type Service=ReturnType<typeof serviceClient>;
 export async function normaliseConsultationImage(bytes:Uint8Array){
  if(bytes.byteLength===0||bytes.byteLength>10485760)throw new Error('image_size');
@@ -58,7 +55,7 @@ export async function loadConsultationContext({service,userId,expectedRevision,r
   service.from('style_intakes').select('data').eq('user_id',userId).maybeSingle(),
   service.from('style_round_details').select('round_id,plan').eq('user_id',userId).order('updated_at',{ascending:false}).limit(3),
  ]);
- const snapshot=providerSnapshot.safeParse(saved.data);
+ const snapshot=consultationSnapshot.safeParse(saved.data);
  if(saved.error||profile.error||intake.error||plans.error||!snapshot.success||profile.data?.deletion_state!=='active')throw new Error('context_unavailable');
  if(mode!=='voice-vision'&&snapshot.data.revision!==expectedRevision)throw new Error('context_conflict');
  let voiceSnapshot=mode==='voice-vision'?consultationSnapshot.parse(saved.data):null;
@@ -144,7 +141,7 @@ export async function loadConsultationContext({service,userId,expectedRevision,r
  const input={
   operation:mode==='text'?'reply-to-saved-user-message':'reply-to-voice-transcript',
   targetMessage:target?{text:target.text,activeBoardId:target.activeBoardId}:null,
-  history:voiceSnapshot?voiceSnapshot.messages:snapshot.data.messages.map(({role,source,text,activeBoardId})=>({role,source,text,activeBoardId})),
+  history:consultationHistory((voiceSnapshot??snapshot.data).messages),
   profileReports:{reflections:profile.data.document.reflections??null,selectedTemplateId:profile.data.document.selectedTemplateId??null,taste:profile.data.document.taste??null,bodyProportionAnswers:profile.data.document.answers?.bodyProportionAnswers??null,consultationVibe:profile.data.document.answers?.consultationVibe??null,journeyStage:profile.data.document.answers?.consultationStage??null},
   bodyReference:bodySource?{sourceMediaId:bodySource.id,bodyRevision:bodySource.bodyRevision,coverage:bodySource.coverage,coverageSource:'user-report',provenance:bodySource.referenceProvenance,pixelsAttached:imageEvidence.some(item=>item.referenceKind==='body')}:null,
   styleIntakeReports:intake.data?.data??null,savedStylePlans:plans.data??[],preparedBoards,preparedReferences,activeOutput:activeOutput?{board:activeOutput.board,documentRevision:activeOutput.documentRevision,provenance:activeOutput.provenance,...((mode==='voice-vision'||mode==='voice')?{referenceSource:boardReferenceSource}: {})}:null,
