@@ -11,11 +11,21 @@ export async function POST(request:Request){
  try{
   const auth=await activeUser();if(!auth)return fail(401,'Sign in for your private consultation');
   const parsed=offer.safeParse(await body(request));if(!parsed.success)return fail(400,'A current conversation and WebRTC offer are required');
-  if(!liveAvailability().available)return Response.json({error:'GPT-Live is awaiting release',code:'live_release_blocked'},{status:503,headers});
+  const readiness=liveAvailability(auth.user.id);
+  if(!readiness.available)return Response.json({error:readiness.reason,code:readiness.code},{status:503,headers});
   const input=parsed.data,context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:input.expectedRevision,mode:'voice'});
   const hash=createHash('sha256').update(JSON.stringify({context:context.inputHash,sdp:input.sdp,pricingVersion:LIVE_PRICING_VERSION})).digest('hex');
   const reserved=await auth.service.rpc('reserve_live_consultation',{p_user:auth.user.id,p_key:input.idempotencyKey,p_hash:hash,p_revision:input.expectedRevision});
-  if(reserved.error||reserved.data?.error)return fail(reserved.data?.error==='budget'?402:409,'Live call could not be reserved');
+  if(reserved.error)return fail(503,'The shared Live budget ledger is unavailable');
+  if(reserved.data?.error){
+   const reason=reserved.data.error;
+   const message=reason==='budget'?'The remaining shared account budget cannot cover this Live reservation.'
+    :reason==='in_flight'?'Another operation is active or awaiting reconciliation. Finish it before starting Live.'
+    :reason==='unavailable'?'Live budget admission is disabled or its reservation price is not configured.'
+    :reason==='conflict'?'The saved conversation changed. Reload it before starting Live.'
+    :reason==='forbidden'?'This account is not permitted to start Live.':'Live call could not be reserved';
+   return Response.json({error:message,code:`live_${reason}`},{status:reason==='budget'?402:reason==='unavailable'?503:409,headers});
+  }
   const op=reserved.data?.operation;if(!op?.id)return fail(503,'Live call unavailable');
   if(!reserved.data.created)return Response.json({operation:op,replayed:true},{headers});
   const uncertain=()=>auth.service.rpc('mark_style_uncertain',{p_user:auth.user.id,p_op:op.id});
@@ -35,9 +45,10 @@ export async function GET(request:Request){
  try{
   const auth=await activeUser();if(!auth)return fail(401,'Sign in for your private consultation');
   const id=new URL(request.url).searchParams.get('operationId');
-  if(!id)return Response.json(liveAvailability(),{headers});
+  if(!id)return Response.json(liveAvailability(auth.user.id),{headers});
   if(!z.uuid().safeParse(id).success)return fail(404,'Live call unavailable');
-  if(!liveAvailability().available)return fail(503,'GPT-Live is awaiting release');
+  const readiness=liveAvailability(auth.user.id);
+  if(!readiness.available)return Response.json({error:readiness.reason,code:readiness.code},{status:503,headers});
   const operation=await auth.service.from('ai_operations').select('base_revision').eq('id',id).eq('user_id',auth.user.id).eq('kind','live').eq('state','running').maybeSingle();
   if(operation.error||!operation.data)return fail(404,'Live call unavailable');
   const context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:operation.data.base_revision,mode:'voice'});
