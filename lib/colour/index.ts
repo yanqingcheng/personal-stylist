@@ -14,7 +14,7 @@ export type ColourResponse = {
   /** The user's own words, retained verbatim. */
   comment?: string;
   /** Persist the displayed mapping, swatches and image transform with each comparison. */
-  presentation?: { left: "A" | "B"; right: "A" | "B"; aHex: string; bHex: string; transform: string };
+  presentation?: { left: "A" | "B"; right: "A" | "B"; aHex: string; bHex: string; transform: string; referenceVersion?: string };
 };
 export type UserStatement = { id: string; text: string; kind: "reflection" | "self-report" | "preference" };
 export type ColourObservation = { id: string; text: string; source: "photo-ai" | "user"; evidenceIds: string[] };
@@ -36,6 +36,9 @@ export const drapeTrials = source.drape_trials.map((trial) => ({
   id: trial.id as TrialId,
   axis: axisNames[trial.axis as keyof typeof axisNames],
   hueFamily: families[trial.id as TrialId],
+  // C1 approximately controls lightness/hue; other catalogue pairs visibly vary
+  // multiple dimensions. Their observations remain saved, not isolated-axis votes.
+  evidenceQuality: trial.id === "C1" ? "display-controlled" as const : "confounded" as const,
   positiveAnswer: trial.polarity[0] as "A" | "B",
 }));
 
@@ -69,7 +72,7 @@ export function summariseEvidence(responses: readonly ColourResponse[]): Evidenc
     const signs = new Set(trialVotes.filter((v) => v.status === "positive" || v.status === "negative").map((v) => v.status));
     const broad = trialVotes.some((v) => v.status === "broad");
     const conflict = trialVotes.some((v) => v.status === "conflicting") || signs.size > 1;
-    const directional = trialVotes.filter((v) => v.status === "positive" || v.status === "negative");
+    const directional = trialVotes.filter((v) => (v.status === "positive" || v.status === "negative") && drapeTrials.find(trial => trial.id === v.trialId)?.evidenceQuality === "display-controlled");
     const independentFamilies = new Set(directional.map((v) => families[v.trialId]));
     const status: AxisStatus = conflict ? "conflicting" : broad ? "broad" : directional.length >= 2 && independentFamilies.size >= 2 ? "provisional" : "unknown";
     const range: [number, number] | null = status !== "provisional" ? null : signs.has("positive") ? [0.1, 1] : [-1, -0.1];
