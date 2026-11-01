@@ -140,7 +140,8 @@ export default function StudioHub() {
       <div className="hub-grid">
         <aside className="hub-cover" aria-label="Your featured style image">
           <div className="hub-cover-image">{heroUrl ? <img src={heroUrl} alt={preview ? "Fictional model in charcoal tailoring, an illustrative design preview" : featuredLook?.title || "Your saved generated outfit sheet"} /> : <div className="hub-cover-empty"><span className="hub-cover-cross">✳</span><p>Your next<br/><em>point of view.</em></p><span>{featuredLook ? "Your saved image is loading or unavailable." : "Your first saved outfit will find its home here."}</span><Link href="/style">Explore your style ↗</Link></div>}<span className="hub-cover-index">01 / THE PERSONAL EDIT</span></div>
-          <div className="hub-cover-caption"><span>{preview ? "FICTIONAL OUTFIT / DESIGN PREVIEW" : approved ? "YOUR APPROVED STYLE DIRECTION" : featured ? "YOUR SAVED EXPLORATION" : "A LITTLE MORE YOU, EVERY DAY"}</span><span>↗</span></div>
+          <div className="hub-cover-caption"><span>{preview ? "FICTIONAL OUTFIT / DESIGN PREVIEW" : approved ? "YOUR APPROVED STYLE DIRECTION" : featured ? "YOUR SAVED EXPLORATION" : "A LITTLE MORE YOU, EVERY DAY"}</span></div>
+          {(preview || featuredLook) && <Link className="hub-cover-title" href={featuredLook?.purpose === "silhouette" ? "/style?stage=6" : "/style?stage=8"}>{preview ? "A new point of view" : featuredLook?.title || "Your outfit study"}<span aria-hidden="true"> ↗</span></Link>}
           <p className="hub-cover-note">{preview ? "An invented model and outfit. Real studios show your saved outfit sheet here." : featured ? `${featuredLook?.provenance === "prepared" ? "Supplied prepared image" : "Generated outfit illustration"}. Open your consultation to review or refine it.` : "There’s no single way to get dressed. Let’s find yours."}</p>
         </aside>
         <div className="hub-content">
