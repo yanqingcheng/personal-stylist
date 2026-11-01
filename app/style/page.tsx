@@ -8,6 +8,7 @@ import ConsultationChat from './consultation-chat';
 import type {Consultation as SavedConsultation} from '@/lib/consultation';
 import './consultation-polish.css';
 import './journey.css';
+import './recording-image-size.css';
 
 type Intake={occasion:string;preferences:string;practicality:string;wardrobe:string;photoId:string|null;adultFullBodyConfirmed:boolean;garmentDomain?:string;[key:string]:unknown};
 type Output={purpose?:'silhouette'|'synthesis';id:string;board:{id:string;title:string;description?:string;options:{id:string;title:string;description?:string}[]};documentRevision:string;provenance:'prepared'|'dynamic';url?:string|null;critique?:string};
