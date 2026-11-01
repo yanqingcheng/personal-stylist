@@ -2,12 +2,21 @@
 /* Private signed approved-sheet URLs bypass image proxies. */
 /* eslint-disable @next/next/no-img-element */
 import{useCallback,useEffect,useId,useRef,useState,type CSSProperties}from'react';
-import type{SavedEditorialLayout}from'@/lib/consultation-editorial-layout';
+import type{EditorialSpread,SavedEditorialLayout}from'@/lib/consultation-editorial-layout';
 import styles from'./editorial-magazine.module.css';
 type Props={outputId:string;documentRevision:string;editorialActionId:string;expectedRevision:number};
 type Envelope={available:boolean;reason?:string|null;result:SavedEditorialLayout|null;error?:string};
+export function EditorialSpreadView({layout}:{layout:EditorialSpread}){
+ const titleId=useId();
+ return <article className={`${styles.magazine} ${styles[layout.composition]}`} style={{'--magazine-paper':layout.palette.paper,'--magazine-ink':layout.palette.ink,'--magazine-accent':layout.palette.accent}as CSSProperties}>
+  <header className={styles.heading}><p className={styles.kicker}>YOUR PERSONAL STYLE EDIT</p><h2>{layout.title}</h2><p className={styles.standfirst}>{layout.standfirst}</p></header>
+  <div className={styles.drawings}>{layout.illustrations.map((drawing,index)=><figure key={drawing.lookId}><svg viewBox="0 0 300 420" role="img" aria-labelledby={`${titleId}-${index}`}><title id={`${titleId}-${index}`}>{drawing.caption}</title>{drawing.paths.map((part,partIndex)=><path key={partIndex} d={part.d} fill={part.fill} stroke={part.stroke} strokeWidth={part.strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>)}</svg><figcaption>{drawing.caption}</figcaption></figure>)}</div>
+  <div className={styles.copy} style={{columnCount:layout.columns}}>{layout.sections.map((section,index)=><section key={index}><h3>{section.heading}</h3><p>{section.body}</p></section>)}</div>
+  <aside className={styles.note}>{layout.styleNote}</aside><footer className={styles.provenance}>Illustrated from your approved outfit sheet · garment concepts, not verified fit or body measurements</footer>
+ </article>;
+}
 export default function EditorialMagazine(props:Props){
- const titleId=useId(),lock=useRef(false),key=useRef<string|null>(null);
+ const lock=useRef(false),key=useRef<string|null>(null);
  const[result,setResult]=useState<SavedEditorialLayout|null>(null),[enabled,setEnabled]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState('Opening your illustrated editorial…'),[uncertain,setUncertain]=useState(false);
  const{outputId,documentRevision,editorialActionId,expectedRevision}=props;
  const query=new URLSearchParams({outputId,documentRevision,editorialActionId,expectedRevision:String(expectedRevision)}).toString();
@@ -29,12 +38,7 @@ export default function EditorialMagazine(props:Props){
  return <section className={styles.wrapper} aria-label="Your illustrated editorial">
   {!layout&&<div className={styles.controls}><h3>Make it a personal magazine.</h3><p>Turn your saved editorial and approved outfits into an illustrated spread with its own composition and garment drawings.</p><button type="button" disabled={!enabled||busy||uncertain||result?.status==='running'||result?.status==='pending'} onClick={()=>void create()}>{busy?'Designing your editorial…':'Illustrate my editorial'}</button>{busy&&<progress aria-label="Illustrated editorial preparation in progress"/>}</div>}
   <p className={styles.status} role="status" aria-live="polite">{message}</p>
-  {layout&&<article className={`${styles.magazine} ${styles[layout.composition]}`} style={{'--magazine-paper':layout.palette.paper,'--magazine-ink':layout.palette.ink,'--magazine-accent':layout.palette.accent}as CSSProperties}>
-   <header className={styles.heading}><p className={styles.kicker}>YOUR PERSONAL STYLE EDIT</p><h2>{layout.title}</h2><p className={styles.standfirst}>{layout.standfirst}</p></header>
-   <div className={styles.drawings}>{layout.illustrations.map((drawing,index)=><figure key={drawing.lookId}><svg viewBox="0 0 300 420" role="img" aria-labelledby={`${titleId}-${index}`}><title id={`${titleId}-${index}`}>{drawing.caption}</title>{drawing.paths.map((part,partIndex)=><path key={partIndex} d={part.d} fill={part.fill} stroke={part.stroke} strokeWidth={part.strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>)}</svg><figcaption>{drawing.caption}</figcaption></figure>)}</div>
-   <div className={styles.copy} style={{columnCount:layout.columns}}>{layout.sections.map((section,index)=><section key={index}><h3>{section.heading}</h3><p>{section.body}</p></section>)}</div>
-   <aside className={styles.note}>{layout.styleNote}</aside><footer className={styles.provenance}>Illustrated from your approved outfit sheet · garment concepts, not verified fit or body measurements</footer>
-  </article>}
+  {layout&&<EditorialSpreadView layout={layout}/>}
   {layout&&result?.approvedSheetUrl&&<details className={styles.reference}><summary>Compare with your approved outfit sheet</summary><img src={result.approvedSheetUrl} alt="The exact approved outfit sheet used for this illustrated editorial"/></details>}
   <button type="button" className={styles.refresh} disabled={busy} onClick={()=>void load()}>Refresh saved editorial</button>
  </section>;
