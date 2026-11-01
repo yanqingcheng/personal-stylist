@@ -83,3 +83,41 @@ end $$;
 create trigger clear_dialogue_on_profile_deletion after update of deletion_state on public.profiles
 for each row execute function public.clear_dialogue_on_profile_deletion();
 revoke all on function public.clear_dialogue_on_profile_deletion() from public,anon,authenticated;
+
+-- Web callers use these wrappers. Keep the original RPCs for existing isolated
+-- ledger tests; clients still have no execute privileges on either path.
+create function public.save_style_feedback_with_dialogue(p_user uuid,p_round uuid,p_feedback text,p_approve boolean,p_dialogue_revision integer)
+returns jsonb language plpgsql security invoker set search_path=public,pg_temp as $$
+declare p public.profiles; d public.style_dialogues;
+begin
+ select * into p from public.profiles where user_id=p_user for update;
+ if not found or p.deletion_state<>'active' or not exists(select 1 from public.access_grants where user_id=p_user and active) then return jsonb_build_object('error','forbidden'); end if;
+ select * into d from public.style_dialogues where user_id=p_user and profile_id=p.id;
+ if p_dialogue_revision is null or p_dialogue_revision<0 or coalesce(d.revision,0)<>p_dialogue_revision then return jsonb_build_object('error','stale'); end if;
+ if d.required_question_id is not null then return jsonb_build_object('error','stale','reason','clarification'); end if;
+ return public.save_style_feedback(p_user,p_round,p_feedback,p_approve);
+end $$;
+
+create function public.reserve_style_operation_with_dialogue(p_user uuid,p_key uuid,p_hash text,p_kind text,p_revision integer,p_round uuid,p_dialogue_revision integer)
+returns jsonb language plpgsql security invoker set search_path=public,pg_temp as $$
+declare p public.profiles; d public.style_dialogues;
+begin
+ -- Match the ledger's global-lock-before-profile ordering. Append never takes
+ -- the ledger lock, and it rejects any already reserved/running operation.
+ perform pg_advisory_xact_lock(hashtextextended('style-ledger',0));
+ select * into p from public.profiles where user_id=p_user for update;
+ if not found or p.deletion_state<>'active' or not exists(select 1 from public.access_grants where user_id=p_user and active) then return jsonb_build_object('error','forbidden'); end if;
+ select * into d from public.style_dialogues where user_id=p_user and profile_id=p.id;
+ if p_dialogue_revision is null or p_dialogue_revision<0 or coalesce(d.revision,0)<>p_dialogue_revision then return jsonb_build_object('error','conflict'); end if;
+ if d.required_question_id is not null then return jsonb_build_object('error','conflict','reason','clarification'); end if;
+ -- Legacy feedback can revoke approval without incrementing dialogue revision.
+ if p_kind='editorial' and not exists(
+   select 1 from public.style_round_details details join public.style_intakes i on i.user_id=details.user_id
+   join public.rounds r on r.id=details.round_id and r.user_id=details.user_id
+   where details.round_id=p_round and details.user_id=p_user and r.profile_id=p.id and r.status='succeeded'
+   and details.approved_hash is not null and details.approved_hash=public.style_input_hash(p.document,i.data)
+ ) then return jsonb_build_object('error','conflict','reason','approval'); end if;
+ return public.reserve_new_style_operation(p_user,p_key,p_hash,p_kind,p_revision,p_round);
+end $$;
+revoke all on function public.save_style_feedback_with_dialogue(uuid,uuid,text,boolean,integer),public.reserve_style_operation_with_dialogue(uuid,uuid,text,text,integer,uuid,integer) from public,anon,authenticated;
+grant execute on function public.save_style_feedback_with_dialogue(uuid,uuid,text,boolean,integer),public.reserve_style_operation_with_dialogue(uuid,uuid,text,text,integer,uuid,integer) to service_role;
