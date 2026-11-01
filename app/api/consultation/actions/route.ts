@@ -5,6 +5,7 @@ import {resolveConsultationOutput} from '@/lib/consultation-output';
 import {consultationAiReady,loadConsultationContext,normaliseConsultationImage} from '@/lib/consultation-provider';
 import {requestText,ProviderError} from '@/lib/style/server/provider.mjs';
 import {recordProviderUsage} from '@/lib/style/server/usage';
+import {paidAccountInScope} from '@/lib/paid-release';
 const headers={'Cache-Control':'private, no-store, max-age=0','Vary':'Cookie'};
 const inputSchema=z.object({action:z.enum(['reject_all','request_revision','approve','editorial']),idempotencyKey:z.uuid(),expectedRevision:z.number().int().nonnegative(),outputId:z.string().min(1).max(200),documentRevision:z.string().regex(/^[a-f0-9]{64}$/),feedback:z.string().max(12000).optional()}).strict();
 export async function GET(){
@@ -23,7 +24,7 @@ export async function POST(request:Request){
   if(created.error)return fail(503,'Could not confirm the saved action. Retry with the same key');
   if(created.data?.error)return fail(409,created.data.error==='pending'?'Wait for the stylist reply before this action':created.data.error==='approval'?'Explicit current approval is required':'The consultation changed. Reload before continuing');
   if(input.action!=='editorial'||created.data.action.status==='succeeded')return Response.json(created.data,{headers});
-  if(!consultationAiReady()||process.env.CONSULTATION_AI_ENABLED!=='true'||process.env.CONSULTATION_VERIFIED_COST_BOUND!=='true'||!process.env.OPENAI_API_KEY)return Response.json({...created.data,error:'Editorial request saved. Autonomous dispatch is not enabled.',code:'autonomous_disabled'},{status:503,headers});
+  if(!paidAccountInScope(auth.user.id,process.env.CONSULTATION_TEST_USER_ID)||!consultationAiReady()||process.env.CONSULTATION_AI_ENABLED!=='true'||process.env.CONSULTATION_VERIFIED_COST_BOUND!=='true'||!process.env.OPENAI_API_KEY)return Response.json({...created.data,error:'Editorial request saved. Autonomous dispatch is not enabled.',code:'autonomous_disabled'},{status:503,headers});
   const context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:input.expectedRevision,mode:'voice'});
   const imageFile=await auth.service.storage.from('private-media').download(output.assetPath);
   if(imageFile.error||!imageFile.data||imageFile.data.size>10485760)return fail(409,'The approved sheet image is unavailable; no editorial call was made');
