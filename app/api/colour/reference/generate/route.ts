@@ -6,7 +6,6 @@ import { editColourComposite, CompositeProviderError } from '@/lib/colour-compos
 import { recordProviderUsage } from '@/lib/style/server/usage';
 
 export const maxDuration=300;
-export const runtime='nodejs';
 const headers={'Cache-Control':'no-store'};
 const mimeType=z.enum(['image/jpeg','image/png','image/webp']);
 const photoList=z.array(z.object({id:z.uuid()}).passthrough()).max(4);
