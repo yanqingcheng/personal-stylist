@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {z} from 'zod';
 import {activeUser,body,fail,sameOrigin} from '@/lib/server/supabase';
-import {demoDocument} from '@/lib/demo';
+import {resolveConsultationOutput} from '@/lib/consultation-output';
 import {consultationAiReady,loadConsultationContext,normaliseConsultationImage} from '@/lib/consultation-provider';
 import {requestText,ProviderError} from '@/lib/style/server/provider.mjs';
 import {recordProviderUsage} from '@/lib/style/server/usage';
@@ -15,11 +15,9 @@ export async function POST(request:Request){
  try{
   const auth=await activeUser();if(!auth)return fail(401,'Sign in to your consultation');
   const parsed=inputSchema.safeParse(await body(request));if(!parsed.success)return fail(400,'Choose a current style sheet and action');const input=parsed.data;
-  const saved=await auth.service.storage.from('private-media').download(auth.user.id+'/demo/document.json');
-  if(saved.error||!saved.data||saved.data.size>2_000_000)return fail(404,'Owned style sheet unavailable');
-  const doc=demoDocument.parse(JSON.parse(await saved.data.text()));
-  const hash=createHash('sha256').update(JSON.stringify(doc)).digest('hex'),board=doc.boards.find(item=>item.id===input.outputId);
-  if(hash!==input.documentRevision||!board)return fail(409,'The sheet changed. Review the current output first');
+  let output;
+  try{output=await resolveConsultationOutput({service:auth.service,userId:auth.user.id,outputId:input.outputId,documentRevision:input.documentRevision})}catch(error){return fail(error instanceof Error&&error.message==='output_changed'?409:404,'The owned output is unavailable or changed. Review it before continuing')}
+  const board=output.board,hash=output.documentRevision;
   const payloadHash=createHash('sha256').update(JSON.stringify(input)).digest('hex');
   const created=await auth.service.rpc('create_consultation_action',{p_user:auth.user.id,p_id:input.idempotencyKey,p_kind:input.action,p_revision:input.expectedRevision,p_output_id:input.outputId,p_output_hash:hash,p_payload_hash:payloadHash,p_feedback:input.feedback??''});
   if(created.error)return fail(503,'Could not confirm the saved action. Retry with the same key');
@@ -27,7 +25,7 @@ export async function POST(request:Request){
   if(input.action!=='editorial'||created.data.action.status==='succeeded')return Response.json(created.data,{headers});
   if(!consultationAiReady()||process.env.CONSULTATION_AI_ENABLED!=='true'||process.env.CONSULTATION_VERIFIED_COST_BOUND!=='true'||!process.env.OPENAI_API_KEY)return Response.json({...created.data,error:'Editorial request saved. Autonomous dispatch is not enabled.',code:'autonomous_disabled'},{status:503,headers});
   const context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:input.expectedRevision,mode:'voice'});
-  const imageFile=await auth.service.storage.from('private-media').download(auth.user.id+'/demo/'+board.path);
+  const imageFile=await auth.service.storage.from('private-media').download(output.assetPath);
   if(imageFile.error||!imageFile.data||imageFile.data.size>10485760)return fail(409,'The approved sheet image is unavailable; no editorial call was made');
   const image=await normaliseConsultationImage(new Uint8Array(await imageFile.data.arrayBuffer()));
   const imageHash=createHash('sha256').update(image).digest('hex');
