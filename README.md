@@ -74,6 +74,35 @@ The product idea and factor-based system were developed collaboratively through 
 
 Codex agents implemented and reviewed parallel pieces of the product, and user feedback repeatedly redirected the journey and prompts. Examples include the [saved colour-study interface](app/profile/page.tsx), [colour evidence logic](lib/colour/index.ts), [consultation generation](lib/consultation-generation.ts) and [account ownership boundaries](supabase/migrations/20261101000000_foundation.sql). Focused review led to save-conflict, A/B placement and interrupted-upload fixes; the [review record](docs/reviews/stage1-review-request.md) describes the changes and evidence.
 
+## What we learned—and what remains a hypothesis
+
+These are post-event reflections from the project owner and the Codex-assisted workflow. We distinguish observed problems, changes followed by better results, and untested proposals. A failure of the current approach does not prove that a proposed replacement will work.
+
+### Observed problems
+
+- Component checks passed while the user journey still failed: users could upload, chat and generate, yet encounter hidden or disabled next actions. Component success was insufficient evidence of a usable whole journey.
+- Conservative reservations were initially charged as spending. Users were blocked despite low reported provider usage. The owner's strong warnings against careless test spending were followed by very cautious agent behaviour; she assessed that the work underspent substantially. The causal contribution of the prompt cannot be isolated from the accounting bug or coordination choices.
+- Repeated requests to swarm did not reliably sustain the desired parallel work. Conversational reminders alone were insufficient in this run.
+- Pleasing image outputs could still change apparent proportions, reproduce unwanted reference images or miss preferences. Attractiveness alone was insufficient evidence of success.
+
+### Changes we tried that produced better results
+
+- **Concrete feedback on the actual screen led to useful repairs.** The owner identified silent upload progress, reversed spatial A/B choices, neutral-only palette previews and off-screen navigation. Subsequent checks verified visible upload progress, direct drape selection mapped to the displayed colour, full palette swatches and reachable navigation. After the navigation repair, she reported that clicking through worked. These are specific improvements, not proof that the whole UX was finished.
+- **The owner's nine-step walkthrough made missing work explicit.** Comparing the implementation against it exposed missing separate body uploads, proportion questions and ordered silhouette/vibe stages. Those steps were implemented, and a synthetic phone journey later passed steps 3–9 with saved-state checks. This supports the usefulness of that concrete specification in this project; it does not establish that every real-user path passed.
+- **Separating tasks by ownership produced independently shippable fixes.** Bounded agents delivered upload ordering, saved-editorial navigation and result-before-chat layout changes without overlapping edits; each was integrated and checked separately. We did not run a controlled comparison showing that a larger swarm was always faster.
+- **Usage-based accounting corrected the visible budget distortion.** Reconciliation reduced previously settled bounds from USD 49.50 to USD 4.191291 in usage-based estimates and conservative upper estimates, preserving uncertain holds. These figures are not a reconciled provider invoice. The correction restored available allowance without increasing the total cap.
+- **Inspecting actual outputs and screenshots exposed errors that prompt/code review missed.** Examples included unwanted reference imagery, garment-detail drift and mobile controls outside the viewport. Subsequent targeted checks verified particular repairs; image fidelity and styling validity remain unvalidated in general.
+
+### Things to try next time
+
+- Begin with one short, authoritative journey brief covering observable acceptance criteria and allowed demo shortcuts; give it to every worker and update it as decisions change.
+- Map each model call's purpose and inputs up front: original-photo interpretation → conversation → image generation → inspection of the actual output → feedback-driven revision. Keep original evidence, generated suggestions and user preferences distinct.
+- Assign explicit implementation, integration and complete-journey review roles; check actual parallel assignments rather than assuming a swarm remains active.
+- Specify a hard total budget and an autonomous experiment allowance, with reservations, usage estimates and uncertain holds reported separately.
+- Put an early complete walkthrough on the target device in front of the owner, rather than waiting for individually completed components.
+
+These are proposals to test, not established improvements. The owner identified clearer model-call planning and less emphatic budget caution as changes she would try. The [longer retrospective](docs/retrospective.md) preserves the distinction between her reflections, observed outcomes and agent interpretations.
+
 ## Hackathon access and budget (historical)
 
 During the event, judges and attendees needed an invitation supplied privately; funded admission is subject to the available pool and account allowance. The authorised shared API budget was USD 100 including tests, with protected owner funds and separate admission controls. Availability is limited by configured funding, reservations and provider capacity. Completed operations settle from retained usage and verified prices when coverage permits; missing historical cache/tier details use labelled conservative upper estimates. Unused reservation is released, while uncertain outcomes retain their hold. These estimates are not provider invoices. A paused or exhausted consultation remains saved. Do not put invitation phrases or credentials in the repository.
