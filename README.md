@@ -2,11 +2,11 @@
 
 A private, colour-first consultation for the DevDay Community Hackathon, London, 1 November 2026.
 
-[Current public holding page](https://personal-stylist-mauve.vercel.app) · [Stage 1 review request](docs/reviews/stage1-review-request.md)
+[Live colour consultation](https://personal-stylist-mauve.vercel.app) · [Stage 1 review request](docs/reviews/stage1-review-request.md)
 
 ## Status
 
-This branch implements the non-paid Stage 1 journey: invite-gated sign-in, owned photographs and revisioned profile saves, identical-photo colour comparisons, explicit selection from 31 provisional templates, separate palette preferences, and a public colour-system guide. **The live site is still the earlier holding page.** Supabase provisioning, password sign-in, private storage isolation and the real end-to-end journey have not yet been verified. Paid inference and later styling stages are not enabled.
+This branch implements the non-paid Stage 1 journey: invite-gated sign-in, owned photographs and revisioned profile saves, identical-photo colour comparisons, explicit selection from 31 provisional templates, separate palette preferences, and a public colour-system guide. Stage 1 is live. Real password sign-in, invitation boundaries, two-account profile/media isolation, photo upload, saved return, and the late-upload deletion boundary have been checked. Expired upload-token cleanup still requires a later retry. Paid inference and later styling stages are not enabled.
 
 ## Development
 
@@ -31,4 +31,4 @@ The 31-template atlas and drape definitions are adapted from the project's revie
 
 ## Recovery
 
-Read [work packets](docs/work-packets.md), [execution contracts](docs/execution-spec.md), and the review request. The shared issue tracker lives in the primary checkout, `/home/qing/projects/personal-stylist`; do not initialize or import a separate worktree tracker. The intended production alias is `personal-stylist-mauve.vercel.app`; the custom domain remains pending. Total API budget is $50 including tests, but this stage uses no paid model calls.
+Read [work packets](docs/work-packets.md), [execution contracts](docs/execution-spec.md), and the review request. The shared issue tracker lives in the primary checkout, `/home/qing/projects/personal-stylist`; do not initialize or import a separate worktree tracker. The production alias is `personal-stylist-mauve.vercel.app`; custom-domain DNS status has not been verified here. Total API budget is $50 including tests, but this stage uses no paid model calls.
