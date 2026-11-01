@@ -30,7 +30,12 @@ export default function BodyReference({onReady}:Props){
     setProgress({done:index,total:files.length,text:`Processing body photo ${index+1} of ${files.length}…`});await request(`/api/media/${prepared.media.id}/finalize`,post({}));pendingId=null;added++;
    }catch(error){if(pendingId){try{await request(`/api/media/${pendingId}`,{method:'DELETE'})}catch{/* Pending record remains available for explicit cleanup. */}}failures.push(`${file.name}: ${error instanceof Error?error.message:'Upload failed'}`)}
    setProgress({done:index+1,total:files.length,text:`${index+1} of ${files.length} body uploads completed`});
-  }await load();setMessage(`${added} body photo${added===1?'':'s'} saved. ${failures.join(' ')}`)}finally{setBusy(false);setProgress(null)}
+  }const refreshed=await load();
+   if(added>0&&refreshed&&!refreshed.selectedSourceId&&refreshed.photos.length){
+    try{await request(endpoint,post({action:'select',expectedRevision:refreshed.revision,mediaId:refreshed.photos[0].id}));await load()}
+    catch(error){failures.push(error instanceof Error?`Select a body photo below to continue: ${error.message}`:'Select a body photo below to continue.');await load()}
+   }
+   setMessage(`${added} body photo${added===1?'':'s'} saved. ${failures.join(' ')}`)}finally{setBusy(false);setProgress(null)}
  }
  const selected=state?.photos.find(photo=>photo.id===state.selectedSourceId);
  return <section className="sc-reference sc-body-reference" aria-label="Your body photos and reference">
