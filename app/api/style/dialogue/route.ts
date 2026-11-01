@@ -25,7 +25,9 @@ export async function POST(request:Request) {
     ]);
     const dialogue=savedDialogue.safeParse(saved.data);
     if(saved.error||details.error||intake.error||!dialogue.success||!details.data||!intake.data) return fail(503,'Saved conversation unavailable; your message has not been discarded');
-    const reply=consultationReply({text:input.text,plan:details.data.plan,answerTo:input.answerTo,domain:intake.data.data.garmentDomain});
+    const domain=intake.data.data.garmentDomain;
+    if(domain!=='menswear'&&domain!=='womenswear'&&domain!=='mixed') return fail(409,'Choose menswear, womenswear, or mixed garments before continuing; your message has not been discarded');
+    const reply=consultationReply({text:input.text,plan:details.data.plan,answerTo:input.answerTo,domain});
     const result=await auth.service.rpc('append_style_dialogue',{
       p_user:auth.user.id,p_round:input.roundId,p_revision:input.expectedRevision,p_intake_revision:input.expectedIntakeRevision,
       p_message:input.clientMessageId,p_text:input.text,p_answer_to:input.answerTo??null,p_reply:reply.text,p_reply_kind:reply.kind,
