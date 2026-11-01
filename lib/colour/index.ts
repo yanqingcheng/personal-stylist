@@ -116,3 +116,61 @@ export function personalPalette(template: Template, excludedSwatches: readonly s
   const all = [...neutral, ...accent];
   return { swatches: all.filter((swatch) => !excluded.has(swatch.id)), missingRoles: all.filter((swatch) => excluded.has(swatch.id)).map((swatch) => swatch.id) };
 }
+
+/** A recommendation for discussion, not a measurement, confidence score or diagnosis. */
+export type NextColourComparison =
+  | { action: 'compare'; trialId: TrialId; axis: Axis; reason: string }
+  | { action: 'confirm'; trialId: TrialId; photoId: string; reason: string }
+  | { action: 'pause'; reason: string };
+
+/**
+ * Suggest one unused comparison from the existing catalogue. Repeated views of
+ * one trial never count as independent questions. Caller controls pause and may
+ * stop or choose another comparison; no answer is needed to complete a session.
+ *
+ * Examples: no responses -> T1 (temperature has not been explored); T1 alone
+ * -> V1 (cover a new axis); conflicting T1/T2 -> T3 (recheck temperature in a
+ * different hue family); exhausted unresolved catalogue -> pause, inconclusive.
+ * These are deterministic heuristics, not calibrated colour inference.
+ */
+export function nextColourComparison(responses: readonly ColourResponse[], paused = false): NextColourComparison {
+  if (paused) return { action: 'pause', reason: 'Your consultation is paused; your existing observations remain available.' };
+  const known = new Set(drapeTrials.map((trial) => trial.id));
+  const latest = new Map<string, ColourResponse>();
+  for (const response of responses) {
+    if (!known.has(response.trialId)) continue;
+    const key = JSON.stringify([response.trialId,response.photoId]);
+    const previous = latest.get(key);
+    if (!previous || response.revision >= previous.revision) latest.set(key,response);
+  }
+  // A reversed legacy A/B choice could reflect a positional misunderstanding.
+  // Ask for confirmation rather than using or silently changing the answer.
+  const ambiguous = [...latest.values()].find(needsDrapeConfirmation);
+  if (ambiguous) return { action:'confirm', trialId:ambiguous.trialId, photoId:ambiguous.photoId, reason:'Please confirm which colour you meant in this earlier comparison before it guides the next step.' };
+  const summary = summariseEvidence([...latest.values()]);
+  const touched = new Set([...latest.values()].map((response) => response.trialId));
+  const unresolved = axes.filter((axis) => summary[axis].status !== 'provisional');
+  if (!unresolved.length) return { action:'pause', reason:'Each factor has a provisional direction. You can stop here or explore further; these are not measurements or a diagnosis.' };
+  const available = unresolved.map((axis,order) => {
+    const votes = summary[axis].trialVotes;
+    const usedFamilies = new Set(votes.filter((vote) => touched.has(vote.trialId)).map((vote) => families[vote.trialId]));
+    const choices = drapeTrials.filter((trial) => trial.axis === axis && !touched.has(trial.id));
+    const differentFamily = choices.find((trial) => !usedFamilies.has(trial.hueFamily));
+    return {axis,order,votes,trial:differentFamily ?? choices[0], differentFamily:!!differentFamily};
+  }).filter((entry) => entry.trial);
+  available.sort((a,b) => {
+    const priority = (entry: typeof a) => summary[entry.axis].status === 'conflicting' ? 0 : entry.votes.every((vote) => !touched.has(vote.trialId)) ? 1 : 2;
+    return priority(a)-priority(b) || a.order-b.order;
+  });
+  const next = available[0];
+  if (!next) return { action:'pause', reason:'The available comparisons have not resolved every factor. Your result can remain inconclusive; no neutral value is assumed.' };
+  const state = summary[next.axis].status;
+  const reason = state === 'conflicting'
+    ? `Earlier ${next.axis} answers differ; another hue family may help explore the disagreement.`
+    : next.votes.every((vote) => !touched.has(vote.trialId))
+      ? `${next.axis[0].toUpperCase()+next.axis.slice(1)} has not yet been explored; this comparison starts that question.`
+      : state === 'broad'
+        ? `Both colours worked in an earlier ${next.axis} comparison; another hue family can explore that breadth without assuming neutrality.`
+        : `The ${next.axis} evidence is still unresolved; another hue family can offer a separate comparison.`;
+  return {action:'compare',trialId:next.trial.id,axis:next.axis,reason};
+}
