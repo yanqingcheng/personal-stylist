@@ -57,6 +57,7 @@ fieldset.studio-body{width:100%}
 
 /* A new comparison starts with both portraits and its answers in the phone viewport. */
 @media(max-width:700px){
+ .studio:has(.drapes),.studio:has([data-colour-comparison]){overflow-anchor:none}
  .studio:has(.drapes)>.callout{order:2}
  .studio:has([data-colour-comparison]){display:flex;flex-direction:column}
  .studio:has([data-colour-comparison])>.callout,.studio:has([data-colour-comparison])>details{order:2}
