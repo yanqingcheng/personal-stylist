@@ -1,6 +1,6 @@
 # Current decisions and build entry — 1 November 2026
 
-**Start here.** This is the authoritative current scope and user-decision summary. It supersedes conflicting release sequencing, auth, demo and product guidance in older plans, work packets and private research. Those documents retain useful detail, not permission to start another stage. This task changes documentation only; implementation stopped after Stage 1. Resume later stages only on the parent’s instruction.
+**Start here.** Read [how we work](working-agreement.md) for product authority, intent review, parallel work and proportionate testing. This is the authoritative current scope and user-decision summary. It supersedes conflicting release sequencing, auth, demo and product guidance in older plans, work packets and private research. Those documents retain useful detail, not permission to start another stage. This task changes documentation only; implementation stopped after Stage 1. Resume later stages only on the parent’s instruction.
 
 ## Shipped and pending
 
