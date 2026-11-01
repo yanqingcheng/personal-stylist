@@ -23,8 +23,18 @@ Review against the owner's intent is mandatory. The owner judges product appeal 
 
 ## Coordination and communication
 
-Astra parent stays available for high-level reasoning, requirements and product conversation. Terra leads implementation/integration with bounded workers. Sol reviews material increments and runs focused prompt/evaluation work. Astra design owns the homepage visual direction. Use the existing shared beads tracker; no extra process system. Exact ownership can change when explicitly handed over.
+Astra parent stays available for high-level reasoning, requirements and product conversation. Sol leads implementation, integration and intent review. Terra handles bounded mechanical tasks. Astra owns creative design, high-level design and visual/product judgement. Use the existing shared beads tracker; no extra process system. Exact ownership can change when explicitly handed over.
 
 No avoidable downtime: when a task is blocked, continue independent work and tell the owner immediately what is needed, what it blocks and what continues. Do not leave workers waiting on decisions that can be found in the notes or verified through research. Do not broaden work merely to keep agents busy.
 
-The homepage presents the whole stylist vision once; stages unlock within it. Stage1 is the deployed fallback. Later work serves the full on-user consultation, explicit satisfaction, personal editorial and optional boutique. Protect recording time from15:30, first take16:00, submission preparation16:30 before17:00London. Record concrete Codex contributions and honest feature availability.
+The homepage presents the whole stylist vision once; stages unlock within it. Stage1 is the deployed fallback. Later work serves the full on-user consultation, explicit satisfaction, personal editorial and optional boutique. Select the demo journey by 14:45 London, begin filming at 15:00, aim for a usable take by 15:30, edit by 16:00, review/refine by 16:20, and export/upload by 16:35 before the 17:00 deadline. Record concrete Codex contributions and honest feature availability.
+
+## Work as a collaborative swarm
+
+For this final hackathon build window, actively use parallel agents where they improve speed and quality. Collaborate directly across lanes: share discoveries early, ask peers for concrete help, challenge assumptions, and spot each other's mistakes. Do not route every exchange through the parent or treat file ownership as a reason to withhold useful criticism. Keep one writer per file/worktree; agree ownership before editing another lane. Sol coordinates integration; the parent remains available for the owner's vision and decisions.
+
+Be creative in finding the fastest convincing demonstration of the intended experience. A worker may propose a better approach or identify a missed requirement outside its assignment; communicate it promptly without silently broadening edits. Cross-check high-impact visual and reasoning outputs with independent native image judgements when useful. Agreement is evidence of consistency, not proof of accuracy. Avoid mandatory review rounds for trivial changes.
+
+The practical concurrency limit is workstation health. Reuse sessions, avoid duplicate dev servers and concurrent heavyweight builds, and check resource pressure before increasing concurrency. Reduce heavy jobs if the machine becomes strained; never trade workstation stability for nominal agent count. Paid API gates and the total budget remain unchanged.
+
+Use a lightweight 2×2 for significant failures: how this specific mistake was introduced, how it escaped detection, the general pattern that introduced it, and the general check that would catch it. Apply the smallest useful prevention to the next increment; do not turn learning into a separate bureaucracy.
