@@ -6,6 +6,8 @@ export const consultationInput=z.object({
 export const consultationMessage=z.object({
  id:z.uuid(),role:z.enum(['user','stylist']),text:z.string(),source:z.enum(['user','native-codex','api']),
  createdAt:z.string(),replyTo:z.uuid().nullable(),activeBoardId:z.string().nullable(),
+ liveOperationId:z.uuid().nullable().optional(),liveEventId:z.string().nullable().optional(),
+ startMs:z.number().int().nonnegative().nullable().optional(),endMs:z.number().int().nonnegative().nullable().optional(),
 });
 export const consultationSnapshot=z.object({
  revision:z.number().int().nonnegative(),messages:z.array(consultationMessage),

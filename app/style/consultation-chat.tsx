@@ -69,6 +69,14 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
   },[receive,pending]);
 
   const lastMessageId=consultation?.messages.at(-1)?.id;
+  const displayMessages=(consultation?.messages??[]).reduce<Array<{message:ConsultationMessage;fragments:ConsultationMessage[]}>>((groups,message)=>{
+    const previous=groups.at(-1);
+    if(message.liveOperationId&&previous?.message.liveOperationId===message.liveOperationId&&previous.message.role===message.role&&previous.message.source===message.source){
+      previous.fragments.push(message);
+      previous.message={...previous.message,text:previous.message.text+message.text,endMs:message.endMs};
+    }else groups.push({message:{...message},fragments:[message]});
+    return groups;
+  },[]);
   useEffect(()=>{
     // Scroll the conversation itself, without pulling the whole atelier away from a board.
     const target=end.current;
@@ -116,10 +124,10 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
   }
 
   return <section className="sc-conversation" aria-label="Your stylist conversation">
-    <header><div><h2>A little conversation.<br/>A more personal edit.</h2><p>Private, saved consultation · {autonomous?'AI stylist':'Replies are supervised for this demo'}</p></div></header>
+    <header><div><h2>A little conversation.<br/>A more personal edit.</h2><p>Private, saved consultation · Text and voice share this history</p></div></header>
     <div className="sc-messages" role="log" aria-label="Saved conversation" aria-live="polite" aria-relevant="additions text" aria-busy={loading}>
-      {consultation?.messages.map(message=><article className={`sc-message sc-message--${message.role}`} data-role={message.role} key={message.id}>
-        <p className="sc-message-author">{message.role==='user'?'You':'Your stylist'}</p>
+      {displayMessages.map(({message,fragments})=><article className={`sc-message sc-message--${message.role}`} data-role={message.role} data-live-operation={message.liveOperationId??undefined} data-fragment-count={fragments.length} key={message.id}>
+        <p className="sc-message-author">{message.role==='user'?'You':message.source==='api'?'AI stylist':'Supervised stylist reply'}</p>
         <div className="sc-message-text" style={{whiteSpace:'pre-wrap'}}>{message.text}</div>
         {message.activeBoardId&&<p className="sc-message-context">About an outfit study</p>}
       </article>)}
