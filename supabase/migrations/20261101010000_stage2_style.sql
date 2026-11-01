@@ -94,6 +94,9 @@ returns boolean language plpgsql security invoker set search_path = public, pg_t
 begin
   if p_lease_seconds < 1 or p_lease_seconds > 900 then return false; end if;
   perform pg_advisory_xact_lock(hashtextextended('style-ledger',0));
+  -- Serialize dispatch with profile deletion: never dispatch against a stale active snapshot.
+  perform 1 from public.profiles where user_id=p_user and deletion_state='active' for update;
+  if not found then return false; end if;
   update public.ai_operations o set state='running',lease_expires_at=now()+make_interval(secs=>p_lease_seconds),updated_at=now()
     where o.id=p_id and o.user_id=p_user and o.state='reserved'
       and exists(select 1 from public.profiles where id=o.profile_id and deletion_state='active')
