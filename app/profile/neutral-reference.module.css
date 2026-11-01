@@ -12,4 +12,8 @@
 .actions button{white-space:normal;min-height:48px}
 .result{padding:.8rem 1rem;background:#e6eadc;border-radius:.5rem}
 .empty{margin:1rem 0;padding:1rem;border:1px dashed #bbb8ad;border-radius:.7rem}
+.preparation{padding-bottom:1.2rem;margin-bottom:1.2rem;border-bottom:1px solid #d9d4c9}
+.preparation label{display:flex;align-items:flex-start;gap:.6rem;line-height:1.6;max-width:70ch}
+.preparation input{margin-top:.4rem;flex-shrink:0}
+.preparation progress{width:min(100%,24rem);margin-top:1rem;accent-color:#555d42}
 @media(max-width:600px){.comparison{grid-template-columns:1fr}.originals{grid-template-columns:repeat(2,minmax(0,1fr))}.generated img{height:300px}.actions{display:grid}.actions button{width:100%}}
