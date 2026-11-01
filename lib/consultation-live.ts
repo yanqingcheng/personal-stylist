@@ -82,7 +82,7 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
           const saved=await service.rpc('read_consultation',{p_user:userId});
           if(saved.error||!saved.data||typeof saved.data!=='object')throw new Error('Active consultation unavailable');
           const current={savedContext:input,savedHistory:saved.data,liveFragments};
-          if(Buffer.byteLength(JSON.stringify(current))>96000)throw new Error('Live context exceeds bound');
+          if(Buffer.byteLength(JSON.stringify(current))>64000)throw new Error('Live context exceeds the 64 KB bound');
           const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate.',input:current,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS});
           usage.push({delegationId:id,model:reply.model,modelSource:reply.modelSource,requestId:reply.requestId,reportedUsage:reportedUsage(reply.usage)});
           const recorded=await service.from('consultation_live_sessions').update({backend_usage:usage}).eq('operation_id',operationId).eq('user_id',userId);if(recorded.error)throw new Error('Usage save failed');
