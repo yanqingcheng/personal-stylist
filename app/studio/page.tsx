@@ -13,7 +13,7 @@ type Look = { mediaId: string; title?: string; description?: string };
 type Output = { id: string; board: { title: string; options: { title: string }[] }; documentRevision: string; url?: string | null; provenance: "prepared" | "dynamic"; purpose?: "silhouette" | "synthesis" };
 type Job = { state: string; output: Output | null };
 type Consultation = { approvedOutputId: string | null; approvedOutputHash: string | null };
-type Action = { kind: string; status: string; result: string | null };
+type Action = { id: string; outputHash: string; kind: string; status: string; result: string | null };
 type Round = { id: string; looks: Look[]; approved: boolean; editorial?: string | null; createdAt: string };
 type Style = { intake?: { data?: { wardrobe?: string; preferences?: string } } | null; rounds?: Round[] };
 
@@ -114,7 +114,8 @@ export default function StudioHub() {
   const featuredLook = approved || looks[looks.length - 1];
   const featured = Boolean(featuredLook);
   const heroUrl = preview ? "/design/hub-avatar.webp" : featuredLook?.url;
-  const editorial = [...actions].reverse().find(action => action.kind === "editorial" && action.status === "succeeded" && action.result)?.result || [...rounds].reverse().find(r => r.editorial)?.editorial;
+  const editorialAction = [...actions].reverse().find(action => action.kind === "editorial" && action.status === "succeeded" && action.result);
+  const editorial = editorialAction?.result || [...rounds].reverse().find(r => r.editorial)?.editorial;
   const silhouette = [...savedOutputs].reverse().find(output => output.purpose === "silhouette");
   const answers = savedAnswers.safeParse(preview ? undefined : profile?.document?.answers);
   const observations = proportionLabels.flatMap(({id,choices}) => {
@@ -153,7 +154,7 @@ export default function StudioHub() {
               <Link className="hub-result" href="/style?stage=7"><div className="hub-card-top"><span>03</span><span>{hasVibe ? "YOUR WORDS" : "EXPLORE"} ↗</span></div><div className="hub-vibe-art" aria-hidden="true"><span>✳</span><i/></div><h3>Vibe</h3><strong>{recognisable ? `You recognise: ${excerpt(recognisable, 75)}` : hasVibe ? "Your desired direction" : "That certain something"}</strong><p>{vibeSummary || (hasVibe ? "Your own description, saved for your consultation." : "The energy you want to bring. In your own words.")}</p><span className="hub-card-link">{hasVibe ? "Revisit your vibe" : "Find your direction"} ↗</span></Link>
             </div><p className="hub-fine">Explore silhouette and vibe in your consultation; saved illustrations are ideas to review together.</p>
           </section>
-          <section className="hub-editorial" aria-labelledby="hub-editorial-title"><div><p className="hub-eyebrow">THE STYLE EDIT</p><h2 id="hub-editorial-title">Your story.<br/><em>Beautifully told.</em></h2><p>{editorial ? editorial.slice(0,210) + (editorial.length > 210 ? "…" : "") : "A personal editorial, shaped by the looks you love and the direction you approve."}</p><Link href="/style">{editorial ? "Read your saved editorial" : "Continue your consultation"} ↗</Link></div><div className="hub-editorial-graphic" aria-hidden="true"><span>THE<br/>PERSONAL<br/><em>EDIT.</em></span><i>✳</i></div></section>
+          <section className="hub-editorial" aria-labelledby="hub-editorial-title"><div><p className="hub-eyebrow">THE STYLE EDIT</p><h2 id="hub-editorial-title">Your story.<br/><em>Beautifully told.</em></h2><p>{editorial ? editorial.slice(0,210) + (editorial.length > 210 ? "…" : "") : "A personal editorial, shaped by the looks you love and the direction you approve."}</p><Link href={editorialAction ? `/studio/editorial/${encodeURIComponent(editorialAction.id)}?revision=${encodeURIComponent(editorialAction.outputHash)}` : "/style"}>{editorialAction ? "Read your saved editorial" : "Continue your consultation"} ↗</Link></div><div className="hub-editorial-graphic" aria-hidden="true"><span>THE<br/>PERSONAL<br/><em>EDIT.</em></span><i>✳</i></div></section>
           <section className="hub-wardrobe"><div><p className="hub-eyebrow">WHAT’S ALREADY YOURS</p><h2>Your wardrobe, <em>in the picture.</em></h2><p>{wardrobe || "A favourite jacket. The shoes you live in. Add wardrobe notes when you want your own pieces in the conversation."}</p></div><Link href="/style">{wardrobe ? "Edit wardrobe notes" : "Add your notes"} ↗</Link></section>
         </div>
       </div>
