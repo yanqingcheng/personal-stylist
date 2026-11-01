@@ -5,7 +5,7 @@ export const intake = z.object({
   occasion: z.string().max(4000), preferences: z.string().max(4000),
   practicality: z.string().max(4000), wardrobe: z.string().max(4000),
   photoId: z.uuid().nullable(), adultFullBodyConfirmed: z.boolean(),
-  garmentDomain: z.enum(['menswear','womenswear','']).optional(),
+  garmentDomain: z.enum(['menswear','womenswear','mixed','']).optional(),
   fitSuccesses:z.string().max(4000).optional(), fitDifficulties:z.string().max(4000).optional(),
   changedFit:z.string().max(4000).optional(), visualImpression:z.string().max(4000).optional(), aspiration:z.string().max(4000).optional(),
 }).strict();

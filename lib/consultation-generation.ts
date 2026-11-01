@@ -99,8 +99,8 @@ export async function generateConsultation(auth:Auth,input:Input){
  }
  const missing:string[]=[];
  if(!adult)missing.push('Confirm that the reference shows you and you are an adult (adultConfirmed: true).');
- const domain=z.enum(['menswear','womenswear']).safeParse(ctx.reports.garmentDomain);
- if(!domain.success)missing.push('Save your clothing workflow: menswear or womenswear.');
+ const domain=z.enum(['menswear','womenswear','mixed']).safeParse(ctx.reports.garmentDomain);
+ if(!domain.success)missing.push('Save your clothing workflow: menswear, womenswear, or mixed / choose by garment.');
  const reference=z.uuid().safeParse(ctx.document.referencePhotoId);
  const listed=z.array(z.object({id:z.uuid()}).passthrough()).safeParse(ctx.document.photos??[]);
  let bodySource:Awaited<ReturnType<typeof loadApprovedBodySource>>|null=null;

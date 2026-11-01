@@ -40,7 +40,7 @@ export async function paid(request:Request,kind:'generation'|'editorial') {
     const profileDocument=profile.data.document;
     const intakeData=intake.data.data;
     const domain=intakeData.garmentDomain;
-    if(domain!=='menswear' && domain!=='womenswear') return fail(409,'Choose a clothing workflow before continuing');
+    if(domain!=='menswear' && domain!=='womenswear' && domain!=='mixed') return fail(409,'Choose menswear, womenswear, or mixed garments before continuing');
     // Requires verified full-request cost bounds and product review before release.
     if(!releaseReady() || process.env.STYLE_PAID_ENABLED!=='true' || process.env.STYLE_VERIFIED_COST_BOUND!=='true' || !process.env.OPENAI_API_KEY) return fail(503,'This feature is not yet available');
     const consultationResult=await auth.service.rpc('read_consultation',{p_user:auth.user.id});
