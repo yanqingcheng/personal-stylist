@@ -2,17 +2,19 @@
 
 A private personal stylist exploring colour, silhouette and vibe, built for the DevDay Community Hackathon, London, 1 November 2026.
 
-[Live personal stylist](https://stylist.qingsworkshop.com) · [Current decisions and worker entry](docs/current-decisions.md) · [Launch evidence](docs/launch-status.md)
+**Hackathon portfolio archive.** Feature development has ended. Hosted retirement is being completed; the source and screenshots are the durable portfolio, and the former hosted app should not be relied on for access.
+
+[Draft retrospective](docs/retrospective.md) · [Public-source audit](docs/public-readiness-audit.md) · [Historical launch evidence](docs/launch-status.md)
 
 ## The idea
 
 Personal stylist is a collaborative exploration of colour, silhouette and vibe. The user compares colours against the same portrait, shares their preferences and practical needs, and reviews visual style suggestions with the stylist. The app keeps observations, user preferences and uncertainty distinct: a proposed palette or outfit is something to discuss, not a diagnosis or a promise of fit.
 
-The colour system adapts existing seasonal-colour frameworks into continuous temperature, value and chroma factors and 31 proposed templates. Silhouette and vibe exploration similarly use visual questions and user feedback. These are illustrative design tools, not validated measurements or classifications. [Read the colour guide](https://stylist.qingsworkshop.com/colour-system).
+The colour system adapts existing seasonal-colour frameworks into continuous temperature, value and chroma factors and 31 proposed templates. Silhouette and vibe exploration similarly use visual questions and user feedback. These are illustrative design tools, not validated measurements or classifications. The [colour-guide source](app/colour-system/page.tsx) is included.
 
-## What's working
+## What the hackathon implementation does
 
-Invite-gated accounts can save and resume a consultation, upload private account-owned photos, compare identical-photo colour drapes, choose a provisional palette and record style preferences. The body reference is the user's selected original photograph, not an AI-generated replacement. The studio supports text and GPT-Live conversation, dynamically generated style ideas, feedback and revision, and explicit approval. Features depend on account admission, deployment configuration and available allowance.
+With its backend and feature configuration enabled, invite-gated accounts can save and resume a consultation, upload private account-owned photos, compare identical-photo colour drapes, choose a provisional palette and record style preferences. The body reference is the user's selected original photograph, not an AI-generated replacement. The studio supports text and GPT-Live conversation, dynamically generated style ideas, feedback and revision, and explicit approval. Features depend on account admission, deployment configuration and available allowance.
 
 Application API tests produced a body-grounded three-look styling image and a neutral two-image edit with synthetic inputs; the latter persisted and reloaded. A later real-input test produced a four-look synthesis from the earlier silhouette image, passed 17 of 17 reload checks, and completed a feedback revision and text editorial. These observations do not establish universal image fidelity or fit. The user reported that voice and conversation worked well; separately, a controlled synthetic-microphone Live call exercised audio, interruption and reload continuity. Delegated backend reasoning in that controlled call remains unverified. An illustrated image editorial is switched off pending testing. The colour study's sign-in, invite boundaries, two-account isolation and late-upload containment were tested; post-expiry cleanup still awaits verification. See [launch evidence](docs/launch-status.md), noting that older entries describe earlier checkpoints.
 
@@ -20,7 +22,7 @@ The runtime uses OpenAI APIs for text and vision, neutral reference edits, style
 
 ## Development
 
-Node.js 22 is recommended. The public source includes the sanitized atlas, application and SQL migration; private research is not required to build Stage 1.
+Node.js 22 is recommended. The public source includes the sanitized atlas, application and SQL migrations; private research is not required to build the application.
 
 ```sh
 npm ci
@@ -29,7 +31,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Configure a dedicated Supabase project using [backend setup](supabase/README.md): apply the migration, enable password sign-in with email confirmation disabled, and privately configure attendee/judge invites. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, server-only `SUPABASE_SECRET_KEY` and `NEXT_PUBLIC_SITE_URL` in the ignored `.env.local` (and hosting environment for deployment). Public-prefixed values are browser-visible; the secret key must stay server-only. Keep `AI_ENABLED=false` for the non-paid colour study; no OpenAI key is needed for that journey. AI consultation features additionally require `OPENAI_API_KEY`, release and feature flags, and configured transactional spending limits. See the [text route](app/api/consultation/respond/route.ts), [image generation](lib/consultation-generation.ts), [Live configuration](lib/consultation-live.ts) and [budget contract](docs/execution-spec.md) for their gates; historical budget amounts in that contract are superseded by the USD 100 authorisation below. Enable features only after configuring and checking their accounting and access boundaries. Without Supabase configuration, personal-data routes fail closed. Never commit environment values, invite phrases or photographs.
+Configure a dedicated Supabase project using [backend setup](supabase/README.md): apply the SQL migrations in filename order, enable password sign-in with email confirmation disabled, and privately configure attendee/judge invites. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, server-only `SUPABASE_SECRET_KEY` and `NEXT_PUBLIC_SITE_URL` in the ignored `.env.local` (and hosting environment for deployment). Public-prefixed values are browser-visible; the secret key must stay server-only. Keep `AI_ENABLED=false` for the non-paid colour study; no OpenAI key is needed for that journey. AI consultation features additionally require `OPENAI_API_KEY`, release and feature flags, and configured transactional spending limits. See the [text route](app/api/consultation/respond/route.ts), [image generation](lib/consultation-generation.ts), [Live configuration](lib/consultation-live.ts) and [budget contract](docs/execution-spec.md) for their gates; historical budget amounts in that contract are superseded by the USD 100 authorisation below. Enable features only after configuring and checking their accounting and access boundaries. Without Supabase configuration, personal-data routes fail closed. Never commit environment values, invite phrases or photographs.
 
 Relevant implementation checks (not needed for documentation-only changes):
 
@@ -57,8 +59,8 @@ The product idea and factor-based system were developed collaboratively through 
 
 Codex agents implemented and reviewed parallel pieces of the product, and user feedback repeatedly redirected the journey and prompts. Examples include the [saved colour-study interface](app/profile/page.tsx), [colour evidence logic](lib/colour/index.ts), [consultation generation](lib/consultation-generation.ts) and [account ownership boundaries](supabase/migrations/20261101000000_foundation.sql). Focused review led to save-conflict, A/B placement and interrupted-upload fixes; the [review record](docs/reviews/stage1-review-request.md) describes the changes and evidence.
 
-## Access and budget
+## Hackathon access and budget (historical)
 
-Judges and attendees need an invitation supplied privately; funded admission is subject to the available pool and account allowance. The authorised shared API budget is USD 100 including tests, with protected owner funds and separate admission controls. Availability is limited by configured funding, reservations and provider capacity. Completed operations settle from retained usage and verified prices when coverage permits; missing historical cache/tier details use labelled conservative upper estimates. Unused reservation is released, while uncertain outcomes retain their hold. These estimates are not provider invoices. A paused or exhausted consultation remains saved. Do not put invitation phrases or credentials in the repository.
+During the event, judges and attendees needed an invitation supplied privately; funded admission is subject to the available pool and account allowance. The authorised shared API budget was USD 100 including tests, with protected owner funds and separate admission controls. Availability is limited by configured funding, reservations and provider capacity. Completed operations settle from retained usage and verified prices when coverage permits; missing historical cache/tier details use labelled conservative upper estimates. Unused reservation is released, while uncertain outcomes retain their hold. These estimates are not provider invoices. A paused or exhausted consultation remains saved. Do not put invitation phrases or credentials in the repository.
 
-For implementation context, see [current decisions](docs/current-decisions.md) and [work packets](docs/work-packets.md); older historical decisions may have been superseded by later implementation. Tracker writes belong to the primary checkout’s integration owner.
+This archive does not authorize further paid calls or a relaunch. For implementation history, see [current decisions](docs/current-decisions.md) and [work packets](docs/work-packets.md); older historical decisions may have been superseded by later implementation. Tracker writes belong to the primary checkout’s integration owner.

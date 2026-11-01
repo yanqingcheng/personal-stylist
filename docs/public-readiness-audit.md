@@ -22,3 +22,12 @@ Anonymous HTTP GETs returned 200 for the live alias, `/colour-system`, and both 
 README setup was checked against package scripts, `.env.example`, server configuration and the migration instructions. Relative Markdown links/README heading anchors and `git diff --check` passed. No application tests or fresh install/build were run for this documentation-only change; earlier acceptance is linked from [current decisions](current-decisions.md).
 
 Limitations: bounded regex/manual review cannot prove absence of every secret or paraphrased private detail. Scope excludes other remote branches, unreachable/deleted Git objects, GitHub-hosted attachments and provider-side configuration/logs. No automated secret scanner was installed. Remaining atlas source links were not exhaustively rechecked. Publication consent, post-expiry cleanup, full demo recording and future AI capability/cost remain separate outstanding work.
+
+
+## Portfolio wrap review — 1 November 2026
+
+Reviewed `origin/main` at `fdec202`: 214 reachable commits and 539 unique file blobs, including changes since the earlier audit above. Credential-pattern scans across that reachable history found no matches for common OpenAI/GitHub/AWS tokens, JWTs, private-key headers or password-bearing PostgreSQL URLs. Email-pattern candidates were limited to the login page's placeholder. The current tracked tree contains no committed environment values, personal-photo directories, audio recordings or transcript exports identified by this review.
+
+The four tracked WebP design assets were visually inspected: a conceptual textile collage and fictional portrait/style imagery. Their design provenance and the fictional colour-result page distinguish them from real user outcomes. No private case narrative was identified. Internal operational paths remain in historical documentation and the issue export (including references to private secret-file locations); these are location references, not credentials or file contents. They are a minor disclosure of workflow structure, not a claim that private material was published. No history rewrite was performed.
+
+This is a bounded source review, not a guarantee that all private details or all possible credential formats are absent. Other branches, unreachable objects, GitHub attachments, provider logs and private account data are outside its scope. New portfolio screenshots require separate visual/provenance review before publication. Documentation checks cover local links and whitespace, not fresh runtime acceptance.
