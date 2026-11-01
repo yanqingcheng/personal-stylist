@@ -1,0 +1,11 @@
+/* Keep the complete comparison sheet in view above the phone's Next bar. */
+@media (max-width: 700px) {
+  .style-consultation .sc-sheet img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: clamp(180px, 50svh, 440px);
+    margin-inline: auto;
+    object-fit: contain;
+  }
+}
