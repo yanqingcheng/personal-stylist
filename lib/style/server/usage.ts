@@ -25,7 +25,7 @@ type Service = ReturnType<typeof serviceClient>;
  * Missing modality/count information stays unpriced. This never mutates the ledger.
  */
 export async function recordProviderUsage({service,userId,operationId,action,response,rates}: {
-  service:Service; userId:string; operationId:string; action:'plan'|'image'|'editorial'|'dialogue'|'composite'|'transcription'|'voice';
+  service:Service; userId:string; operationId:string; action:'plan'|'image'|'editorial'|'dialogue'|'composite'|'transcription'|'voice'|'inspection';
   response:unknown; rates?:VerifiedUsageRates;
 }) {
   const parsed=responseSchema.parse(response);
