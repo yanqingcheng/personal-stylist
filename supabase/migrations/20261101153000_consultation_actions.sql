@@ -106,3 +106,24 @@ begin
 end $$;
 revoke all on function public.consultation_action_json(public.consultation_actions),public.read_consultation_actions(uuid),public.create_consultation_action(uuid,uuid,text,integer,text,text,text,text),public.claim_consultation_action(uuid,uuid,uuid),public.start_consultation_editorial(uuid,uuid,uuid,text),public.finish_consultation_action(uuid,uuid,uuid,text,text) from public,anon,authenticated;
 grant execute on function public.consultation_action_json(public.consultation_actions),public.read_consultation_actions(uuid),public.create_consultation_action(uuid,uuid,text,integer,text,text,text,text),public.claim_consultation_action(uuid,uuid,uuid),public.start_consultation_editorial(uuid,uuid,uuid,text),public.finish_consultation_action(uuid,uuid,uuid,text,text) to service_role;
+
+-- Explicit operator association of an already prepared owned asset. This is a
+-- distinct, unmetered path and never claims feedback-triggered image generation.
+create function public.associate_prepared_consultation_action(p_user uuid,p_action uuid,p_revision integer,p_output_hash text,p_asset_path text)
+returns jsonb language plpgsql security invoker set search_path=public,pg_temp as $$
+declare p public.profiles; s public.consultation_sessions; a public.consultation_actions;
+begin
+ select * into p from public.profiles where user_id=p_user for update;
+ if not found or p.deletion_state<>'active' or not exists(select 1 from public.access_grants where user_id=p_user and active) then return jsonb_build_object('error','forbidden'); end if;
+ select * into s from public.consultation_sessions where user_id=p_user for update;
+ select * into a from public.consultation_actions where id=p_action and user_id=p_user for update;
+ if a.id is null or a.kind<>'request_revision' or a.operation_id is not null or s.revision is distinct from p_revision or a.base_revision is distinct from p_revision or a.output_hash is distinct from p_output_hash then return jsonb_build_object('error','conflict'); end if;
+ if p_asset_path is null or p_asset_path not like p_user::text||'/%' or position('..' in p_asset_path)>0 then return jsonb_build_object('error','asset'); end if;
+ if a.status='succeeded' and a.prepared_asset_path=p_asset_path then return jsonb_build_object('action',public.consultation_action_json(a),'replayed',true); end if;
+ if a.status<>'pending' or exists(select 1 from public.ai_operations where user_id=p_user and state in ('reserved','running')) then return jsonb_build_object('error','conflict'); end if;
+ if exists(select 1 from public.consultation_messages m where m.user_id=p_user and m.role='user' and not exists(select 1 from public.consultation_messages reply where reply.reply_to=m.id and reply.user_id=p_user)) then return jsonb_build_object('error','pending'); end if;
+ update public.consultation_actions set status='succeeded',prepared_asset_path=p_asset_path,result='Prepared image explicitly associated with this request. It was not generated from the new feedback.',updated_at=now() where id=a.id returning * into a;
+ return jsonb_build_object('action',public.consultation_action_json(a),'consultation',public.read_consultation(p_user),'replayed',false);
+end $$;
+revoke all on function public.associate_prepared_consultation_action(uuid,uuid,integer,text,text) from public,anon,authenticated;
+grant execute on function public.associate_prepared_consultation_action(uuid,uuid,integer,text,text) to service_role;
