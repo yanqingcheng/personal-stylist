@@ -12,7 +12,7 @@ export type ProgressJob={id:string;state:'pending'|'running'|'succeeded'|'failed
 
 /** Keep the exact request key across reloads; saved server jobs remain authoritative. */
 export function useGenerationProgress<T extends ProgressJob>(profileId:string|null,jobs:T[]){
- const [attempt,setAttempt]=useState<Attempt|null>(null),[now,setNow]=useState(()=>Date.now());
+ const [attempt,setAttempt]=useState<Attempt|null>(null),[now,setNow]=useState(0);
  const currentAttempt=useRef<Attempt|null>(null);
  const key=profileId?'stylist-generation:'+profileId:null;
  const persist=useCallback((value:Attempt|null)=>{currentAttempt.current=value;setAttempt(value);if(key)try{if(value)sessionStorage.setItem(key,JSON.stringify(value));else sessionStorage.removeItem(key)}catch{/* The current tab still retains its exact key. */}},[key]);
