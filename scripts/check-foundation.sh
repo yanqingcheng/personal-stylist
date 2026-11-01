@@ -31,6 +31,12 @@ do $$ declare r jsonb; winner uuid; begin
  r:=redeem_invite('00000000-0000-0000-0000-000000000004','invalid'); if r->>'status'<>'invalid' then raise exception 'invalid invite accepted'; end if;
  r:=save_profile(winner,0,'1',null,'{"version":1,"answers":{"note":"saved"}}'::jsonb); if r->'profile'->>'revision'<>'1' then raise exception 'save failed'; end if;
  r:=save_profile(winner,0,'2',null,'{}'::jsonb); if r->>'error'<>'conflict' then raise exception 'stale save accepted'; end if;
+ r:=create_pending_media('00000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','test/pending','colour_portrait','image/jpeg',1000);
+ if r->>'id' is null then raise exception 'pending media creation failed'; end if;
+ update public.media set status='processing' where id='10000000-0000-0000-0000-000000000001';
+ if not begin_profile_deletion('00000000-0000-0000-0000-000000000003') then raise exception 'deletion did not begin'; end if;
+ if finish_media('00000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','test/ready',1000) then raise exception 'late upload resurrected profile'; end if;
+ if not exists(select 1 from upload_leases where object_path='test/pending') then raise exception 'pending upload lease lost'; end if;
 end $$;
 do $$ begin if has_function_privilege('authenticated','public.redeem_invite(uuid,text)','execute') or has_function_privilege('anon','public.save_profile(uuid,integer,text,text,jsonb)','execute') then raise exception 'untrusted role has privileged RPC'; end if; end $$;
 grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
@@ -39,4 +45,4 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003'
 do $$ begin if (select count(*) from public.profiles)<>1 then raise exception 'RLS leaked profiles'; end if; end $$;
 reset role;
 SQL
-printf 'PASS: isolated PostgreSQL migration, final-slot race, idempotent activation, judge admission, save conflict and profile RLS.\n'
+printf 'PASS: isolated PostgreSQL migration, final-slot race, idempotent activation, judge admission, save conflict, profile RLS and late-upload tombstone.\n'

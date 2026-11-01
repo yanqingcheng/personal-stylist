@@ -26,7 +26,7 @@ export function serviceClient() {
 export async function identity() {
   const client = await userClient();
   const { data: { user }, error } = await client.auth.getUser();
-  if (error || !user || !user.email_confirmed_at) return null;
+  if (error || !user) return null;
   return user;
 }
 export async function activeUser() {

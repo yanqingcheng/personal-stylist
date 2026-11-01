@@ -1,5 +1,7 @@
 # Work packets for “go”
 
+> Latest Stage 1 access decision: email and password with unverified email, no email recovery; see [password access decision](password-access-decision.md). Paid features remain off and do not block this non-paid milestone.
+
 Read [execution-spec.md](execution-spec.md) (R0–R9) and [implementation-plan.md](implementation-plan.md) first. These files govern over older bead prose where they conflict. Implementation authorised by the user on 1 November 2026. Scope is the complete journey, delivered in working checkpoints; no assumption it all fits before17:00.
 
 Each packet below is an execution-task unless labelled decision/test-charter. Its input is this repo plus the specified R-sections and the source map in the implementation plan. Private source checkout can be obtained from `yanqingcheng/stylist-notes` using authorised access; pin reviewed commit7f5f43d, review later deltas before adoption. No private photos or personal examples enter public source. Missing credentials do not prevent pure domain/UI work.

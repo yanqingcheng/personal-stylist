@@ -1,0 +1,5 @@
+# Hackathon password access — 1 November 2026
+
+The user explicitly chose email and password for Stage 1 and authorized disabling email signup confirmation on the dedicated hackathon Supabase project. Email addresses are not verified, do not represent distinct real people, and cannot be used for password recovery until a mail provider is configured. The interface states this before account creation. No insecure manual reset is offered. Invite activation, account-owned profiles and private media remain required. Paid endpoints remain disabled; no API ledger is needed for the non-paid colour milestone.
+
+Configure `mailer_autoconfirm: true` only on the verified dedicated project. Confirm password signup, sign-in, sign-out and return, invite gates and two-user isolation against the actual project before opening access. The account-based invitation cap is not a per-person cap. Source: [Supabase password authentication](https://supabase.com/docs/guides/auth/passwords) and [Auth configuration API](https://supabase.com/docs/reference/api/v1-update-auth-service-config).

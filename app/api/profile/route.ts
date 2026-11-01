@@ -4,8 +4,9 @@ const documentSchema = z.object({ version: z.number().int().min(1).max(1).option
 const patch = z.object({ expectedRevision: z.number().int().nonnegative(), currentStep: z.string().min(1).max(100).optional(), pauseReason: z.string().max(2000).nullable().optional(), document: documentSchema.optional() }).strict();
 export async function GET() {
   try { const auth = await activeUser(); if (!auth) return fail(401, 'Sign in and activate your account');
-    const { data, error } = await auth.service.from('profiles').select('*').eq('user_id', auth.user.id).eq('deletion_state', 'active').maybeSingle();
-    if (error || !data) return fail(404, 'Profile unavailable');
+    const { data, error } = await auth.service.from('profiles').select('*').eq('user_id', auth.user.id).maybeSingle();
+    if (error || !data || data.deletion_state === 'deleted') return fail(404, 'Profile unavailable');
+    if (data.deletion_state === 'deleting') return Response.json({deletionPending:true},{headers:{'Cache-Control':'no-store'}});
     return Response.json({ profile: data }, { headers: { 'Cache-Control': 'no-store' } });
   } catch { return fail(503, 'Profile unavailable'); }
 }
@@ -40,6 +41,11 @@ export async function DELETE(request: Request) {
     if (rounds.error) return fail(503,'Deletion incomplete; please retry');
     const media = await auth.service.from('media').delete().eq('user_id',auth.user.id);
     if (media.error) return fail(503,'Deletion incomplete; please retry');
+    const {data:leases,error:leaseError}=await auth.service.from('upload_leases').select('id,object_path,expires_at').eq('user_id',auth.user.id);
+    if(leaseError) return fail(503,'Deletion incomplete; please retry');
+    const expired=leases.filter(lease=>new Date(lease.expires_at).getTime()<=Date.now());
+    if(expired.length) { const removed=await auth.service.storage.from('private-media').remove(expired.map(lease=>lease.object_path)); if(removed.error) return fail(503,'Deletion incomplete; please retry'); const cleared=await auth.service.from('upload_leases').delete().eq('user_id',auth.user.id).in('id',expired.map(lease=>lease.id)); if(cleared.error) return fail(503,'Deletion incomplete; please retry'); }
+    if(expired.length < leases.length) return Response.json({pending:true},{status:202,headers:{'Cache-Control':'no-store'}});
     const profile = await auth.service.from('profiles').update({document:{},current_step:'deleted',pause_reason:null,deletion_state:'deleted',updated_at:new Date().toISOString()}).eq('user_id',auth.user.id).eq('deletion_state','deleting');
     if (profile.error) return fail(503,'Deletion incomplete; please retry');
     return Response.json({ok:true});

@@ -1,5 +1,7 @@
 # Build coordination — 1 November 2026
 
+> Latest Stage 1 access decision: email and password with unverified email, no email recovery; see [password access decision](password-access-decision.md). Paid features remain off and do not block this non-paid milestone.
+
 User authorised implementation, deployment within existing hosting, GPT-6.1 Sol and Terra leads with bounded subdelegation, creative design and built-in image generation for assets. Earlier planning-only text is superseded. Deadline 17:00 London; aim feature freeze15:30 and submission ready16:30.
 
 Terra leads implementation and integration/release, delegating bounded backend and frontend tasks. Sol is the independent reviewer of ready increments, concentrating on user-visible correctness, privacy, spending and simplicity. Agree shared types and endpoint contracts early; each owns its worktree. Terra is sole integration publisher to main after the lead handoff. Commit and push branch checkpoints promptly. Do not overwrite another worker. Parent Astra remains available for high-level decisions and review.
