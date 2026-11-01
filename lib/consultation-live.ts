@@ -71,6 +71,7 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
           if(closing)return;
           socket.send(JSON.stringify({type:'session.thinking.append',event_id:randomUUID(),delegation_id:id,content:''}));
           const saved=await service.rpc('read_consultation',{p_user:userId});
+          if(saved.error||!saved.data||typeof saved.data!=='object')throw new Error('Active consultation unavailable');
           const current={savedContext:input,savedHistory:saved.data,liveFragments};
           if(Buffer.byteLength(JSON.stringify(current))>96000)throw new Error('Live context exceeds bound');
           const reply=await requestText({key,instructions:CONSULTATION_INSTRUCTIONS+' Give a concise useful response under 150 words. This result is for the voice agent to communicate.',input:current,maxOutputTokens:LIVE_BACKEND_OUTPUT_TOKENS});
