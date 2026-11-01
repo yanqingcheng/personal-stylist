@@ -14,8 +14,16 @@ export const LIVE_BACKEND_OUTPUT_TOKENS=600;
 export const LIVE_PRICING_VERSION='live-60s-3delegations-engineering-reserve-2026-11-01';
 // Published voice rate $0.05/minute. Backend use is additional, not included.
 export const LIVE_VOICE_MICROUSD_PER_MINUTE=50_000;
-function releaseReady():boolean{return false}
-export function liveAvailability(){return {available:releaseReady()&&process.env.CONSULTATION_LIVE_ENABLED==='true'&&!!process.env.OPENAI_API_KEY,model:LIVE_MODEL,maxSeconds:LIVE_MAX_SECONDS,mode:'full-duplex' as const,reason:'GPT-Live is awaiting release. Your saved text consultation is available.'}}
+export function consultationLiveReady():boolean{return process.env.CONSULTATION_LIVE_RELEASE_APPROVED==='true'}
+export function liveAvailability(userId?:string){
+  const testUser=process.env.CONSULTATION_TEST_USER_ID;
+  const blocked=!consultationLiveReady()?{code:'live_release_disabled',reason:'GPT-Live release is disabled in this environment.'}
+    :process.env.CONSULTATION_LIVE_ENABLED!=='true'?{code:'live_disabled',reason:'GPT-Live is switched off in this environment.'}
+    :!testUser?{code:'live_test_scope_missing',reason:'The GPT-Live test account has not been configured.'}
+    :userId!==testUser?{code:'live_test_scope',reason:'GPT-Live is available only to the configured test account.'}
+    :!process.env.OPENAI_API_KEY?{code:'live_provider_unconfigured',reason:'The GPT-Live provider is not configured.'}:null;
+  return {available:blocked===null,model:LIVE_MODEL,maxSeconds:LIVE_MAX_SECONDS,mode:'full-duplex' as const,code:blocked?.code??'live_ready',reason:blocked?.reason??'GPT-Live is ready. The shared budget is checked before each call.'};
+}
 const created=z.object({session:z.object({id:z.string().regex(/^[A-Za-z0-9_-]{1,200}$/)}),transport:z.object({type:z.literal('webrtc'),sdp:z.string().min(1).max(100000)})});
 export async function createLiveSession({key,sdp,history,fetcher=fetch}:{key:string;sdp:string;history:{role:string;text:string}[];fetcher?:typeof fetch}){
   // Keep exact saved text, dropping oldest whole messages to fit startup history.
