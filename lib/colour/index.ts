@@ -9,6 +9,8 @@ export type ColourResponse = {
   photoId: string;
   revision: number;
   answer: TrialAnswer;
+  /** This choice was explicitly made on its displayed drape after the placement fix. */
+  confirmedOnDrape?: boolean;
   /** The user's own words, retained verbatim. */
   comment?: string;
   /** Persist the displayed mapping, swatches and image transform with each comparison. */
@@ -37,6 +39,16 @@ export const drapeTrials = source.drape_trials.map((trial) => ({
   positiveAnswer: trial.polarity[0] as "A" | "B",
 }));
 
+/** The original placement algorithm, also used to identify potentially ambiguous legacy answers. */
+export function drapeLeft(trialId: string, photoId: string): "A" | "B" {
+  const seed = [...(trialId + photoId)].reduce((n, c) => ((n * 31 + c.charCodeAt(0)) >>> 0), 0);
+  return seed % 2 === 0 ? "A" : "B";
+}
+export function needsDrapeConfirmation(response: ColourResponse): boolean {
+  return !response.confirmedOnDrape && (response.answer === "A" || response.answer === "B") &&
+    (response.presentation?.left ?? drapeLeft(response.trialId, response.photoId)) === "B";
+}
+
 /** Latest answer per trial/photo; a re-drape is contextual evidence, not another independent vote. */
 export function summariseEvidence(responses: readonly ColourResponse[]): EvidenceSummary {
   const latest = new Map<string, ColourResponse>();
@@ -49,7 +61,7 @@ export function summariseEvidence(responses: readonly ColourResponse[]): Evidenc
   const summary = {} as EvidenceSummary;
   for (const axis of ["temperature", "value", "chroma"] as const) {
     const trialVotes: TrialVote[] = drapeTrials.filter((trial) => trial.axis === axis).map((trial) => {
-      const answers = [...latest.values()].filter((response) => response.trialId === trial.id);
+      const answers = [...latest.values()].filter((response) => response.trialId === trial.id && !needsDrapeConfirmation(response));
       const directions = new Set(answers.filter((r) => r.answer === "A" || r.answer === "B").map((r) => r.answer === trial.positiveAnswer ? "positive" : "negative"));
       const status: TrialVote["status"] = answers.some((r) => r.answer === "both") ? "broad" : directions.size > 1 ? "conflicting" : directions.has("positive") ? "positive" : directions.has("negative") ? "negative" : "no-direction";
       return { trialId: trial.id, status, responses: answers };
