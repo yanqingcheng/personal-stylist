@@ -164,6 +164,6 @@ export default function ConsultationChat({activeBoardId=null,onMessages,onSnapsh
         <button type="submit" disabled={!canSend}>{sending?'Sending…':'Send message'} <span aria-hidden="true">↗</span></button>
       </div>
     </form>
-    {consultation&&!sending&&!replySending&&!pending&&<ConsultationLive expectedRevision={consultation.revision} onSaved={receive} onActive={setLiveActive}/>}
+    {consultation&&!sending&&!replySending&&!pending&&<ConsultationLive activeBoardId={activeBoardId} expectedRevision={consultation.revision} onSaved={receive} onActive={setLiveActive}/>}
   </section>;
 }

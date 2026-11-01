@@ -46,8 +46,11 @@ export function monitorLive({key,service,userId,operationId,sessionId,startedAt,
     const socket=new WebSocket(`wss://api.openai.com/v1/live/sessions/${encodeURIComponent(sessionId)}/attach`,{headers:{Authorization:`Bearer ${key}`},handshakeTimeout:10000,maxPayload:1_048_576});
     let finished=false,closing=false,confirmed=false,persistenceFailed=false,backendFailed=false,sequence=Promise.resolve(),backend=Promise.resolve(),delegations=0;
     let drain:ReturnType<typeof setTimeout>|undefined;
-    const startingBoard=z.object({approvedOutput:z.object({id:z.string().min(1).max(200),hash:z.string().regex(/^[a-f0-9]{64}$/)})}).safeParse(input);
-    const sessionBoard=startingBoard.success?{id:startingBoard.data.approvedOutput.id,documentRevision:startingBoard.data.approvedOutput.hash}:undefined;
+    // App-owned context was resolved before SDP release; this is a starting
+    // reference, never approval. Fresh saved selections still take precedence.
+    const startingOutput=z.object({activeOutput:z.object({board:z.object({id:z.string().min(1).max(200)}),documentRevision:z.string().regex(/^[a-f0-9]{64}$/)})}).safeParse(input);
+    const startingApproval=z.object({approvedOutput:z.object({id:z.string().min(1).max(200),hash:z.string().regex(/^[a-f0-9]{64}$/)})}).safeParse(input);
+    const sessionBoard=startingOutput.success?{id:startingOutput.data.activeOutput.board.id,documentRevision:startingOutput.data.activeOutput.documentRevision}:startingApproval.success?{id:startingApproval.data.approvedOutput.id,documentRevision:startingApproval.data.approvedOutput.hash}:undefined;
     const seen=new Set<string>();const usage:Record<string,unknown>[]=[];const liveFragments:Record<string,unknown>[]=[];
     const emit=(event:Record<string,unknown>)=>{try{onEvent(event)}catch{/* Disconnected browser; server still finalizes. */}};
     const settle=async()=>{

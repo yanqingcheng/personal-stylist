@@ -5,7 +5,7 @@ import { loadConsultationContext } from '@/lib/consultation-provider';
 import { createLiveSession, closeLiveSession, liveAvailability, monitorLive, LIVE_PRICING_VERSION } from '@/lib/consultation-live';
 export const maxDuration=300;
 const headers={'Cache-Control':'private, no-store, max-age=0','Vary':'Cookie'};
-const offer=z.object({idempotencyKey:z.uuid(),expectedRevision:z.number().int().nonnegative(),sdp:z.string().min(1).max(64000)}).strict();
+const offer=z.object({idempotencyKey:z.uuid(),expectedRevision:z.number().int().nonnegative(),activeBoardId:z.string().min(1).max(200).nullable().optional(),sdp:z.string().min(1).max(64000)}).strict();
 export async function POST(request:Request){
  if(!sameOrigin(request))return fail(403,'Forbidden');
  try{
@@ -13,7 +13,7 @@ export async function POST(request:Request){
   const parsed=offer.safeParse(await body(request));if(!parsed.success)return fail(400,'A current conversation and WebRTC offer are required');
   const readiness=liveAvailability(auth.user.id);
   if(!readiness.available)return Response.json({error:readiness.reason,code:readiness.code},{status:503,headers});
-  const input=parsed.data,context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:input.expectedRevision,mode:'voice'});
+  const input=parsed.data,context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:input.expectedRevision,mode:'voice',activeBoardId:input.activeBoardId});
   const hash=createHash('sha256').update(JSON.stringify({context:context.inputHash,sdp:input.sdp,pricingVersion:LIVE_PRICING_VERSION})).digest('hex');
   const reserved=await auth.service.rpc('reserve_live_consultation',{p_user:auth.user.id,p_key:input.idempotencyKey,p_hash:hash,p_revision:input.expectedRevision});
   if(reserved.error)return fail(503,'The shared Live budget ledger is unavailable');
@@ -44,14 +44,16 @@ export async function POST(request:Request){
 export async function GET(request:Request){
  try{
   const auth=await activeUser();if(!auth)return fail(401,'Sign in for your private consultation');
-  const id=new URL(request.url).searchParams.get('operationId');
+  const query=new URL(request.url).searchParams,id=query.get('operationId');
   if(!id)return Response.json(liveAvailability(auth.user.id),{headers});
   if(!z.uuid().safeParse(id).success)return fail(404,'Live call unavailable');
+  const board=z.string().min(1).max(200).nullable().safeParse(query.get('activeBoardId'));
+  if(!board.success)return fail(404,'Live board unavailable');
   const readiness=liveAvailability(auth.user.id);
   if(!readiness.available)return Response.json({error:readiness.reason,code:readiness.code},{status:503,headers});
   const operation=await auth.service.from('ai_operations').select('base_revision').eq('id',id).eq('user_id',auth.user.id).eq('kind','live').eq('state','running').maybeSingle();
   if(operation.error||!operation.data)return fail(404,'Live call unavailable');
-  const context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:operation.data.base_revision,mode:'voice'});
+  const context=await loadConsultationContext({service:auth.service,userId:auth.user.id,expectedRevision:operation.data.base_revision,mode:'voice',activeBoardId:board.data});
   const claim=await auth.service.rpc('claim_live_monitor',{p_user:auth.user.id,p_op:id});
   if(claim.error||!claim.data?.providerSessionId)return fail(409,'This live call already has a monitor or is unavailable');
   const answer=await auth.service.from('consultation_live_sessions').select('sdp_answer').eq('operation_id',id).eq('user_id',auth.user.id).maybeSingle();
